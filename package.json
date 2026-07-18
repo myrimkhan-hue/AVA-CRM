@@ -1,0 +1,8 @@
+{
+  "name": "ava-crm",
+  "private": true,
+  "workspaces": ["backend", "frontend"],
+  "scripts": {
+    "build": "npm run build --workspace backend && npm run build --workspace frontend"
+  }
+}
