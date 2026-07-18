@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body{margin:0;background:#F6F7F9;color:#1B2430;font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  a{color:#E4140E;text-decoration:none}a:hover{color:#C10F0A}
+  input:focus,select:focus{outline:none;border-color:#E4140E;box-shadow:0 0 0 3px rgba(228,20,14,.12)}
+</style>
+</helmet>
+<div data-screen-label="Вход и роли" style="display:grid;grid-template-columns:440px 1fr;min-height:100vh">
+  <section style="background:#fff;border-right:1px solid #E3E8EF;display:flex;flex-direction:column;justify-content:center;padding:0 48px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px">
+      <img src="assets/ava-logo.svg" alt="AVA" style="width:44px;height:44px;display:block">
+      <div>
+        <div style="font-size:19px;font-weight:800;letter-spacing:-.01em">AVA Solution</div>
+        <div style="font-size:12.5px;color:#66707D">CRM для экспедиторской компании</div>
+      </div>
+    </div>
+    <h2 style="font-size:22px;font-weight:700;margin:0 0 4px">Вход в систему</h2>
+    <p style="font-size:13px;color:#66707D;margin:0 0 22px">Доступ только для авторизованных сотрудников. Сессия завершается после 12 часов неактивности.</p>
+    <label style="display:block;font-size:12.5px;font-weight:600;color:#3A424E;margin-bottom:5px">Логин или e-mail</label>
+    <input value="{{ login }}" onChange="{{ setLogin }}" placeholder="ezhan.t@ava-solution.kz" style="width:100%;padding:11px 13px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:9px;color:#1B2430;background:#fff;box-sizing:border-box;margin-bottom:14px">
+    <label style="display:block;font-size:12.5px;font-weight:600;color:#3A424E;margin-bottom:5px">Пароль</label>
+    <div style="position:relative;margin-bottom:6px">
+      <input type="{{ pwType }}" value="{{ pw }}" onChange="{{ setPw }}" placeholder="••••••••" style="width:100%;padding:11px 13px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:9px;color:#1B2430;background:#fff;box-sizing:border-box">
+      <button onClick="{{ togglePw }}" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);border:none;background:none;color:#66707D;font-size:12.5px;cursor:pointer;padding:6px 8px">{{ pwToggle }}</button>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:8px 0 20px">
+      <label style="display:inline-flex;align-items:center;gap:7px;font-size:13px;cursor:pointer;user-select:none"><input type="checkbox" style="width:15px;height:15px;accent-color:#E4140E">Запомнить меня</label>
+      <a href="#" style="font-size:13px">Забыли пароль?</a>
+    </div>
+    <button style="width:100%;background:#E4140E;border:1px solid #E4140E;color:#fff;border-radius:9px;padding:12px;font-size:15px;font-weight:600;cursor:pointer" style-hover="background:#C10F0A">Войти</button>
+    <div style="margin-top:22px">
+      <div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:#8A93A0;font-weight:600;margin-bottom:9px">Демо-вход под ролью</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <sc-for list="{{ roleChips }}" as="r" hint-placeholder-count="5">
+          <button onClick="{{ r.onClick }}" style="border:1px solid {{ r.bd }};background:{{ r.bg }};color:{{ r.fg }};border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:500;cursor:pointer">{{ r.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="margin-top:26px;font-size:11.5px;color:#8A93A0;display:flex;align-items:center;gap:7px">
+      <span style="width:15px;height:15px;border-radius:4px;background:#EDF0F4;display:inline-flex;align-items:center;justify-content:center;font-size:10px">🔒</span>
+      HTTPS · пароли хранятся только в захешированном виде
+    </div>
+  </section>
+
+  <section style="padding:40px 44px;overflow-y:auto">
+    <h2 style="font-size:22px;font-weight:700;margin:0 0 4px">Матрица ролей и прав</h2>
+    <p style="font-size:13px;color:#66707D;margin:0 0 8px">Права назначает администратор без программиста. Выбранная слева роль подсвечена. Каждое изменение данных пишется в журнал; удаление важных сущностей — только мягкое.</p>
+    <div style="background:#EEF6FF;border:1px solid #BEDBF7;border-radius:10px;padding:11px 15px;font-size:12.5px;color:#1F4A73;margin-bottom:12px">
+      <b style="font-weight:600">Роли комбинируемые:</b> одному пользователю можно назначить несколько ролей — права суммируются (частый случай — «менеджер + логист» в одном лице). Видимость данных дополнительно ограничена <b style="font-weight:600">отделом</b> (отдел Китая, направление РК/РФ): «только свои / свой отдел» означает область в пределах отдела.
+    </div>
+    <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;min-width:720px">
+        <thead><tr>
+          <th style="text-align:left;padding:12px 16px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF;background:#FAFBFC;position:sticky;left:0">Возможность</th>
+          <sc-for list="{{ roleCols }}" as="rc" hint-placeholder-count="5">
+            <th style="padding:12px 10px;font-size:12px;font-weight:700;border-bottom:1px solid #E3E8EF;background:{{ rc.headBg }};color:{{ rc.headFg }};text-align:center;white-space:nowrap">{{ rc.label }}</th>
+          </sc-for>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ matrix }}" as="m" hint-placeholder-count="9">
+            <tr style="border-bottom:1px solid #EEF1F5">
+              <td style="padding:11px 16px;font-size:13.5px;background:#fff;position:sticky;left:0">{{ m.cap }}</td>
+              <sc-for list="{{ m.cells }}" as="c" hint-placeholder-count="5">
+                <td style="padding:11px 10px;text-align:center;background:{{ c.bg }}"><span style="font-size:14px;color:{{ c.fg }};font-weight:700">{{ c.mark }}</span></td>
+              </sc-for>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:#66707D">
+      <span><b style="color:#15803D">✓</b> полный доступ</span>
+      <span><b style="color:#B45309">◑</b> частично / только свои / свой отдел</span>
+      <span><b style="color:#C9CFD8">—</b> нет доступа</span>
+    </div>
+    <div style="background:#FFF7E6;border:1px solid #F5D98B;border-radius:10px;padding:11px 15px;font-size:12.5px;color:#7A5A00;margin-top:16px">
+      <b style="font-weight:600">Деактивация сотрудника:</b> учётная запись блокируется (не удаляется, история сохраняется). Система предлагает массово переназначить его активные сделки и перевозки другому ответственному.
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { login: '', pw: '', pwShown: false, role: 'logist' };
+  renderVals() {
+    const ROLES = [
+      { k: 'admin', label: 'Администратор', bg: '#EDF0F4', fg: '#1B2430' },
+      { k: 'chief', label: 'Руководитель', bg: '#E7E9FD', fg: '#4F46E5' },
+      { k: 'head', label: 'Рук. отдела', bg: '#FDF0D5', fg: '#B45309' },
+      { k: 'manager', label: 'Менеджер', bg: '#DCEFFB', fg: '#0369A1' },
+      { k: 'logist', label: 'Логист', bg: '#D5F0EC', fg: '#0F766E' },
+      { k: 'fin', label: 'Финансист', bg: '#EFE9FD', fg: '#7C3AED' }
+    ];
+    // 2=полный, 1=частично/только свои-отдел, 0=нет
+    const CAPS = [
+      { cap: 'Перевозки: статусы, участки, субподрядчики', v: { admin: 2, chief: 2, head: 1, manager: 1, logist: 1, fin: 0 } },
+      { cap: 'Сделки', v: { admin: 2, chief: 2, head: 1, manager: 1, logist: 0, fin: 1 } },
+      { cap: 'Грязная маржа по сделке', v: { admin: 2, chief: 2, head: 1, manager: 1, logist: 0, fin: 2 } },
+      { cap: 'Счета клиентам и ставки клиента', v: { admin: 2, chief: 2, head: 1, manager: 2, logist: 0, fin: 2 } },
+      { cap: 'Финансы: платежи, кассовый календарь, курсы', v: { admin: 2, chief: 2, head: 0, manager: 0, logist: 0, fin: 2 } },
+      { cap: 'Внутригрупповые операции', v: { admin: 2, chief: 2, head: 0, manager: 0, logist: 0, fin: 2 } },
+      { cap: 'Мой отчёт мотивации (личный)', v: { admin: 2, chief: 2, head: 1, manager: 1, logist: 1, fin: 2 } },
+      { cap: 'Сводная мотивация по сотрудникам', v: { admin: 2, chief: 2, head: 1, manager: 0, logist: 0, fin: 2 } },
+      { cap: 'Назначение ответственных', v: { admin: 2, chief: 2, head: 1, manager: 0, logist: 0, fin: 0 } },
+      { cap: 'Общая финансовая отчётность', v: { admin: 2, chief: 2, head: 0, manager: 0, logist: 0, fin: 2 } },
+      { cap: 'Настройки системы и пользователи', v: { admin: 2, chief: 0, head: 0, manager: 0, logist: 0, fin: 0 } }
+    ];
+    const MARK = { 2: { m: '✓', fg: '#15803D' }, 1: { m: '◑', fg: '#B45309' }, 0: { m: '—', fg: '#C9CFD8' } };
+    const { login, pw, pwShown, role } = this.state;
+    const roleChips = ROLES.map(r => {
+      const active = role === r.k;
+      return { label: r.label, bg: active ? r.fg : '#fff', fg: active ? '#fff' : '#1B2430', bd: active ? r.fg : '#E3E8EF', onClick: () => this.setState({ role: r.k }) };
+    });
+    const roleCols = ROLES.map(r => ({ label: r.label, headBg: role === r.k ? r.bg : '#FAFBFC', headFg: role === r.k ? r.fg : '#66707D' }));
+    const matrix = CAPS.map(c => ({
+      cap: c.cap,
+      cells: ROLES.map(r => {
+        const mk = MARK[c.v[r.k]];
+        return { mark: mk.m, fg: mk.fg, bg: role === r.k ? 'rgba(228,20,14,.04)' : '#fff' };
+      })
+    }));
+    return {
+      login, pw, roleChips, roleCols, matrix,
+      pwType: pwShown ? 'text' : 'password', pwToggle: pwShown ? 'Скрыть' : 'Показать',
+      setLogin: e => this.setState({ login: e.target.value }),
+      setPw: e => this.setState({ pw: e.target.value }),
+      togglePw: () => this.setState(s => ({ pwShown: !s.pwShown }))
+    };
+  }
+}
+</script>
+</body>
+</html>

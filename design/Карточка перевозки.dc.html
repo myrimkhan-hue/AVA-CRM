@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body{margin:0;background:#F6F7F9;color:#1B2430;font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  a{color:#E4140E;text-decoration:none}a:hover{color:#C10F0A}
+  input:focus,select:focus{outline:none;border-color:#E4140E;box-shadow:0 0 0 3px rgba(228,20,14,.12)}
+</style>
+</helmet>
+<header data-screen-label="Карточка перевозки" style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#fff;border-bottom:1px solid #E3E8EF">
+  <div style="display:flex;align-items:center;gap:12px">
+    <img src="assets/ava-logo.svg" alt="AVA" style="width:38px;height:38px;display:block">
+    <div>
+      <h1 style="font-size:18px;margin:0;font-weight:700">Перевозки</h1>
+      <div style="font-size:12px;color:#66707D;margin-top:-2px">AVA Solution · Логист</div>
+    </div>
+  </div>
+  <nav style="display:flex;align-items:center;gap:4px">
+    <a href="Экран логиста.dc.html" style="color:#1B2430;font-weight:600;font-size:14px;padding:7px 13px;border-radius:8px;background:#F3F5F8">Перевозки</a>
+    <a href="#" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Контрагенты</a>
+    <a href="Мой отчёт мотивации.dc.html" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Моя мотивация</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#66707D">
+    <span style="width:28px;height:28px;border-radius:50%;background:#E7E9FD;color:#4F46E5;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">ЕТ</span>
+    Ержан Т.
+  </div>
+</header>
+<main style="max-width:1400px;margin:0 auto;padding:20px 24px">
+  <div style="margin-bottom:6px;font-size:13px"><a href="Экран логиста.dc.html">← Активные перевозки</a></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <h2 style="font-size:22px;font-weight:700;margin:0">Перевозка AVA-2026-0145/1</h2>
+      <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:12.5px;font-weight:600;background:{{ curBg }};color:{{ curFg }}" style-before="content:'';width:6px;height:6px;border-radius:50%;background:currentColor">{{ curLabel }}</span>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">Заявка перевозчику</button>
+      <button style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">Изменить</button>
+    </div>
+  </div>
+  <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px;margin-bottom:14px">
+    <div style="display:flex;gap:0;align-items:flex-start;overflow-x:auto">
+      <sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+        <div style="flex:1;min-width:110px;display:flex;flex-direction:column;align-items:center;gap:7px;position:relative">
+          <div style="position:absolute;top:13px;left:{{ s.lineLeft }};right:{{ s.lineRight }};height:2px;background:{{ s.lineBg }}"></div>
+          <div style="width:28px;height:28px;border-radius:50%;background:{{ s.dotBg }};color:{{ s.dotFg }};border:2px solid {{ s.dotBd }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;position:relative;z-index:1;box-sizing:border-box">{{ s.mark }}</div>
+          <div style="font-size:12px;font-weight:{{ s.w }};color:{{ s.fg }};text-align:center;white-space:nowrap">{{ s.label }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid #E3E8EF;margin-top:14px;padding-top:13px">
+      <sc-if value="{{ canAdvance }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ advance }}" style="background:#E4140E;border:1px solid #E4140E;color:#fff;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:500;cursor:pointer" style-hover="background:#C10F0A">{{ advanceLabel }}</button>
+      </sc-if>
+      <label style="display:inline-flex;align-items:center;gap:7px;font-size:13.5px;cursor:pointer;user-select:none">
+        <input type="checkbox" checked="{{ waNotify }}" onChange="{{ toggleWa }}" style="width:15px;height:15px;accent-color:#E4140E;cursor:pointer">
+        Уведомить клиента в WhatsApp (Wazzup, шаблон «смена статуса»)
+      </label>
+      <sc-if value="{{ canRollback }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ rollback }}" style="border:1px solid transparent;background:none;color:#66707D;border-radius:8px;padding:9px 12px;font-size:13.5px;cursor:pointer;margin-left:auto" style-hover="background:#EEF1F5">← Откатить статус</button>
+      </sc-if>
+      <span style="font-size:12px;color:#66707D">Смена и откат статуса записываются в журнал</span>
+    </div>
+  </div>
+  <sc-if value="{{ dateModal }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(16,24,40,.4);display:flex;align-items:center;justify-content:center;z-index:60;padding:20px">
+      <div style="background:#fff;border-radius:14px;box-shadow:0 20px 50px rgba(16,24,40,.28);width:420px;max-width:100%;padding:22px 24px">
+        <h3 style="font-size:17px;font-weight:700;margin:0 0 4px">{{ dateModal.title }}</h3>
+        <p style="font-size:13px;color:#66707D;margin:0 0 16px">{{ dateModal.hint }}</p>
+        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">{{ dateModal.fieldLabel }}</label>
+        <input type="date" value="{{ eventDate }}" max="{{ today }}" onChange="{{ setEventDate }}" style="width:100%;padding:10px 12px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:8px;color:#1B2430;background:#fff;box-sizing:border-box;font-variant-numeric:tabular-nums">
+        <div style="font-size:12px;color:#66707D;margin-top:8px">Будущие даты запрещены. В журнал попадёт и дата события, и момент проставления статуса ({{ nowStamp }}).</div>
+        <label style="display:inline-flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;margin-top:14px;user-select:none">
+          <input type="checkbox" checked="{{ waNotify }}" onChange="{{ toggleWa }}" style="width:15px;height:15px;accent-color:#E4140E">
+          Уведомить клиента в WhatsApp
+        </label>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:18px">
+          <button onClick="{{ cancelDate }}" style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">Отмена</button>
+          <button onClick="{{ confirmDate }}" style="background:#E4140E;border:1px solid #E4140E;color:#fff;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#C10F0A">Подтвердить</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:14px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px">
+        <h3 style="font-size:15px;font-weight:600;margin:0 0 12px">Груз и маршрут</h3>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px 18px">
+          <div><div style="font-size:12px;color:#66707D">Наименование</div><div>Электроника</div></div>
+          <div><div style="font-size:12px;color:#66707D">Мест</div><div style="font-variant-numeric:tabular-nums">12 паллет</div></div>
+          <div><div style="font-size:12px;color:#66707D">Вес</div><div style="font-variant-numeric:tabular-nums">3 400 кг</div></div>
+          <div><div style="font-size:12px;color:#66707D">Объём</div><div style="font-variant-numeric:tabular-nums">18 м³</div></div>
+          <div><div style="font-size:12px;color:#66707D">Стоимость груза</div><div style="font-variant-numeric:tabular-nums">48 000 USD</div></div>
+          <div><div style="font-size:12px;color:#66707D">Опасный груз</div><div>Нет</div></div>
+          <div><div style="font-size:12px;color:#66707D">Темп. режим</div><div>Не требуется</div></div>
+          <div><div style="font-size:12px;color:#66707D">Вид транспорта</div><div>Мультимодальная</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;border-top:1px solid #E3E8EF;margin-top:14px;padding-top:12px;font-size:15px">
+          <b style="font-weight:600">Гуанчжоу, Китай</b><span style="color:#66707D">→</span><b style="font-weight:600">Алматы, Казахстан</b>
+          <span style="font-size:12.5px;color:#66707D;margin-left:auto">План доставки: 20.07.2026</span>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:6px">
+          <h3 style="font-size:15px;font-weight:600;margin:0">Данные для заявки</h3>
+          <div style="display:flex;gap:8px">
+            <button style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">Заявка перевозчику</button>
+            <button style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:6px 13px;font-size:13px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">Заявка клиенту</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:14px">
+          <sc-for list="{{ reqSets }}" as="r" hint-placeholder-count="2">
+            <div>
+              <div style="display:flex;align-items:center;gap:9px;margin-bottom:5px">
+                <span style="font-size:13px;font-weight:600">{{ r.label }}</span>
+                <span style="font-size:12px;font-weight:600;color:{{ r.fg }};background:{{ r.bg }};border-radius:999px;padding:1px 9px">{{ r.filled }} из {{ r.total }} полей</span>
+                <sc-if value="{{ r.missingText }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:#66707D">ждём: {{ r.missingText }}</span></sc-if>
+              </div>
+              <div style="height:6px;background:#EDF0F4;border-radius:999px;overflow:hidden"><div style="height:100%;width:{{ r.pct }};background:{{ r.barFg }};border-radius:999px"></div></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 18px">
+          <div><div style="font-size:12px;color:#66707D">Грузоотправитель</div><div>Guangzhou Yida Trading Co.</div></div>
+          <div><div style="font-size:12px;color:#66707D">Грузополучатель</div><div>ТОО «Alma Electronics», склад Алматы</div></div>
+          <div><div style="font-size:12px;color:#66707D">Адрес погрузки · дата/время</div><div>Гуанчжоу, Baiyun, склад 7 · 06.07.2026, 10:00</div></div>
+          <div><div style="font-size:12px;color:#66707D">Контакт на погрузке</div><div style="font-variant-numeric:tabular-nums">Chen Hao · +86 138 0000-11-22</div></div>
+          <div><div style="font-size:12px;color:#66707D">Адрес выгрузки</div><div>Алматы, ул. Рыскулова 68, склад 3</div></div>
+          <div><div style="font-size:12px;color:#66707D">Контакт на выгрузке</div><div style="font-variant-numeric:tabular-nums">Дмитрий Ким · +7 727 350-11-20</div></div>
+          <div><div style="font-size:12px;color:#66707D">Тип кузова</div><div>Тент, 20 т</div></div>
+          <div><div style="font-size:12px;color:#66707D">Сопроводительные документы</div><div>{{ sopDocsText }}</div></div>
+          <div style="grid-column:1/3"><div style="font-size:12px;color:#66707D">Особые условия</div><div style="color:#B45309">— не заполнено (простой, штрафы)</div></div>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="font-size:15px;font-weight:600;margin:0">Водитель и транспорт</h3>
+          <sc-if value="{{ driverFirst }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;font-weight:700;color:#B45309;background:#FDF0D5;border-radius:999px;padding:2px 10px">Первая перевозка с перевозчиком</span></sc-if>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px 18px">
+          <div><div style="font-size:12px;color:#66707D">ФИО водителя</div><div>Ерлан Абдиров</div></div>
+          <div><div style="font-size:12px;color:#66707D">Телефон</div><div style="font-variant-numeric:tabular-nums">+7 701 447-20-15</div></div>
+          <div><div style="font-size:12px;color:#66707D">ИИН</div><div style="font-variant-numeric:tabular-nums">870514300123</div></div>
+          <div><div style="font-size:12px;color:#66707D">Перевозчик</div><div>ТОО ТрансАзия</div></div>
+          <div><div style="font-size:12px;color:#66707D">№ удостоверения (в/у)</div><div style="font-variant-numeric:tabular-nums">045821771</div></div>
+          <div><div style="font-size:12px;color:#66707D">Дата выдачи в/у</div><div style="font-variant-numeric:tabular-nums">12.03.2021</div></div>
+          <div><div style="font-size:12px;color:#66707D">Кем выдано</div><div>МВД РК</div></div>
+          <div><div style="font-size:12px;color:#66707D">Машина / прицеп</div><div style="font-variant-numeric:tabular-nums">A 452 KMA 05 / 918 CV</div></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid #E3E8EF;margin-top:13px;padding-top:12px">
+          <sc-for list="{{ driverDocs }}" as="d" hint-placeholder-count="3">
+            <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;background:#F3F5F8;border-radius:8px;padding:5px 11px"><span style="width:22px;height:22px;border-radius:6px;background:#FDEBEA;color:#E4140E;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">{{ d.ext }}</span>{{ d.name }}</span>
+          </sc-for>
+          <button style="border:1px dashed #C9D1DB;background:#fff;border-radius:8px;padding:5px 12px;font-size:12.5px;font-weight:500;cursor:pointer;color:#66707D" style-hover="background:#F3F5F8">+ Документ водителя</button>
+        </div>
+        <div style="font-size:12px;color:#66707D;margin-top:9px">Данные водителя подставляются в транспортную заявку перевозчику и видны в карточке перевозчика.</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="font-size:15px;font-weight:600;margin:0">Участки маршрута</h3>
+          <button style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:5px 12px;font-size:13px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">+ Добавить участок</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ legs }}" as="l" hint-placeholder-count="3">
+            <div style="border:1px solid {{ l.bd }};border-radius:10px;padding:12px 14px;background:{{ l.bg }}">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+                <span style="font-size:12px;font-weight:700;color:#66707D;font-variant-numeric:tabular-nums">{{ l.idx }}</span>
+                <b style="font-weight:600">{{ l.route }}</b>
+                <span style="font-size:12.5px;color:#66707D">{{ l.mode }}</span>
+                <span style="display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:600;background:{{ l.stBg }};color:{{ l.stFg }};margin-left:auto" style-before="content:'';width:5px;height:5px;border-radius:50%;background:currentColor">{{ l.stLabel }}</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px 18px;font-size:13px">
+                <div><div style="font-size:11.5px;color:#66707D">Субподрядчик</div><div>{{ l.sub }}</div></div>
+                <div><div style="font-size:11.5px;color:#66707D">Машина / контейнер</div><div style="font-variant-numeric:tabular-nums">{{ l.vehicle }}</div></div>
+                <div><div style="font-size:11.5px;color:#66707D">Даты план · факт</div><div style="font-variant-numeric:tabular-nums">{{ l.dates }}</div></div>
+                <sc-if value="{{ showRates }}" hint-placeholder-val="{{ true }}">
+                  <div><div style="font-size:11.5px;color:#66707D">Ставка субподрядчика</div><div style="font-variant-numeric:tabular-nums;font-weight:600">{{ l.rate }} <span style="font-weight:500;color:#66707D">· {{ l.rateKzt }}</span></div><div style="font-size:11px;color:#66707D">{{ l.vat }}</div></div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:12px;color:#66707D;margin-top:10px">Заявка перевозчику генерируется из участка — субподрядчик видит только свою ставку.</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <h3 style="font-size:15px;font-weight:600;margin:0">Документы</h3>
+          <button style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:5px 12px;font-size:13px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">+ Прикрепить файл</button>
+        </div>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ docs }}" as="d" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px solid #EEF1F5">
+              <span style="width:34px;height:34px;border-radius:8px;background:#FDEBEA;color:#E4140E;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700">{{ d.ext }}</span>
+              <div style="flex:1"><a href="#">{{ d.name }}</a><div style="font-size:12px;color:#66707D">{{ d.meta }}</div></div>
+              <span style="font-size:12px;color:#66707D;font-variant-numeric:tabular-nums">{{ d.size }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <sc-if value="{{ showClientRate }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h3 style="font-size:15px;font-weight:600;margin:0">Финансы перевозки</h3>
+            <button style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:5px 12px;font-size:12.5px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">Создать счёт на ставку</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px 14px;font-size:13.5px">
+            <div><div style="font-size:12px;color:#66707D">Ставка клиента</div><div style="font-weight:600;font-variant-numeric:tabular-nums">62 000 USD</div><div style="font-size:11.5px;color:#66707D">≈ 29 140 000 ₸</div></div>
+            <div><div style="font-size:12px;color:#66707D">Ставки субподрядчиков</div><div style="font-weight:600;font-variant-numeric:tabular-nums">24 057 500 ₸</div><div style="font-size:11.5px;color:#66707D">CNY 28 500 + KZT 590 000, в тенге</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px 14px;border-top:1px solid #E3E8EF;margin-top:12px;padding-top:12px">
+            <div><div style="font-size:12px;color:#66707D">Маржа плановая</div><div style="font-weight:700;color:#15803D;font-variant-numeric:tabular-nums">5 082 500 ₸ · 17%</div></div>
+            <div><div style="font-size:12px;color:#66707D">Маржа фактическая</div><div style="font-weight:700;color:#B45309;font-variant-numeric:tabular-nums">прогноз · 4 915 000 ₸</div></div>
+          </div>
+          <div style="font-size:12px;color:#66707D;margin-top:10px">Базовая валюта — тенге. Валютные ставки приведены к ₸ по курсу НБ РК. План = ставка клиента − ставки субподрядчиков; факт — по оплатам и фактическим курсам (до оплат — прогноз).</div>
+          <div style="border-top:1px solid #E3E8EF;margin-top:14px;padding-top:13px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+              <div style="font-size:13px;font-weight:600">Счёт клиенту</div>
+              <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#FDF0D5;color:#B45309" style-before="content:'';width:5px;height:5px;border-radius:50%;background:currentColor">Частично оплачен</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px 14px;font-size:13.5px">
+              <div><div style="font-size:12px;color:#66707D">Счёт №</div><div><a href="#">AVA-СЧ-2026-0231</a> · от 06.07.2026</div></div>
+              <div><div style="font-size:12px;color:#66707D">Сумма счёта</div><div style="font-weight:600;font-variant-numeric:tabular-nums">62 000 USD</div></div>
+              <div><div style="font-size:12px;color:#66707D">Оплачено клиентом</div><div style="font-weight:600;color:#15803D;font-variant-numeric:tabular-nums">27 900 USD · 45%</div></div>
+              <div><div style="font-size:12px;color:#66707D">Остаток</div><div style="font-weight:600;color:#B45309;font-variant-numeric:tabular-nums">34 100 USD</div></div>
+            </div>
+            <div style="height:6px;background:#EDF0F4;border-radius:999px;overflow:hidden;margin-top:10px"><div style="height:100%;width:45%;background:#15803D;border-radius:999px"></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px">
+              <span style="font-size:12px;color:#66707D">Оплачено субподрядчикам: 60%</span>
+              <button style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:5px 12px;font-size:12.5px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">Внести оплату</button>
+            </div>
+            <div style="font-size:11.5px;color:#66707D;margin-top:9px">Один заказ = одна перевозка: финансы сделки показаны здесь, отдельно открывать сделку не нужно.</div>
+          </div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ hideClientRate }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:14px 18px;font-size:12.5px;color:#66707D;display:flex;align-items:center;gap:8px">
+          <span style="width:18px;height:18px;border-radius:5px;background:#EDF0F4;display:inline-flex;align-items:center;justify-content:center;font-size:11px">🔒</span>
+          Ставка клиента и маржа скрыты для роли «Логист».
+        </div>
+      </sc-if>
+      <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px">
+        <h3 style="font-size:15px;font-weight:600;margin:0 0 12px">Сведения</h3>
+        <div style="display:grid;grid-template-columns:130px 1fr;gap:9px 12px;font-size:13.5px">
+          <div style="color:#66707D">Сделка</div><div><a href="Карточка сделки.dc.html">AVA-2026-0145</a></div>
+          <div style="color:#66707D">Клиент</div><div>Alma Electronics</div>
+          <div style="color:#66707D">Юрлицо</div><div>ТОО AVA Solution</div>
+          <div style="color:#66707D">Менеджер</div><div>Айгерим С.</div>
+          <div style="color:#66707D">Логист</div><div>Ержан Т.</div>
+          <div style="color:#66707D">Создана</div><div style="font-variant-numeric:tabular-nums">04.07.2026</div>
+          <div style="color:#66707D">План доставки</div><div style="font-variant-numeric:tabular-nums">20.07.2026</div>
+          <div style="color:#66707D">Факт доставки</div><div style="font-variant-numeric:tabular-nums">{{ factDelivery }}</div>
+          <div style="color:#66707D">Дата выгрузки (факт)</div><div style="font-variant-numeric:tabular-nums;font-weight:{{ unloadW }}">{{ unloadDate }}</div>
+        </div>
+        <div style="font-size:12px;color:#66707D;border-top:1px solid #E3E8EF;margin-top:12px;padding-top:10px">Дата выгрузки заполняется при переводе в «Доставлен» и определяет месяц расчёта мотивации.</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px">
+        <h3 style="font-size:15px;font-weight:600;margin:0 0 12px">История статусов</h3>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ history }}" as="h" hint-placeholder-count="5">
+            <div style="display:flex;gap:10px">
+              <div style="width:8px;height:8px;border-radius:50%;background:{{ h.dot }};margin-top:5px;flex-shrink:0"></div>
+              <div style="flex:1">
+                <div style="font-size:13.5px"><b style="font-weight:600;color:{{ h.fg }}">{{ h.title }}</b></div>
+                <sc-if value="{{ h.note }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:#15803D">{{ h.note }}</div></sc-if>
+                <div style="font-size:12px;color:#66707D;font-variant-numeric:tabular-nums">{{ h.meta }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSubRates&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Права роли&quot;},&quot;showClientRate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Права роли&quot;}}">
+class Component extends DCLogic {
+  state = { stIndex: 3, waNotify: true, extra: [], dateTarget: null, eventDate: '2026-07-18' };
+  renderVals() {
+    const ORDER = ['accepted', 'picked', 'transit', 'customs', 'delivered', 'closed'];
+    const ST = {
+      accepted:  { l: 'Заявка принята', bg: '#E7E9FD', fg: '#4F46E5' },
+      picked:    { l: 'Груз забран',    bg: '#D5F0EC', fg: '#0F766E' },
+      transit:   { l: 'В пути',         bg: '#FDF0D5', fg: '#B45309' },
+      customs:   { l: 'Таможня',        bg: '#EFE9FD', fg: '#7C3AED' },
+      delivered: { l: 'Доставлен',      bg: '#DCF5E4', fg: '#15803D' },
+      closed:    { l: 'Закрыта',        bg: '#EDF0F4', fg: '#66707D' }
+    };
+    const { stIndex, waNotify, extra, dateTarget, eventDate } = this.state;
+    const cur = ORDER[stIndex];
+    const TODAY = '2026-07-18';
+    const NOW = '18.07.2026, 14:32';
+    const fmtD = iso => iso ? iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.' + iso.slice(0, 4) : '—';
+    const DATE_STEPS = { picked: { title: 'Груз забран', field: 'Фактическая дата забора груза', hint: 'Статус часто проставляют на следующий день после события — укажите реальную дату забора.', journal: 'Дата забора' }, delivered: { title: 'Доставлен', field: 'Фактическая дата выгрузки', hint: 'Дата выгрузки определяет месяц для расчёта мотивации. По умолчанию — сегодня, можно выбрать прошедшую.', journal: 'Дата выгрузки' } };
+    const commit = (targetIdx, ev) => {
+      const nk = ORDER[targetIdx];
+      const meta = 'Ержан Т. · проставлено ' + NOW + (ev ? ' · ' + DATE_STEPS[nk].journal + ' (факт): ' + fmtD(ev) : '');
+      this.setState(s => ({
+        stIndex: targetIdx, dateTarget: null,
+        extra: [{ title: ST[nk].l, meta, fg: ST[nk].fg, dot: ST[nk].fg, note: s.waNotify ? 'Клиенту отправлено WhatsApp-уведомление' : '' }].concat(s.extra)
+      }));
+    };
+    const dm = dateTarget != null ? DATE_STEPS[ORDER[dateTarget]] : null;
+    const showRates = this.props.showSubRates ?? true;
+    const steps = ORDER.map((k, i) => {
+      const done = i < stIndex, active = i === stIndex;
+      return {
+        label: ST[k].l, mark: done ? '✓' : String(i + 1),
+        dotBg: done ? '#15803D' : active ? ST[k].fg : '#fff',
+        dotFg: done || active ? '#fff' : '#66707D',
+        dotBd: done ? '#15803D' : active ? ST[k].fg : '#E3E8EF',
+        fg: active ? ST[k].fg : done ? '#1B2430' : '#66707D',
+        w: active ? 700 : 400,
+        lineLeft: i === 0 ? '50%' : '-50%', lineRight: '50%',
+        lineBg: i === 0 ? 'transparent' : (i <= stIndex ? '#15803D' : '#E3E8EF')
+      };
+    });
+    const legStates = i => {
+      if (i === 0) return 'done';
+      if (i === 1) return stIndex > 3 ? 'done' : stIndex === 3 ? 'active' : 'wait';
+      return stIndex >= 4 ? 'done' : 'wait';
+    };
+    const LSTYLE = { done: { l: 'Завершён', bg: '#DCF5E4', fg: '#15803D' }, active: { l: 'В работе', bg: '#FDF0D5', fg: '#B45309' }, wait: { l: 'Ожидает', bg: '#EDF0F4', fg: '#66707D' } };
+    const LEGS = [
+      { route: 'Гуанчжоу → Хоргос', mode: 'Авто', sub: 'China Trans', vehicle: '粤A·D8821', dates: '06.07 → 12.07 · 07.07 → 12.07', rate: '28 500 CNY', rateKzt: '1 852 500 ₸', vat: 'Без НДС' },
+      { route: 'Таможня Хоргос', mode: 'Брокер', sub: 'KazCustoms Broker', vehicle: '—', dates: '13.07 → 15.07 · с 13.07', rate: '210 000 KZT', rateKzt: '210 000 ₸', vat: 'С НДС 12%' },
+      { route: 'Хоргос → Алматы', mode: 'Авто', sub: 'ТОО ТрансАзия', vehicle: 'A 452 KMA 05', dates: '16.07 → 20.07 · —', rate: '380 000 KZT', rateKzt: '380 000 ₸', vat: 'С НДС 12%' }
+    ];
+    const legs = LEGS.map((l, i) => {
+      const s = legStates(i), st = LSTYLE[s];
+      return Object.assign({}, l, {
+        idx: String(i + 1).padStart(2, '0'),
+        stLabel: st.l, stBg: st.bg, stFg: st.fg,
+        bd: s === 'active' ? '#F3D9A4' : '#E3E8EF',
+        bg: s === 'active' ? '#FFFDF6' : '#fff'
+      });
+    });
+    const docs = [
+      { ext: 'PDF', name: 'Инвойс INV-8841.pdf', meta: 'Инвойс · Айгерим С. · 05.07.2026', size: '412 КБ' },
+      { ext: 'PDF', name: 'Упаковочный лист.pdf', meta: 'Упаковочный лист · Айгерим С. · 05.07.2026', size: '284 КБ' },
+      { ext: 'PDF', name: 'CMR 0071244.pdf', meta: 'CMR · Ержан Т. · 07.07.2026', size: '1,1 МБ' },
+      { ext: 'DOCX', name: 'Заявка China Trans.docx', meta: 'Заявка перевозчику · сгенерирована · 06.07.2026', size: '96 КБ' }
+    ];
+    const baseHistory = [
+      { title: 'Таможня', meta: 'Ержан Т. · 13.07.2026, 09:12', fg: '#7C3AED', dot: '#7C3AED', note: 'Клиенту отправлено WhatsApp-уведомление' },
+      { title: 'В пути', meta: 'Ержан Т. · 07.07.2026, 15:40', fg: '#B45309', dot: '#B45309', note: '' },
+      { title: 'Груз забран', meta: 'Ержан Т. · 07.07.2026, 11:05', fg: '#0F766E', dot: '#0F766E', note: 'Клиенту отправлено WhatsApp-уведомление' },
+      { title: 'Заявка принята', meta: 'Айгерим С. · 04.07.2026, 10:21', fg: '#4F46E5', dot: '#4F46E5', note: '' },
+      { title: 'Перевозка создана', meta: 'Айгерим С. · 04.07.2026, 10:18', fg: '#1B2430', dot: '#C9D1DB', note: '' }
+    ];
+    const history = extra.concat(baseHistory);
+    const delivered = stIndex >= 4;
+    const showClientRate = this.props.showClientRate ?? false;
+    const driverDocs = [
+      { ext: 'PDF', name: 'Удостоверение' },
+      { ext: 'PDF', name: 'Техпаспорт' },
+      { ext: 'PDF', name: 'Доверенность' }
+    ];
+    return {
+      curLabel: ST[cur].l, curBg: ST[cur].bg, curFg: ST[cur].fg,
+      steps, legs, docs, history, showRates, waNotify,
+      sopDocsText: 'CMR, СНТ, доверенность',
+      reqSets: [
+        { label: 'Для заявки перевозчику', filled: 10, total: 12, missing: ['особые условия', 'вес брутто'] },
+        { label: 'Для заявки клиенту', filled: 7, total: 9, missing: ['условия оплаты', 'контакт получателя'] }
+      ].map(r => {
+        const pct = Math.round(r.filled / r.total * 100);
+        const full = r.filled === r.total;
+        return {
+          label: r.label, filled: r.filled, total: r.total, pct: pct + '%',
+          missingText: full ? '' : r.missing.join(', '),
+          fg: full ? '#15803D' : '#B45309', bg: full ? '#DCF5E4' : '#FDF0D5',
+          barFg: full ? '#15803D' : '#E4140E'
+        };
+      }),
+      driverDocs, driverFirst: false,
+      showClientRate, hideClientRate: !showClientRate,
+      factDelivery: delivered ? '18.07.2026' : '—',
+      unloadDate: delivered ? '18.07.2026' : 'не заполнена',
+      unloadW: delivered ? 600 : 400,
+      canAdvance: stIndex < 5,
+      canRollback: stIndex > 0,
+      advanceLabel: stIndex < 5 ? 'Перевести в «' + ST[ORDER[stIndex + 1]].l + '»' : '',
+      today: TODAY, nowStamp: NOW, eventDate,
+      dateModal: dm ? { title: 'Статус «' + dm.title + '»', hint: dm.hint, fieldLabel: dm.field } : null,
+      setEventDate: e => { const v = e.target.value; if (v && v <= TODAY) this.setState({ eventDate: v }); },
+      cancelDate: () => this.setState({ dateTarget: null }),
+      confirmDate: () => commit(this.state.dateTarget, this.state.eventDate),
+      toggleWa: () => this.setState(s => ({ waNotify: !s.waNotify })),
+      advance: () => {
+        const nextIdx = this.state.stIndex + 1;
+        const nk = ORDER[nextIdx];
+        if (DATE_STEPS[nk]) this.setState({ dateTarget: nextIdx, eventDate: TODAY });
+        else commit(nextIdx, null);
+      },
+      rollback: () => this.setState(s => {
+        const prev = ORDER[s.stIndex - 1];
+        return {
+          stIndex: s.stIndex - 1,
+          extra: [{
+            title: 'Откат: ' + ST[ORDER[s.stIndex]].l + ' → ' + ST[prev].l,
+            meta: 'Ержан Т. · ' + NOW + ' · записано в журнал', fg: '#B91C1C', dot: '#B91C1C', note: ''
+          }].concat(s.extra)
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>
