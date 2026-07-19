@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body{margin:0;background:#F6F7F9;color:#1B2430;font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  a{color:#E4140E;text-decoration:none}a:hover{color:#C10F0A}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:#E4140E;box-shadow:0 0 0 3px rgba(228,20,14,.12)}
+  label.fld{display:block;font-size:12.5px;font-weight:600;color:#3A424E;margin-bottom:5px}
+  .money{display:flex;gap:8px}
+  .money>input{flex:1;min-width:0;padding:10px 12px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:8px;background:#fff;box-sizing:border-box;font-variant-numeric:tabular-nums}
+  .money>select{width:88px;padding:10px 8px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:8px;background:#fff;box-sizing:border-box}
+  .in{width:100%;padding:10px 12px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:8px;background:#fff;box-sizing:border-box}
+</style>
+</helmet>
+<header data-screen-label="Новая перевозка" style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#fff;border-bottom:1px solid #E3E8EF">
+  <div style="display:flex;align-items:center;gap:12px">
+    <img src="assets/ava-logo.svg" alt="AVA" style="width:38px;height:38px;display:block">
+    <div>
+      <h1 style="font-size:18px;margin:0;font-weight:700">Новая перевозка</h1>
+      <div style="font-size:12px;color:#66707D;margin-top:-2px">AVA Solution · Логист</div>
+    </div>
+  </div>
+  <a href="Экран логиста.dc.html" style="color:#66707D;font-size:14px">✕ Закрыть</a>
+</header>
+<main style="max-width:960px;margin:0 auto;padding:22px 24px">
+  <div style="margin-bottom:6px;font-size:13px"><a href="Экран логиста.dc.html">← К перевозкам</a></div>
+  <div style="display:flex;align-items:center;gap:0;margin-bottom:22px;background:#fff;border:1px solid #E3E8EF;border-radius:12px;padding:14px 18px;overflow-x:auto">
+    <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+      <div style="display:flex;align-items:center;flex:1;min-width:150px">
+        <div onClick="{{ s.go }}" style="display:flex;align-items:center;gap:10px;cursor:pointer">
+          <span style="width:28px;height:28px;border-radius:50%;background:{{ s.dotBg }};color:{{ s.dotFg }};border:2px solid {{ s.dotBd }};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;box-sizing:border-box;flex-shrink:0">{{ s.mark }}</span>
+          <div><div style="font-size:11px;color:#8A93A0;font-weight:500">Шаг {{ s.n }}</div><div style="font-size:13.5px;font-weight:{{ s.w }};color:{{ s.fg }};white-space:nowrap">{{ s.label }}</div></div>
+        </div>
+        <sc-if value="{{ s.line }}" hint-placeholder-val="{{ true }}"><span style="flex:1;height:2px;background:{{ s.lineBg }};margin:0 12px;min-width:20px"></span></sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:22px 24px;min-height:340px">
+    <sc-if value="{{ isStep0 }}" hint-placeholder-val="{{ true }}">
+      <h3 style="font-size:17px;font-weight:700;margin:0 0 4px">Сделка и клиент</h3>
+      <p style="font-size:13px;color:#66707D;margin:0 0 20px">Перевозка привязывается к сделке. Номер получит префикс юрлица сделки.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 18px">
+        <div style="grid-column:1/3"><label class="fld">Сделка</label>
+          <select value="{{ f.deal }}" onChange="{{ setDeal }}" class="in">
+            <option>AVA-2026-0145 · Alma Electronics</option><option>AVA-2026-0151 · ТОО Ромашка</option><option>ALT-2026-0075 · ТОО AgroExport</option><option>+ Создать новую сделку</option>
+          </select>
+        </div>
+        <div><label class="fld">Клиент</label><input value="{{ f.client }}" disabled="{{ true }}" class="in" style="background:#F6F7F9;color:#66707D"></div>
+        <div><label class="fld">Юрлицо (даёт префикс №)</label><input value="{{ f.entity }}" disabled="{{ true }}" class="in" style="background:#F6F7F9;color:#66707D"></div>
+        <div><label class="fld">Ответственный логист</label>
+          <select class="in"><option>Ержан Т.</option><option>Марат Б.</option><option>Дана К.</option></select>
+        </div>
+        <div><label class="fld">Плановая дата доставки</label><input type="date" value="2026-08-01" class="in"></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ false }}">
+      <h3 style="font-size:17px;font-weight:700;margin:0 0 4px">Груз</h3>
+      <p style="font-size:13px;color:#66707D;margin:0 0 20px">Характеристики груза для заявки перевозчику и таможни.</p>
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px 18px">
+        <div><label class="fld">Наименование</label><input placeholder="напр. Электроника" class="in"></div>
+        <div><label class="fld">Мест</label>
+          <div class="money"><input type="number" placeholder="12" style="flex:1"><select style="width:118px"><option>паллеты</option><option>коробки</option><option>ролики</option><option>биг-бэги</option><option>места</option></select></div>
+        </div>
+        <div><label class="fld">Вес, кг</label><input type="number" placeholder="3400" class="in"></div>
+        <div><label class="fld">Объём, м³</label><input type="number" placeholder="18" class="in"></div>
+        <div><label class="fld">Стоимость груза</label>
+          <div class="money"><input type="number" placeholder="48000"><select><option>USD</option><option>KZT</option><option>CNY</option><option>RUB</option><option>EUR</option></select></div>
+        </div>
+        <div><label class="fld">Вид транспорта</label>
+          <select value="{{ f.transport }}" onChange="{{ setTransport }}" class="in"><option>Авто</option><option>Ж/д</option><option>Море</option><option>Авиа</option><option>Мультимодальная</option></select>
+        </div>
+      </div>
+      <div style="display:flex;gap:22px;margin-top:18px">
+        <label style="display:inline-flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer"><input type="checkbox" style="width:15px;height:15px;accent-color:#E4140E">Опасный груз (ADR)</label>
+        <label style="display:inline-flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer"><input type="checkbox" style="width:15px;height:15px;accent-color:#E4140E">Температурный режим</label>
+      </div>
+      <div style="border-top:1px solid #E3E8EF;margin-top:20px;padding-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:16px 18px">
+        <div><label class="fld">Грузоотправитель</label><input placeholder="Организация на точке погрузки" class="in"><div style="font-size:11.5px;color:#8A93A0;margin-top:5px">Может не совпадать с клиентом. Печатается в заявках.</div></div>
+        <div><label class="fld">Грузополучатель</label><input placeholder="Организация на точке выгрузки" class="in"></div>
+      </div>
+      <div style="margin-top:18px">
+        <label class="fld">Сопроводительные документы</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <sc-for list="{{ docChips }}" as="d" hint-placeholder-count="5">
+            <button onClick="{{ d.toggle }}" style="border:1px solid {{ d.bd }};background:{{ d.bg }};color:{{ d.fg }};border-radius:999px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer">{{ d.label }}</button>
+          </sc-for>
+          <button style="border:1px dashed #C9D1DB;background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;color:#66707D" style-hover="background:#F3F5F8">+ Свой</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <h3 style="font-size:17px;font-weight:700;margin:0">{{ routeTitle }}</h3>
+        <sc-if value="{{ single }}" hint-placeholder-val="{{ true }}"><button onClick="{{ split }}" style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">Разбить на участки</button></sc-if>
+        <sc-if value="{{ multi }}" hint-placeholder-val="{{ false }}"><button onClick="{{ addLeg }}" style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">+ Добавить участок</button></sc-if>
+      </div>
+      <p style="font-size:13px;color:#66707D;margin:0 0 18px">{{ routeHint }}</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px">
+        <div><label class="fld">Пункт отправления</label><input placeholder="Гуанчжоу, Китай" class="in"></div>
+        <div><label class="fld">Пункт назначения</label><input placeholder="Алматы, Казахстан" class="in"></div>
+      </div>
+
+      <div style="border:1px solid #E3E8EF;border-radius:10px;margin-top:14px;overflow:hidden">
+        <div onClick="{{ toggleAddr }}" style="display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;background:#FAFBFC;user-select:none">
+          <span style="font-size:13.5px;font-weight:600">Уточнить адреса и контакты</span>
+          <span style="font-size:12px;color:#8A93A0">необязательно — часто приходят позже</span>
+          <span style="margin-left:auto;font-size:15px;color:#B0A796;transform:{{ addrCaret }}">⌄</span>
+        </div>
+        <sc-if value="{{ addrOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:16px;border-top:1px solid #E3E8EF;display:grid;grid-template-columns:1fr 1fr;gap:14px 18px">
+            <div><label class="fld">Адрес погрузки</label><input placeholder="г. …, ул. …, склад" class="in"></div>
+            <div><label class="fld">Дата и время погрузки</label><input type="datetime-local" class="in"></div>
+            <div><label class="fld">Контакт на погрузке</label><input placeholder="Имя" class="in"></div>
+            <div><label class="fld">Телефон на погрузке</label><input placeholder="+7 …" class="in"></div>
+            <div><label class="fld">Адрес выгрузки</label><input placeholder="г. …, ул. …" class="in"></div>
+            <div><label class="fld">Контакт на выгрузке</label><input placeholder="Имя / телефон" class="in"></div>
+            <div><label class="fld">Требования к транспорту</label><select class="in"><option>Тент</option><option>Рефрижератор</option><option>Контейнер</option><option>Открытая платформа</option><option>Изотерм</option></select></div>
+            <div style="grid-column:1/3"><label class="fld">Особые условия / примечания</label><textarea placeholder="Простой, штрафы, специфика…" class="in" style="min-height:56px;resize:vertical;font-family:inherit"></textarea></div>
+          </div>
+        </sc-if>
+      </div>
+
+      <sc-if value="{{ single }}" hint-placeholder-val="{{ true }}">
+        <sc-if value="{{ showClientRate }}" hint-placeholder-val="{{ false }}">
+          <div style="border:1px solid #C9DAF0;border-radius:10px;padding:16px 18px;background:#F4F8FE;margin-top:14px">
+            <div style="font-size:12px;font-weight:700;color:#0369A1;margin-bottom:12px">Клиент</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px">
+              <div><label class="fld">Ставка клиента</label>
+                <div class="money"><input type="number" value="{{ clientRate }}" onChange="{{ setClientRate }}" placeholder="62000"><select value="{{ clientCur }}" onChange="{{ setClientCur }}"><option>USD</option><option>KZT</option><option>CNY</option><option>RUB</option><option>EUR</option></select></div>
+              </div>
+              <div><label class="fld">Условия оплаты</label><select class="in"><option>Постоплата после выгрузки</option><option>Предоплата 100%</option><option>50% / 50%</option><option>Постоплата 5 дней</option></select></div>
+            </div>
+          </div>
+        </sc-if>
+        <div style="border:1px solid #C4E4DE;border-radius:10px;padding:16px 18px;background:#F3FAF8;margin-top:14px">
+          <div style="font-size:12px;font-weight:700;color:#0F766E;margin-bottom:12px">Перевозчик</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 18px">
+            <div><label class="fld">Субподрядчик</label><select class="in"><option>Выбрать…</option><option>ТОО ТрансАзия (пост., 41 перевозка)</option><option>КТЖ Экспресс (пост., 63)</option><option>China Trans</option><option>EuroLine Logistics</option></select></div>
+            <div><label class="fld">Ставка субподрядчика</label>
+              <div class="money"><input type="number" value="{{ subRate }}" onChange="{{ setSubRate }}" placeholder="380000"><select value="{{ subCur }}" onChange="{{ setSubCur }}"><option>KZT</option><option>USD</option><option>CNY</option><option>RUB</option><option>EUR</option></select></div>
+            </div>
+            <div><label class="fld">НДС по ставке</label><select class="in"><option>Без НДС</option><option>С НДС 12%</option></select></div>
+            <div><label class="fld">Плановый забор груза</label><input type="date" class="in"></div>
+            <div><label class="fld">№ машины / прицепа</label><input placeholder="A 452 KMA 05 / 918 CV" class="in"></div>
+          </div>
+          <div style="border-top:1px solid #D6ECE6;margin-top:14px;padding-top:13px">
+            <div style="font-size:12px;font-weight:700;color:#0F766E;margin-bottom:12px">Водитель <span style="font-weight:500;color:#7FA79F">— вносится сразу при фиксации ставки</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 16px">
+              <div><label class="fld">ФИО водителя</label><input placeholder="Ерлан Абдиров" class="in"></div>
+              <div><label class="fld">Телефон</label><input placeholder="+7 701 …" class="in"></div>
+              <div><label class="fld">ИИН</label><input placeholder="12 цифр" class="in"></div>
+              <div><label class="fld">№ удостоверения (в/у)</label><input placeholder="0123456" class="in"></div>
+              <div><label class="fld">Дата выдачи в/у</label><input type="date" class="in"></div>
+              <div><label class="fld">Кем выдано</label><input placeholder="МВД РК" class="in"></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <button style="border:1px dashed #C9D1DB;background:#fff;border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;color:#66707D" style-hover="background:#F3F5F8">+ Удостоверение</button>
+              <button style="border:1px dashed #C9D1DB;background:#fff;border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;color:#66707D" style-hover="background:#F3F5F8">+ Техпаспорт</button>
+              <button style="border:1px dashed #C9D1DB;background:#fff;border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;color:#66707D" style-hover="background:#F3F5F8">+ Доверенность</button>
+            </div>
+            <div style="font-size:12px;color:#66707D;margin-top:9px">Данные водителя печатаются в транспортной заявке и сохраняются в карточке перевозчика.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ multi }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+          <sc-for list="{{ legs }}" as="l" hint-placeholder-count="2">
+            <div style="border:1px solid #E3E8EF;border-radius:10px;padding:14px 16px;background:#FAFBFC">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                <span style="font-size:12px;font-weight:700;color:#66707D">Участок {{ l.idx }}</span>
+                <sc-if value="{{ l.removable }}" hint-placeholder-val="{{ false }}"><button onClick="{{ l.remove }}" style="margin-left:auto;border:none;background:none;color:#B91C1C;font-size:12.5px;cursor:pointer;font-weight:500">Удалить</button></sc-if>
+                <sc-if value="{{ l.canMerge }}" hint-placeholder-val="{{ false }}"><button onClick="{{ merge }}" style="margin-left:auto;border:none;background:none;color:#66707D;font-size:12.5px;cursor:pointer;font-weight:500">← Объединить в одну перевозку</button></sc-if>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 14px">
+                <div><label class="fld">Откуда → Куда</label><input placeholder="Хоргос → Алматы" class="in" style="font-size:13.5px;padding:9px 11px"></div>
+                <div><label class="fld">Транспорт участка</label><select class="in" style="font-size:13.5px;padding:9px 11px"><option>Авто</option><option>Ж/д</option><option>Море</option><option>Авиа</option><option>Брокер (таможня)</option></select></div>
+                <div><label class="fld">Субподрядчик</label><select class="in" style="font-size:13.5px;padding:9px 11px"><option>Выбрать…</option><option>ТОО ТрансАзия</option><option>КТЖ Экспресс</option><option>China Trans</option><option>KazCustoms Broker</option></select></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 14px;margin-top:12px">
+                <div><label class="fld">Ставка субподрядчика</label>
+                  <div class="money"><input type="number" placeholder="380000" style="font-size:13.5px;padding:9px 11px"><select style="width:78px;font-size:13.5px;padding:9px 6px"><option>KZT</option><option>USD</option><option>CNY</option><option>RUB</option><option>EUR</option></select></div>
+                </div>
+                <div><label class="fld">НДС по ставке</label><select class="in" style="font-size:13.5px;padding:9px 11px"><option>Без НДС</option><option>С НДС 12%</option></select></div>
+                <div><label class="fld">№ машины / контейнера / вагона</label><input placeholder="A 452 KMA 05" class="in" style="font-size:13.5px;padding:9px 11px"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showClientRate }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;gap:14px;border:1.5px solid {{ marginBd }};background:{{ marginBg }};border-radius:10px;padding:14px 18px;margin-top:16px">
+          <span style="font-size:13px;font-weight:700;color:#1B2430">Плановая маржа</span>
+          <span style="font-size:12px;color:#66707D">ставка клиента − ставки перевозчиков, в тенге</span>
+          <span style="margin-left:auto;font-size:20px;font-weight:800;color:{{ marginFg }};font-variant-numeric:tabular-nums">{{ marginKzt }}</span>
+          <span style="font-size:14px;font-weight:700;color:{{ marginFg }}">· {{ marginPct }}%</span>
+        </div>
+      </sc-if>
+    </sc-if>
+
+    <sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+      <h3 style="font-size:17px;font-weight:700;margin:0 0 4px">Проверка и создание</h3>
+      <p style="font-size:13px;color:#66707D;margin:0 0 20px">Проверьте данные. После создания перевозка появится в статусе «Заявка принята».</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <sc-for list="{{ summary }}" as="s" hint-placeholder-count="6">
+          <div style="border:1px solid #EEF1F5;border-radius:10px;padding:12px 14px;background:#FAFBFC"><div style="font-size:12px;color:#66707D">{{ s.label }}</div><div style="font-weight:600">{{ s.value }}</div></div>
+        </sc-for>
+      </div>
+      <div style="border:1px solid #EEF1F5;border-radius:10px;padding:14px 16px;background:#FAFBFC;margin-top:12px">
+        <div style="font-size:12px;color:#66707D;margin-bottom:8px">{{ modeSummary }}</div>
+        <div style="font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums">Будущий №: {{ nextNum }}</div>
+      </div>
+      <sc-if value="{{ showClientRate }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid #EEF1F5;border-radius:10px;padding:14px 16px;background:#FAFBFC;margin-top:12px">
+          <div style="font-size:12px;font-weight:700;color:#66707D;margin-bottom:11px">Финансовая сводка (в тенге)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+            <div><div style="font-size:12px;color:#66707D">Ставка клиента</div><div style="font-weight:600;font-variant-numeric:tabular-nums">{{ clientRateText }}</div></div>
+            <div><div style="font-size:12px;color:#66707D">Ставка перевозчика</div><div style="font-weight:600;font-variant-numeric:tabular-nums">{{ subRateText }}</div></div>
+            <div><div style="font-size:12px;color:#66707D">Плановая маржа</div><div style="font-weight:700;color:{{ marginFg }};font-variant-numeric:tabular-nums">{{ marginKzt }} · {{ marginPct }}%</div></div>
+          </div>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+        <label style="display:inline-flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer"><input type="checkbox" checked="{{ true }}" style="width:15px;height:15px;accent-color:#E4140E">{{ genLabel }}</label>
+        <sc-if value="{{ showClientRate }}" hint-placeholder-val="{{ false }}">
+          <label style="display:inline-flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer"><input type="checkbox" checked="{{ true }}" style="width:15px;height:15px;accent-color:#E4140E">Сгенерировать заявку клиенту (со ставкой клиента)</label>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px">
+    <sc-if value="{{ canBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ back }}" style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">← Назад</button></sc-if>
+    <sc-if value="{{ atStart }}" hint-placeholder-val="{{ true }}"><span></span></sc-if>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span style="font-size:12.5px;color:#66707D">Черновик сохраняется автоматически</span>
+      <sc-if value="{{ canNext }}" hint-placeholder-val="{{ true }}"><button onClick="{{ next }}" style="background:#E4140E;border:1px solid #E4140E;color:#fff;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#C10F0A">Далее →</button></sc-if>
+      <sc-if value="{{ isLast }}" hint-placeholder-val="{{ false }}"><button onClick="{{ create }}" style="background:#15803D;border:1px solid #15803D;color:#fff;border-radius:8px;padding:10px 22px;font-size:14px;font-weight:600;cursor:pointer" style-hover="background:#116932">Создать перевозку</button></sc-if>
+    </div>
+  </div>
+</main>
+<sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;background:rgba(16,24,40,.4);display:flex;align-items:center;justify-content:center;z-index:60;padding:20px">
+    <div style="background:#fff;border-radius:14px;box-shadow:0 20px 50px rgba(16,24,40,.28);width:400px;max-width:100%;padding:26px;text-align:center">
+      <div style="width:52px;height:52px;border-radius:50%;background:#DCF5E4;color:#15803D;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px">✓</div>
+      <h3 style="font-size:18px;font-weight:700;margin:0 0 6px">Перевозка создана</h3>
+      <p style="font-size:13.5px;color:#66707D;margin:0 0 20px">{{ nextNum }} · статус «Заявка принята». Заявки сформированы.</p>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <a href="Экран логиста.dc.html" style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:500;color:#1B2430">К списку</a>
+        <a href="Карточка перевозки.dc.html" style="background:#E4140E;border:1px solid #E4140E;color:#fff;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:600">Открыть карточку</a>
+      </div>
+    </div>
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showClientRate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Права роли&quot;}}">
+class Component extends DCLogic {
+  state = { step: 0, multi: false, legs: [0, 1], seq: 2, deal: 'AVA-2026-0145 · Alma Electronics', transport: 'Мультимодальная', addrOpen: false, docs: { CMR: true, СНТ: false, ТТН: false, 'Доверенность': false, ЭСФ: false }, clientRate: '62000', clientCur: 'USD', subRate: '51200', subCur: 'USD', done: false };
+  renderVals() {
+    const LABELS = ['Сделка и клиент', 'Груз', 'Маршрут и перевозчик', 'Проверка'];
+    const DEALS = {
+      'AVA-2026-0145 · Alma Electronics': { client: 'Alma Electronics', entity: 'ТОО AVA Solution', prefix: 'AVA' },
+      'AVA-2026-0151 · ТОО Ромашка': { client: 'ТОО Ромашка', entity: 'ТОО AVA Solution', prefix: 'AVA' },
+      'ALT-2026-0075 · ТОО AgroExport': { client: 'ТОО AgroExport', entity: 'ТОО ALT Corp', prefix: 'ALT' },
+      '+ Создать новую сделку': { client: '—', entity: '—', prefix: 'AVA' }
+    };
+    const { step, multi, legs, deal, transport, addrOpen, docs, clientRate, clientCur, subRate, subCur, done } = this.state;
+    const dm = DEALS[deal] || DEALS['AVA-2026-0145 · Alma Electronics'];
+    const showClientRate = this.props.showClientRate ?? true;
+    // База системы — KZT (4.4.3): всё сводим к тенге по курсу НБ РК
+    const KZT = { KZT: 1, USD: 470, CNY: 65, RUB: 5.1, EUR: 505 };
+    const kzt = (v, c) => (parseFloat(v) || 0) * (KZT[c] || 1);
+    const fmtKzt = n => Math.round(n).toLocaleString('ru-RU') + ' ₸';
+    const marginVal = kzt(clientRate, clientCur) - kzt(subRate, subCur);
+    const marginPct = kzt(clientRate, clientCur) > 0 ? Math.round(marginVal / kzt(clientRate, clientCur) * 100) : 0;
+    const marginKzt = (marginVal < 0 ? '−' : '') + fmtKzt(Math.abs(marginVal));
+    const marginFg = marginVal > 0 ? '#15803D' : marginVal < 0 ? '#B91C1C' : '#66707D';
+    const steps = LABELS.map((label, i) => {
+      const doneStep = i < step, active = i === step;
+      return {
+        label, n: i + 1, mark: doneStep ? '✓' : String(i + 1),
+        dotBg: doneStep ? '#15803D' : active ? '#E4140E' : '#fff',
+        dotFg: doneStep || active ? '#fff' : '#8A93A0',
+        dotBd: doneStep ? '#15803D' : active ? '#E4140E' : '#D5DAE1',
+        fg: active ? '#1B2430' : '#66707D', w: active ? 700 : 500,
+        line: i < LABELS.length - 1, lineBg: i < step ? '#15803D' : '#E3E8EF',
+        go: () => { if (i <= step) this.setState({ step: i }); }
+      };
+    });
+    const legItems = legs.map((id, i) => ({
+      idx: String(i + 1).padStart(2, '0'), removable: legs.length > 1, canMerge: legs.length === 1,
+      remove: () => this.setState(s => ({ legs: s.legs.filter(x => x !== id) }))
+    }));
+    const docChips = Object.keys(docs).map(k => {
+      const on = docs[k];
+      return { label: k, bg: on ? '#1B2430' : '#fff', fg: on ? '#fff' : '#1B2430', bd: on ? '#1B2430' : '#E3E8EF',
+        toggle: () => this.setState(s => ({ docs: Object.assign({}, s.docs, { [k]: !s.docs[k] }) })) };
+    });
+    const nextNum = dm.prefix + '-2026-0159/1';
+    const fmtMoney = (v, c) => v ? Number(v).toLocaleString('ru-RU') + ' ' + c : '—';
+    const summary = [
+      { label: 'Сделка', value: deal.split(' · ')[0] },
+      { label: 'Клиент', value: dm.client },
+      { label: 'Юрлицо', value: dm.entity },
+      { label: 'Вид транспорта', value: transport },
+      { label: 'Плановая доставка', value: '01.08.2026' },
+      { label: 'Логист', value: 'Ержан Т.' }
+    ];
+    return {
+      steps, isStep0: step === 0, isStep1: step === 1, isStep2: step === 2, isStep3: step === 3,
+      legs: legItems, nextNum, summary, done, docChips,
+      single: !multi, multi,
+      addrOpen, addrCaret: addrOpen ? 'rotate(0deg)' : 'rotate(-90deg)',
+      toggleAddr: () => this.setState(s => ({ addrOpen: !s.addrOpen })),
+      routeTitle: multi ? 'Маршрут и участки' : 'Маршрут и перевозчик',
+      routeHint: multi
+        ? 'По каждому участку назначается субподрядчик, из участка генерируется заявка перевозчику.'
+        : 'Маршрут → клиент → перевозчик. Для мультимодальных и составных маршрутов — «Разбить на участки».',
+      modeSummary: multi ? 'Участки маршрута (' + legs.length + ')' : 'Один перевозчик на всю перевозку',
+      genLabel: multi ? 'Сгенерировать заявки перевозчикам по участкам' : 'Сгенерировать заявку перевозчику',
+      showClientRate,
+      clientRate, clientCur, subRate, subCur,
+      setClientRate: e => this.setState({ clientRate: e.target.value }),
+      setClientCur: e => this.setState({ clientCur: e.target.value }),
+      setSubRate: e => this.setState({ subRate: e.target.value }),
+      setSubCur: e => this.setState({ subCur: e.target.value }),
+      marginKzt, marginPct, marginFg,
+      marginBg: marginVal > 0 ? '#F0FAF3' : marginVal < 0 ? '#FDF2F1' : '#FAFBFC',
+      marginBd: marginVal > 0 ? '#C4E9D1' : marginVal < 0 ? '#F1D3D1' : '#E3E8EF',
+      clientRateText: fmtMoney(clientRate, clientCur) + ' ≈ ' + fmtKzt(kzt(clientRate, clientCur)),
+      subRateText: fmtMoney(subRate, subCur) + ' ≈ ' + fmtKzt(kzt(subRate, subCur)),
+      f: { deal, client: dm.client, entity: dm.entity, transport },
+      canBack: step > 0, atStart: step === 0, canNext: step < 3, isLast: step === 3,
+      back: () => this.setState(s => ({ step: s.step - 1 })),
+      next: () => this.setState(s => ({ step: s.step + 1 })),
+      split: () => this.setState({ multi: true, legs: [0, 1], seq: 2 }),
+      merge: () => this.setState({ multi: false }),
+      addLeg: () => this.setState(s => ({ legs: s.legs.concat(s.seq), seq: s.seq + 1 })),
+      setDeal: e => this.setState({ deal: e.target.value }),
+      setTransport: e => this.setState({ transport: e.target.value }),
+      create: () => this.setState({ done: true })
+    };
+  }
+}
+</script>
+</body>
+</html>
