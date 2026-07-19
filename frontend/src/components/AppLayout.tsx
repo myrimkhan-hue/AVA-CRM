@@ -1,38 +1,39 @@
-import {
-  ApartmentOutlined,
-  DollarOutlined,
-  CarOutlined,
-  LogoutOutlined,
-  TeamOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
-import { Avatar, Button, Layout, Menu, Typography } from 'antd';
+import { LogoutOutlined } from '@ant-design/icons';
+import { Button, Layout } from 'antd';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/ava-logo.svg';
 import { useAuth } from '../auth/AuthContext';
 
-const { Header, Sider, Content } = Layout;
+const { Header, Content } = Layout;
 
 export function AppLayout() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const isAdmin = user?.roles.includes('ADMIN');
+  const isAdmin = Boolean(user?.roles.includes('ADMIN'));
   const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
 
-  const items = useMemo(
+  const navigation = useMemo(
     () => [
-      { key: 'transportations', icon: <CarOutlined />, label: t('nav.transportations'), disabled: true },
-      { key: '/contractors', icon: <ApartmentOutlined />, label: t('nav.contractors') },
-      ...(!isLogistOnly ? [{ key: '/deals', icon: <DollarOutlined />, label: t('nav.deals') }] : []),
-      ...(isAdmin
-        ? [{ key: '/users', icon: <TeamOutlined />, label: t('nav.users') }]
-        : []),
+      { path: '/transportations', label: t('nav.transportations') },
+      { path: '/contractors', label: t('nav.contractors') },
+      ...(!isLogistOnly ? [{ path: '/deals', label: t('nav.deals') }] : []),
+      ...(isAdmin ? [{ path: '/users', label: t('nav.users') }] : []),
     ],
     [isAdmin, isLogistOnly, t],
+  );
+
+  const initials = useMemo(
+    () => user?.fullName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toLocaleUpperCase())
+      .join('') ?? '',
+    [user?.fullName],
   );
 
   const handleLogout = () => {
@@ -43,29 +44,34 @@ export function AppLayout() {
   return (
     <Layout className="app-shell">
       <Header className="app-header">
-        <button className="brand brand-button" onClick={() => navigate('/')}>
-          <img src={logo} alt={t('brand.logoAlt')} />
-          <span>{t('brand.name')}</span>
-        </button>
-        <div className="user-menu">
-          <Avatar icon={<UserOutlined />} />
-          <Typography.Text className="user-name">{user?.fullName}</Typography.Text>
-          <Button icon={<LogoutOutlined />} onClick={handleLogout}>
-            {t('auth.logout')}
-          </Button>
+        <div className="app-header-inner">
+          <button className="brand brand-button" onClick={() => navigate('/transportations')}>
+            <img src={logo} alt={t('brand.logoAlt')} />
+            <span>{t('brand.name')}</span>
+          </button>
+
+          <nav className="top-navigation" aria-label={t('nav.main')}>
+            {navigation.map((item) => (
+              <button
+                key={item.path}
+                className={`top-navigation-link${location.pathname.startsWith(item.path) ? ' active' : ''}`}
+                onClick={() => navigate(item.path)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="user-menu">
+            <span className="user-initials" aria-hidden="true">{initials}</span>
+            <span className="user-name">{user?.fullName}</span>
+            <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>
+              {t('auth.logout')}
+            </Button>
+          </div>
         </div>
       </Header>
-      <Layout>
-        <Sider width={224} breakpoint="lg" collapsedWidth="0" className="app-sider">
-          <Menu
-            mode="inline"
-            items={items}
-            selectedKeys={[location.pathname]}
-            onClick={({ key }) => navigate(key)}
-          />
-        </Sider>
-        <Content className="app-content"><Outlet /></Content>
-      </Layout>
+      <Content className="app-content"><Outlet /></Content>
     </Layout>
   );
 }

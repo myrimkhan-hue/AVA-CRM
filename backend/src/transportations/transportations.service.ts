@@ -89,6 +89,13 @@ export class TransportationsService {
                   { destinationPoint: { contains: search, mode: 'insensitive' } },
                   { deal: { number: { contains: search, mode: 'insensitive' } } },
                   { deal: { client: { name: { contains: search, mode: 'insensitive' } } } },
+                  {
+                    legs: {
+                      some: {
+                        subcontractor: { name: { contains: search, mode: 'insensitive' } },
+                      },
+                    },
+                  },
                 ]
               : undefined,
           },

@@ -99,8 +99,20 @@ model User {
   responsibleDeals            Deal[]
   logistTransportations       Transportation[]            @relation("TransportationLogist")
   transportationStatusEvents TransportationStatusEvent[] @relation("TransportationStatusSetBy")
+  tableSettings               UserTableSettings[]
 
   @@map("users")
+}
+
+model UserTableSettings {
+  id       String @id @default(cuid())
+  userId   String @map("user_id")
+  tableKey String @map("table_key")
+  columns  Json
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tableKey])
+  @@map("user_table_settings")
 }
 
 model Role {
