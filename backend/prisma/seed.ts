@@ -15,9 +15,9 @@ const roles = [
 const departments = ['Отдел Китая', 'РК/РФ'];
 
 const legalEntities = [
-  { name: 'ТОО «TT»', numberingPrefix: 'TT' },
-  { name: 'ТОО «AVA»', numberingPrefix: 'AVA' },
-  { name: 'ТОО «ALT»', numberingPrefix: 'ALT' },
+  { name: 'ИП Transit Trail', numberingPrefix: 'TT' },
+  { name: 'ТОО AVA Solution', numberingPrefix: 'AVA' },
+  { name: 'ТОО Alt Corp', numberingPrefix: 'ALT' },
 ];
 
 async function main(): Promise<void> {

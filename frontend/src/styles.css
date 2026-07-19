@@ -52,3 +52,10 @@ button, input { font: inherit; }
   .page-heading { align-items: stretch; flex-direction: column; }
   .contractor-filters { grid-template-columns: 1fr; }
 }
+.deal-number {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.deal-actions {
+  margin-top: 20px;
+}

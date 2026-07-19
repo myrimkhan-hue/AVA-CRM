@@ -1,5 +1,6 @@
 import {
   ApartmentOutlined,
+  DollarOutlined,
   CarOutlined,
   LogoutOutlined,
   TeamOutlined,
@@ -20,17 +21,18 @@ export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const isAdmin = user?.roles.includes('ADMIN');
+  const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
 
   const items = useMemo(
     () => [
       { key: 'transportations', icon: <CarOutlined />, label: t('nav.transportations'), disabled: true },
       { key: '/contractors', icon: <ApartmentOutlined />, label: t('nav.contractors') },
-      { key: 'deals', icon: <ApartmentOutlined />, label: t('nav.deals'), disabled: true },
+      ...(!isLogistOnly ? [{ key: '/deals', icon: <DollarOutlined />, label: t('nav.deals') }] : []),
       ...(isAdmin
         ? [{ key: '/users', icon: <TeamOutlined />, label: t('nav.users') }]
         : []),
     ],
-    [isAdmin, t],
+    [isAdmin, isLogistOnly, t],
   );
 
   const handleLogout = () => {

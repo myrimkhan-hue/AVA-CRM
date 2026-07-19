@@ -28,19 +28,39 @@ enum PaymentTerm {
   POSTPAYMENT
 }
 
+enum DealStage {
+  NEW
+  RATE_CALCULATION
+  RATE_SENT
+  AGREED
+  IN_PROGRESS
+  COMPLETED
+  CLOSED
+  REJECTED
+}
+
+enum DealRejectReason {
+  EXPENSIVE
+  TIMING
+  COMPETITOR
+  NO_CONTACT
+  OTHER
+}
+
 model User {
-  id           String      @id @default(cuid())
-  fullName     String      @map("full_name")
-  email        String      @unique
-  phone        String?
-  passwordHash String      @map("password_hash")
-  departmentId String?     @map("department_id")
-  isActive     Boolean     @default(true) @map("is_active")
-  createdAt    DateTime    @default(now()) @map("created_at")
-  updatedAt    DateTime    @updatedAt @map("updated_at")
-  department   Department? @relation(fields: [departmentId], references: [id])
-  roles        UserRole[]
-  auditLogs    AuditLog[]
+  id               String      @id @default(cuid())
+  fullName         String      @map("full_name")
+  email            String      @unique
+  phone            String?
+  passwordHash     String      @map("password_hash")
+  departmentId     String?     @map("department_id")
+  isActive         Boolean     @default(true) @map("is_active")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+  department       Department? @relation(fields: [departmentId], references: [id])
+  roles            UserRole[]
+  auditLogs        AuditLog[]
+  responsibleDeals Deal[]
 
   @@map("users")
 }
@@ -69,19 +89,22 @@ model Department {
   id    String @id @default(cuid())
   name  String @unique
   users User[]
+  deals Deal[]
 
   @@map("departments")
 }
 
 model LegalEntity {
-  id              String   @id @default(cuid())
-  name            String
-  numberingPrefix String   @unique @map("numbering_prefix")
-  bin             String?
-  legalAddress    String?  @map("legal_address")
-  isActive        Boolean  @default(true) @map("is_active")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id                  String               @id @default(cuid())
+  name                String
+  numberingPrefix     String               @unique @map("numbering_prefix")
+  bin                 String?
+  legalAddress        String?              @map("legal_address")
+  isActive            Boolean              @default(true) @map("is_active")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  deals               Deal[]
+  dealNumberSequences DealNumberSequence[]
 
   @@map("legal_entities")
 }
@@ -118,8 +141,42 @@ model Contractor {
   updatedAt       DateTime                @updatedAt @map("updated_at")
   contacts        ContractorContact[]
   bankAccounts    ContractorBankAccount[]
+  deals           Deal[]
 
   @@map("contractors")
+}
+
+model Deal {
+  id            String            @id @default(cuid())
+  number        String            @unique
+  legalEntityId String            @map("legal_entity_id")
+  clientId      String            @map("client_id")
+  responsibleId String            @map("responsible_id")
+  departmentId  String?           @map("department_id")
+  stage         DealStage         @default(NEW)
+  rejectReason  DealRejectReason? @map("reject_reason")
+  rejectComment String?           @map("reject_comment")
+  notes         String?
+  deletedAt     DateTime?         @map("deleted_at")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  legalEntity   LegalEntity       @relation(fields: [legalEntityId], references: [id])
+  client        Contractor        @relation(fields: [clientId], references: [id])
+  responsible   User              @relation(fields: [responsibleId], references: [id])
+  department    Department?       @relation(fields: [departmentId], references: [id])
+
+  @@map("deals")
+}
+
+model DealNumberSequence {
+  id            String      @id @default(cuid())
+  legalEntityId String      @map("legal_entity_id")
+  year          Int
+  lastNumber    Int         @map("last_number")
+  legalEntity   LegalEntity @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
+
+  @@unique([legalEntityId, year])
+  @@map("deal_number_sequences")
 }
 
 model ContractorContact {

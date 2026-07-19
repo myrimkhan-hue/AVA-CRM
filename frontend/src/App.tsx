@@ -5,6 +5,14 @@ import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { UsersPage } from './pages/UsersPage';
 import { ContractorsPage } from './pages/ContractorsPage';
+import { DealsPage } from './pages/DealsPage';
+import { useAuth } from './auth/AuthContext';
+
+function DealsRoute() {
+  const { user } = useAuth();
+  const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
+  return isLogistOnly ? <Navigate to="/" replace /> : <DealsPage />;
+}
 
 export default function App() {
   return (
@@ -14,6 +22,7 @@ export default function App() {
         <Route path="/" element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="contractors" element={<ContractorsPage />} />
+          <Route path="deals" element={<DealsRoute />} />
           <Route path="users" element={<UsersPage />} />
         </Route>
       </Route>

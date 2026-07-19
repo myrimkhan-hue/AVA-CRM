@@ -8,9 +8,10 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ReferencesModule } from './references/references.module';
 import { UsersModule } from './users/users.module';
 import { ContractorsModule } from './contractors/contractors.module';
+import { DealsModule } from './deals/deals.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, ReferencesModule, ContractorsModule],
+  imports: [PrismaModule, AuthModule, UsersModule, ReferencesModule, ContractorsModule, DealsModule],
   controllers: [HealthController],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

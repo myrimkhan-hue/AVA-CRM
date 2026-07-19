@@ -67,6 +67,24 @@
     "validation": { "name": "Укажите название контрагента", "types": "Выберите хотя бы один тип", "postpaymentDays": "Укажите количество дней постоплаты", "blacklistReason": "Укажите причину добавления в чёрный список", "contactName": "Укажите ФИО контактного лица", "email": "Введите корректный email", "bankName": "Укажите банк", "accountNumber": "Укажите номер счёта", "currency": "Выберите валюту" },
     "details": { "blacklisted": "Контрагент в чёрном списке — не работаем", "problem": "Проблемный контрагент", "requisites": "Реквизиты и условия", "contacts": "Контактные лица", "accounts": "Банковские счета", "noContacts": "Контактные лица не добавлены", "noAccounts": "Банковские счета не добавлены", "whatsappValue": "WhatsApp: {{value}}", "accountTitle": "{{bank}} · {{currency}}" }
   },
+  "deals": {
+    "title": "Сделки",
+    "subtitle": "Заявки клиентов и этапы работы по ним",
+    "add": "Новая сделка",
+    "filters": { "search": "Поиск по номеру или названию клиента", "stage": "Стадия", "legalEntity": "Юрлицо", "includeDeleted": "Показать удалённые" },
+    "columns": { "number": "Номер", "client": "Клиент", "legalEntity": "Юрлицо", "responsible": "Ответственный", "department": "Отдел", "stage": "Стадия", "createdAt": "Создана", "actions": "Действия" },
+    "stages": { "NEW": "Новая заявка", "RATE_CALCULATION": "Расчёт ставки", "RATE_SENT": "Ставка отправлена", "AGREED": "Согласована", "IN_PROGRESS": "В работе", "COMPLETED": "Выполнена", "CLOSED": "Закрыта", "REJECTED": "Отказ" },
+    "reasons": { "EXPENSIVE": "Дорого", "TIMING": "Сроки", "COMPETITOR": "Ушёл к конкуренту", "NO_CONTACT": "Не вышел на связь", "OTHER": "Другое" },
+    "status": { "deleted": "Удалена" },
+    "actions": { "open": "Открыть", "restore": "Восстановить", "delete": "Удалить", "changeStage": "Изменить стадию", "editNotes": "Изменить заметки" },
+    "form": { "createTitle": "Новая сделка", "client": "Клиент", "legalEntity": "Юрлицо", "responsible": "Ответственный", "notes": "Заметки", "stage": "Стадия", "rejectReason": "Причина отказа", "rejectComment": "Комментарий" },
+    "validation": { "client": "Выберите клиента", "legalEntity": "Выберите юрлицо", "stage": "Выберите стадию", "rejectReason": "Выберите причину отказа", "rejectComment": "Укажите комментарий для причины «Другое»" },
+    "details": { "client": "Клиент", "legalEntity": "Юрлицо", "responsible": "Ответственный", "department": "Отдел", "stage": "Стадия", "rejectReason": "Причина отказа", "notes": "Заметки", "createdAt": "Дата создания" },
+    "stageModal": { "title": "Изменение стадии" },
+    "notesModal": { "title": "Редактирование заметок" },
+    "confirm": { "deleteTitle": "Удалить сделку?", "deleteText": "Сделка {{number}} будет мягко удалена. Администратор сможет восстановить её позднее." },
+    "messages": { "created": "Сделка {{number}} создана", "stageUpdated": "Стадия сделки изменена", "notesUpdated": "Заметки обновлены", "deleted": "Сделка удалена", "restored": "Сделка восстановлена" }
+  },
   "users": {
     "title": "Пользователи",
     "subtitle": "Управление сотрудниками, ролями и доступом к системе",
