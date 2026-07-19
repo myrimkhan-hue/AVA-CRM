@@ -47,20 +47,58 @@ enum DealRejectReason {
   OTHER
 }
 
+enum TransportationStatus {
+  REQUEST_ACCEPTED
+  CARGO_PICKED
+  IN_TRANSIT
+  CUSTOMS
+  DELIVERED
+  CLOSED
+}
+
+enum TransportMode {
+  AUTO
+  RAIL
+  SEA
+  AIR
+  MULTIMODAL
+}
+
+enum LegTransportMode {
+  AUTO
+  RAIL
+  SEA
+  AIR
+  BROKER
+}
+
+enum VatMode {
+  NO_VAT
+  VAT_12
+}
+
+enum LegStatus {
+  WAITING
+  IN_PROGRESS
+  DONE
+}
+
 model User {
-  id               String      @id @default(cuid())
-  fullName         String      @map("full_name")
-  email            String      @unique
-  phone            String?
-  passwordHash     String      @map("password_hash")
-  departmentId     String?     @map("department_id")
-  isActive         Boolean     @default(true) @map("is_active")
-  createdAt        DateTime    @default(now()) @map("created_at")
-  updatedAt        DateTime    @updatedAt @map("updated_at")
-  department       Department? @relation(fields: [departmentId], references: [id])
-  roles            UserRole[]
-  auditLogs        AuditLog[]
-  responsibleDeals Deal[]
+  id                          String                      @id @default(cuid())
+  fullName                    String                      @map("full_name")
+  email                       String                      @unique
+  phone                       String?
+  passwordHash                String                      @map("password_hash")
+  departmentId                String?                     @map("department_id")
+  isActive                    Boolean                     @default(true) @map("is_active")
+  createdAt                   DateTime                    @default(now()) @map("created_at")
+  updatedAt                   DateTime                    @updatedAt @map("updated_at")
+  department                  Department?                 @relation(fields: [departmentId], references: [id])
+  roles                       UserRole[]
+  auditLogs                   AuditLog[]
+  responsibleDeals            Deal[]
+  logistTransportations       Transportation[]            @relation("TransportationLogist")
+  transportationStatusEvents TransportationStatusEvent[] @relation("TransportationStatusSetBy")
 
   @@map("users")
 }
@@ -123,49 +161,151 @@ model AuditLog {
 }
 
 model Contractor {
-  id              String                  @id @default(cuid())
-  name            String
-  types           ContractorType[]
-  bin             String?
-  country         String?
-  legalAddress    String?                 @map("legal_address")
-  paymentTerm     PaymentTerm?            @map("payment_term")
-  postpaymentDays Int?                    @map("postpayment_days")
-  notes           String?
-  isProblem       Boolean                 @default(false) @map("is_problem")
-  problemComment  String?                 @map("problem_comment")
-  isBlacklisted   Boolean                 @default(false) @map("is_blacklisted")
-  blacklistReason String?                 @map("blacklist_reason")
-  deletedAt       DateTime?               @map("deleted_at")
-  createdAt       DateTime                @default(now()) @map("created_at")
-  updatedAt       DateTime                @updatedAt @map("updated_at")
-  contacts        ContractorContact[]
-  bankAccounts    ContractorBankAccount[]
-  deals           Deal[]
+  id                String                  @id @default(cuid())
+  name              String
+  types             ContractorType[]
+  bin               String?
+  country           String?
+  legalAddress      String?                 @map("legal_address")
+  paymentTerm       PaymentTerm?            @map("payment_term")
+  postpaymentDays   Int?                    @map("postpayment_days")
+  notes             String?
+  isProblem         Boolean                 @default(false) @map("is_problem")
+  problemComment    String?                 @map("problem_comment")
+  isBlacklisted     Boolean                 @default(false) @map("is_blacklisted")
+  blacklistReason   String?                 @map("blacklist_reason")
+  deletedAt         DateTime?               @map("deleted_at")
+  createdAt         DateTime                @default(now()) @map("created_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
+  contacts          ContractorContact[]
+  bankAccounts      ContractorBankAccount[]
+  deals             Deal[]
+  transportationLegs TransportationLeg[]    @relation("TransportationLegSubcontractor")
 
   @@map("contractors")
 }
 
 model Deal {
-  id            String            @id @default(cuid())
-  number        String            @unique
-  legalEntityId String            @map("legal_entity_id")
-  clientId      String            @map("client_id")
-  responsibleId String            @map("responsible_id")
-  departmentId  String?           @map("department_id")
-  stage         DealStage         @default(NEW)
-  rejectReason  DealRejectReason? @map("reject_reason")
-  rejectComment String?           @map("reject_comment")
-  notes         String?
-  deletedAt     DateTime?         @map("deleted_at")
-  createdAt     DateTime          @default(now()) @map("created_at")
-  updatedAt     DateTime          @updatedAt @map("updated_at")
-  legalEntity   LegalEntity       @relation(fields: [legalEntityId], references: [id])
-  client        Contractor        @relation(fields: [clientId], references: [id])
-  responsible   User              @relation(fields: [responsibleId], references: [id])
-  department    Department?       @relation(fields: [departmentId], references: [id])
+  id              String            @id @default(cuid())
+  number          String            @unique
+  legalEntityId   String            @map("legal_entity_id")
+  clientId        String            @map("client_id")
+  responsibleId   String            @map("responsible_id")
+  departmentId    String?           @map("department_id")
+  stage           DealStage         @default(NEW)
+  rejectReason    DealRejectReason? @map("reject_reason")
+  rejectComment   String?           @map("reject_comment")
+  notes           String?
+  deletedAt       DateTime?         @map("deleted_at")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+  legalEntity     LegalEntity       @relation(fields: [legalEntityId], references: [id])
+  client          Contractor        @relation(fields: [clientId], references: [id])
+  responsible     User              @relation(fields: [responsibleId], references: [id])
+  department      Department?       @relation(fields: [departmentId], references: [id])
+  transportations Transportation[]
 
   @@map("deals")
+}
+
+model Transportation {
+  id                    String                      @id @default(cuid())
+  number                String                      @unique
+  dealId                String                      @map("deal_id")
+  sequenceInDeal        Int                         @map("sequence_in_deal")
+  logistId              String                      @map("logist_id")
+  status                TransportationStatus        @default(REQUEST_ACCEPTED)
+  isMultiLeg            Boolean                     @default(false) @map("is_multi_leg")
+  cargoName             String?                     @map("cargo_name")
+  placesCount           Int?                        @map("places_count")
+  placesUnit            String?                     @map("places_unit")
+  weightKg              Decimal?                    @map("weight_kg") @db.Decimal(14, 3)
+  volumeM3              Decimal?                    @map("volume_m3") @db.Decimal(14, 3)
+  cargoValue            Decimal?                    @map("cargo_value") @db.Decimal(18, 2)
+  cargoValueCurrency    String?                     @map("cargo_value_currency") @db.VarChar(3)
+  isDangerous           Boolean                     @default(false) @map("is_dangerous")
+  isTempControlled      Boolean                     @default(false) @map("is_temp_controlled")
+  originPoint           String                      @map("origin_point")
+  destinationPoint      String                      @map("destination_point")
+  transportMode         TransportMode               @map("transport_mode")
+  clientRate            Decimal?                    @map("client_rate") @db.Decimal(18, 2)
+  clientRateCurrency    String?                     @map("client_rate_currency") @db.VarChar(3)
+  plannedDeliveryDate   DateTime?                   @map("planned_delivery_date") @db.Date
+  pickupEventDate       DateTime?                   @map("pickup_event_date") @db.Date
+  unloadingEventDate    DateTime?                   @map("unloading_event_date") @db.Date
+  actualDeliveryDate    DateTime?                   @map("actual_delivery_date") @db.Date
+  shipperName           String?                     @map("shipper_name")
+  consigneeName         String?                     @map("consignee_name")
+  loadingAddress        String?                     @map("loading_address")
+  loadingDateTime       DateTime?                   @map("loading_date_time")
+  loadingContactName    String?                     @map("loading_contact_name")
+  loadingContactPhone   String?                     @map("loading_contact_phone")
+  unloadingAddress      String?                     @map("unloading_address")
+  unloadingContactName  String?                     @map("unloading_contact_name")
+  unloadingContactPhone String?                     @map("unloading_contact_phone")
+  bodyType              String?                     @map("body_type")
+  accompanyingDocs      String[]                    @default([]) @map("accompanying_docs")
+  specialConditions     String?                     @map("special_conditions")
+  deletedAt             DateTime?                   @map("deleted_at")
+  createdAt             DateTime                    @default(now()) @map("created_at")
+  updatedAt             DateTime                    @updatedAt @map("updated_at")
+  deal                  Deal                        @relation(fields: [dealId], references: [id])
+  logist                User                        @relation("TransportationLogist", fields: [logistId], references: [id])
+  legs                  TransportationLeg[]
+  statusEvents          TransportationStatusEvent[]
+
+  @@unique([dealId, sequenceInDeal])
+  @@index([logistId])
+  @@index([status])
+  @@map("transportations")
+}
+
+model TransportationLeg {
+  id                     String           @id @default(cuid())
+  transportationId       String           @map("transportation_id")
+  orderIndex             Int              @map("order_index")
+  fromPoint              String           @map("from_point")
+  toPoint                String           @map("to_point")
+  mode                   LegTransportMode
+  subcontractorId        String?          @map("subcontractor_id")
+  subcontractorRate      Decimal?         @map("subcontractor_rate") @db.Decimal(18, 2)
+  subcontractorRateCurrency String?        @map("subcontractor_rate_currency") @db.VarChar(3)
+  vatMode                VatMode          @default(NO_VAT) @map("vat_mode")
+  plannedStartDate       DateTime?        @map("planned_start_date") @db.Date
+  plannedEndDate         DateTime?        @map("planned_end_date") @db.Date
+  actualStartDate        DateTime?        @map("actual_start_date") @db.Date
+  actualEndDate          DateTime?        @map("actual_end_date") @db.Date
+  vehicleNumber          String?          @map("vehicle_number")
+  status                 LegStatus        @default(WAITING)
+  driverFullName         String?          @map("driver_full_name")
+  driverPhone            String?          @map("driver_phone")
+  driverIin              String?          @map("driver_iin")
+  driverLicenseNumber    String?          @map("driver_license_number")
+  driverLicenseDate      DateTime?        @map("driver_license_date") @db.Date
+  driverLicenseIssuer    String?          @map("driver_license_issuer")
+  transportation         Transportation   @relation(fields: [transportationId], references: [id], onDelete: Cascade)
+  subcontractor          Contractor?      @relation("TransportationLegSubcontractor", fields: [subcontractorId], references: [id])
+
+  @@unique([transportationId, orderIndex])
+  @@index([subcontractorId])
+  @@map("transportation_legs")
+}
+
+model TransportationStatusEvent {
+  id               String                @id @default(cuid())
+  transportationId String                @map("transportation_id")
+  fromStatus       TransportationStatus? @map("from_status")
+  toStatus         TransportationStatus  @map("to_status")
+  isRollback       Boolean               @default(false) @map("is_rollback")
+  eventDate        DateTime?             @map("event_date") @db.Date
+  setAt            DateTime              @default(now()) @map("set_at")
+  setById          String                @map("set_by_id")
+  createdAt        DateTime              @default(now()) @map("created_at")
+  transportation   Transportation        @relation(fields: [transportationId], references: [id], onDelete: Cascade)
+  setBy            User                  @relation("TransportationStatusSetBy", fields: [setById], references: [id])
+
+  @@index([transportationId, setAt])
+  @@map("transportation_status_events")
 }
 
 model DealNumberSequence {
