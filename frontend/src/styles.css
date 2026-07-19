@@ -1,4 +1,50 @@
+:root { color: #1b2430; font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+* { box-sizing: border-box; }
 html, body, #root { min-height: 100%; margin: 0; }
-body { background: #f5f5f5; font-family: Arial, sans-serif; }
-.page { display: grid; min-height: 100vh; padding: 24px; place-items: center; box-sizing: border-box; }
-.health-card { width: min(100%, 560px); }
+body { background: #f6f7f9; }
+button, input { font: inherit; }
+
+.route-loader { display: grid; min-height: 100vh; place-items: center; }
+.login-page { display: grid; grid-template-columns: minmax(390px, 440px) 1fr; min-height: 100vh; background: #f6f7f9; }
+.login-panel { display: flex; align-items: center; padding: 48px; background: #fff; border-right: 1px solid #e3e8ef; }
+.login-card { width: 100%; }
+.login-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+.login-brand img { display: block; width: 44px; height: 44px; }
+.login-brand-name { font-size: 19px; font-weight: 800; }
+.login-brand-subtitle { color: #66707d; font-size: 12.5px; }
+.login-card h2.ant-typography { margin: 0 0 4px; color: #1b2430; font-size: 22px; }
+.login-help.ant-typography { margin-bottom: 22px; color: #66707d; font-size: 13px; }
+.login-error { margin-bottom: 18px; }
+.login-card .ant-form-item-label > label { color: #3a424e; font-size: 12.5px; font-weight: 600; }
+.login-card .ant-input-affix-wrapper { min-height: 44px; border-color: #e3e8ef; }
+.login-card .ant-btn-primary { background: #e4140e; box-shadow: none; }
+.login-card .ant-btn-primary:hover { background: #c10f0a !important; }
+.remember-item { margin-bottom: 20px; }
+.security-note { display: flex; align-items: center; gap: 7px; margin-top: 26px; color: #8a93a0; font-size: 11.5px; }
+.login-visual { position: relative; overflow: hidden; background: linear-gradient(145deg, #f6f7f9 35%, #eef1f5); }
+.visual-mark { position: absolute; top: 50%; left: 50%; width: min(36vw, 440px); aspect-ratio: 1; border: 54px solid rgba(228, 20, 14, .045); border-radius: 50%; transform: translate(-50%, -50%); }
+
+.app-shell { min-height: 100vh; }
+.app-header { display: flex; align-items: center; justify-content: space-between; height: 64px; padding: 0 24px; background: #fff; border-bottom: 1px solid #e3e8ef; }
+.brand { display: flex; align-items: center; gap: 10px; color: #1b2430; font-size: 17px; font-weight: 800; }
+.brand img { width: 36px; height: 36px; }
+.brand-button { padding: 0; background: none; border: 0; cursor: pointer; }
+.user-menu { display: flex; align-items: center; gap: 10px; }
+.user-name { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-sider { padding-top: 16px; background: #fff !important; border-right: 1px solid #e3e8ef; }
+.app-sider .ant-menu { border-inline-end: 0 !important; }
+.app-content { min-width: 0; padding: 24px; background: #f6f7f9; }
+.health-card { width: min(100%, 600px); }
+.page-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
+.page-heading h2.ant-typography { margin: 0 0 2px; }
+.inactive-row > td { color: #8a93a0 !important; background: #fafbfc !important; }
+
+@media (max-width: 760px) {
+  .login-page { grid-template-columns: 1fr; }
+  .login-panel { min-height: 100vh; padding: 32px 24px; border: 0; }
+  .login-visual { display: none; }
+  .app-header { padding: 0 12px; }
+  .user-name { display: none; }
+  .app-content { padding: 16px; }
+  .page-heading { align-items: stretch; flex-direction: column; }
+}

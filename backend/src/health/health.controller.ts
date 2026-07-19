@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { Public } from '../auth/decorators/public.decorator';
 import { PrismaService } from '../prisma/prisma.service';
 
 type HealthResponse = { status: 'ok'; db: 'ok' | 'error' };
@@ -7,6 +8,7 @@ type HealthResponse = { status: 'ok'; db: 'ok' | 'error' };
 export class HealthController {
   constructor(private readonly prisma: PrismaService) {}
 
+  @Public()
   @Get()
   async check(): Promise<HealthResponse> {
     try {

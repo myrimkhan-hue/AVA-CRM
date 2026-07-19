@@ -1,6 +1,27 @@
 {
-  "app": {
-    "title": "CRM AVA Solution"
+  "app": { "title": "CRM AVA Solution" },
+  "brand": {
+    "name": "AVA Solution",
+    "subtitle": "CRM для экспедиторской компании",
+    "logoAlt": "Логотип AVA Solution"
+  },
+  "auth": { "logout": "Выйти" },
+  "login": {
+    "title": "Вход в систему",
+    "help": "Доступ только для авторизованных сотрудников. Сессия завершается после 12 часов неактивности.",
+    "email": "Email",
+    "emailPlaceholder": "name@ava-solution.kz",
+    "password": "Пароль",
+    "passwordPlaceholder": "Введите пароль",
+    "remember": "Запомнить меня",
+    "submit": "Войти",
+    "security": "HTTPS · пароли хранятся только в захешированном виде"
+  },
+  "nav": {
+    "transportations": "Перевозки",
+    "contractors": "Контрагенты",
+    "deals": "Сделки",
+    "users": "Пользователи"
   },
   "health": {
     "title": "Состояние системы",
@@ -8,5 +29,72 @@
     "ok": "Система работает, база данных доступна",
     "error": "Система работает, база данных недоступна",
     "unavailable": "Не удалось связаться с сервером"
+  },
+  "common": {
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "notSpecified": "Не указано"
+  },
+  "validation": {
+    "emailRequired": "Введите email",
+    "emailInvalid": "Введите корректный email",
+    "passwordRequired": "Введите пароль",
+    "passwordMin": "Пароль должен содержать минимум 8 символов",
+    "fullNameRequired": "Введите ФИО",
+    "rolesRequired": "Выберите хотя бы одну роль"
+  },
+  "errors": {
+    "connection": "Не удалось связаться с сервером",
+    "request": "Не удалось выполнить запрос"
+  },
+  "users": {
+    "title": "Пользователи",
+    "subtitle": "Управление сотрудниками, ролями и доступом к системе",
+    "add": "Добавить пользователя",
+    "columns": {
+      "fullName": "ФИО",
+      "email": "Email",
+      "phone": "Телефон",
+      "department": "Отдел",
+      "roles": "Роли",
+      "status": "Статус",
+      "actions": "Действия"
+    },
+    "status": { "active": "Активен", "inactive": "Деактивирован" },
+    "actions": {
+      "edit": "Редактировать",
+      "resetPassword": "Сбросить пароль",
+      "deactivate": "Деактивировать",
+      "activate": "Активировать"
+    },
+    "form": {
+      "createTitle": "Новый пользователь",
+      "editTitle": "Редактирование пользователя",
+      "fullName": "ФИО",
+      "email": "Email",
+      "phone": "Телефон",
+      "department": "Отдел",
+      "departmentPlaceholder": "Выберите отдел",
+      "roles": "Роли",
+      "rolesPlaceholder": "Выберите роли",
+      "password": "Начальный пароль"
+    },
+    "password": {
+      "title": "Новый пароль для {{name}}",
+      "newPassword": "Новый пароль"
+    },
+    "confirm": {
+      "deactivateTitle": "Деактивировать пользователя?",
+      "deactivateText": "Учётная запись сотрудника {{name}} будет заблокирована.",
+      "activateTitle": "Активировать пользователя?",
+      "activateText": "Сотрудник {{name}} снова получит доступ к системе."
+    },
+    "messages": {
+      "created": "Пользователь создан",
+      "updated": "Пользователь обновлён",
+      "passwordReset": "Пароль обновлён",
+      "deactivated": "Пользователь деактивирован",
+      "activated": "Пользователь активирован"
+    }
   }
 }
