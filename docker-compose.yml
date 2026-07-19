@@ -17,7 +17,9 @@ services:
       retries: 10
 
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
     environment:
       PORT: 3000
@@ -29,7 +31,9 @@ services:
         condition: service_healthy
 
   frontend:
-    build: ./frontend
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     restart: unless-stopped
     environment:
       VITE_API_PROXY_TARGET: http://backend:3000
