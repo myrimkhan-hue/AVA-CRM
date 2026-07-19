@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body{margin:0;background:#F6F7F9;color:#1B2430;font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  a{color:#E4140E;text-decoration:none}a:hover{color:#C10F0A}
+  input:focus,select:focus{outline:none;border-color:#E4140E;box-shadow:0 0 0 3px rgba(228,20,14,.12)}
+</style>
+</helmet>
+<header data-screen-label="Экран логиста" style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#fff;border-bottom:1px solid #E3E8EF">
+  <div style="display:flex;align-items:center;gap:12px">
+    <img src="assets/ava-logo.svg" alt="AVA" style="width:38px;height:38px;display:block">
+    <div>
+      <h1 style="font-size:18px;margin:0;font-weight:700">Перевозки</h1>
+      <div style="font-size:12px;color:#66707D;margin-top:-2px">AVA Solution · Логист</div>
+    </div>
+  </div>
+  <nav style="display:flex;align-items:center;gap:4px">
+    <a href="#" style="color:#1B2430;font-weight:600;font-size:14px;padding:7px 13px;border-radius:8px;background:#F3F5F8">Перевозки</a>
+    <a href="#" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Контрагенты</a>
+    <a href="#" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Моя мотивация</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:14px">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#66707D">
+      <span style="width:28px;height:28px;border-radius:50%;background:#E7E9FD;color:#4F46E5;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">ЕТ</span>
+      Ержан Т.
+    </div>
+    <a href="Новая перевозка.dc.html" style="background:#E4140E;border:1px solid #E4140E;color:#fff;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:500;cursor:pointer;text-decoration:none">+ Новая перевозка</a>
+  </div>
+</header>
+<main style="max-width:1400px;margin:0 auto;padding:20px 24px">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <h2 style="font-size:22px;font-weight:700;margin:0">Активные перевозки</h2>
+      <div style="display:inline-flex;background:#EDF0F4;border-radius:9px;padding:3px">
+        <span style="padding:5px 14px;border-radius:7px;font-size:13px;font-weight:600;background:#fff;color:#1B2430;box-shadow:0 1px 2px rgba(16,24,40,.08)">Таблица</span>
+        <a href="Экран логиста v2 (доска).dc.html" style="padding:5px 14px;border-radius:7px;font-size:13px;font-weight:500;color:#66707D" style-hover="color:#1B2430">Доска</a>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#66707D">{{ scopeLabel }} · Сегодня 17.07.2026 · курсы НБ РК обновлены в 09:00</div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+    <sc-for list="{{ chips }}" as="c" hint-placeholder-count="7">
+      <button onClick="{{ c.onClick }}" style="border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};border-radius:999px;padding:6px 14px;font-size:13.5px;font-weight:500;cursor:pointer;display:inline-flex;gap:7px;align-items:center">{{ c.label }}<span style="font-weight:700;font-size:12.5px;opacity:.8">{{ c.count }}</span></button>
+    </sc-for>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+    <input value="{{ q }}" onChange="{{ setQ }}" placeholder="Поиск: №, клиент, маршрут, субподрядчик" style="flex:1;min-width:260px;padding:9px 12px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:8px;color:#1B2430;background:#fff;box-sizing:border-box">
+    <select value="{{ transport }}" onChange="{{ setTransport }}" style="padding:9px 11px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:8px;color:#1B2430;background:#fff">
+      <option>Транспорт: все</option><option>Авто</option><option>Ж/д</option><option>Море</option><option>Авиа</option><option>Мультимодальная</option>
+    </select>
+    <select value="{{ entity }}" onChange="{{ setEntity }}" style="padding:9px 11px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:8px;color:#1B2430;background:#fff">
+      <option>Юрлицо: все</option><option>AVA Solution</option><option>ALT Corp</option><option>Transit Trail</option>
+    </select>
+    <label style="display:inline-flex;align-items:center;gap:7px;font-size:13.5px;color:#1B2430;cursor:pointer;user-select:none">
+      <input type="checkbox" checked="{{ onlyOverdue }}" onChange="{{ toggleOverdue }}" style="width:15px;height:15px;accent-color:#E4140E;cursor:pointer">
+      Только просроченные
+    </label>
+    <sc-if value="{{ hasFilters }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ reset }}" style="border:1px solid transparent;background:none;color:#66707D;border-radius:8px;padding:9px 12px;font-size:13.5px;cursor:pointer" style-hover="background:#EEF1F5">Сбросить</button>
+    </sc-if>
+    <div style="position:relative;margin-left:auto">
+      <button onClick="{{ toggleCols }}" style="border:1.5px solid {{ colsBtnBd }};background:{{ colsBtnBg }};color:#1B2430;border-radius:8px;padding:8px 14px;font-size:13.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:8px" style-hover="background:#F3F5F8">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0.75" y="0.75" width="3.5" height="12.5" rx="1" stroke="#66707D" stroke-width="1.5"></rect><rect x="5.25" y="0.75" width="3.5" height="12.5" rx="1" stroke="#66707D" stroke-width="1.5"></rect><rect x="9.75" y="0.75" width="3.5" height="12.5" rx="1" stroke="#66707D" stroke-width="1.5"></rect></svg>
+        Колонки
+      </button>
+      <sc-if value="{{ colsOpen }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeCols }}" style="position:fixed;inset:0;z-index:40"></div>
+        <div style="position:absolute;right:0;top:calc(100% + 6px);z-index:50;background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 8px 24px rgba(16,24,40,.14);width:300px;padding:8px">
+          <div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;padding:6px 10px 8px">Колонки таблицы</div>
+          <div style="max-height:340px;overflow-y:auto">
+            <sc-for list="{{ colItems }}" as="ci" hint-placeholder-count="9">
+              <div draggable="{{ true }}" onDragStart="{{ ci.onDragStart }}" onDragOver="{{ ci.onDragOver }}" onDragEnd="{{ ci.onDragEnd }}" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;background:{{ ci.bg }};cursor:grab">
+                <svg width="10" height="14" viewBox="0 0 10 14" fill="#B9C0C9"><circle cx="2.5" cy="2.5" r="1.4"></circle><circle cx="7.5" cy="2.5" r="1.4"></circle><circle cx="2.5" cy="7" r="1.4"></circle><circle cx="7.5" cy="7" r="1.4"></circle><circle cx="2.5" cy="11.5" r="1.4"></circle><circle cx="7.5" cy="11.5" r="1.4"></circle></svg>
+                <input type="checkbox" checked="{{ ci.visible }}" disabled="{{ ci.lock }}" onChange="{{ ci.toggle }}" style="width:15px;height:15px;accent-color:#E4140E;cursor:pointer">
+                <span style="font-size:13.5px;flex:1;color:{{ ci.fg }}">{{ ci.label }}</span>
+                <sc-if value="{{ ci.calcNote }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:#66707D;background:#EDF0F4;border-radius:5px;padding:2px 6px;font-weight:600">{{ ci.calcNote }}</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="border-top:1px solid #E3E8EF;margin-top:6px;padding-top:6px">
+            <button onClick="{{ resetCols }}" style="border:none;background:none;color:#E4140E;font-size:13px;font-weight:500;cursor:pointer;padding:7px 10px;border-radius:8px;width:100%;text-align:left" style-hover="background:#FDEBEA">Сбросить к стандартному виду</button>
+            <div style="padding:2px 10px 6px;font-size:11.5px;color:#66707D">Порядок — перетаскиванием. Настройки сохраняются в вашем профиле и доступны с любого устройства. В списке — только колонки, доступные роли «Логист»: финансовые (маржа, оплаты, ставки) скрыты правами доступа.</div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+  <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;overflow-x:auto;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr>
+          <sc-for list="{{ headers }}" as="h" hint-placeholder-count="9">
+            <th style="padding:11px 14px;text-align:left;white-space:nowrap;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF;background:#FAFBFC">{{ h.label }}</th>
+          </sc-for>
+        </tr>
+      </thead>
+      <tbody>
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+          <tr onClick="{{ openCard }}" style="border-bottom:1px solid #E3E8EF;cursor:pointer;background:{{ r.rowBg }};box-shadow:{{ r.rowShadow }}" style-hover="background:{{ r.hoverBg }}">
+            <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="9">
+              <td style="padding:11px 14px;white-space:nowrap">
+                <sc-if value="{{ c.isBadge }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:{{ c.bg }};color:{{ c.fg }}" style-before="content:'';width:5px;height:5px;border-radius:50%;background:currentColor">{{ c.main }}</span>
+                </sc-if>
+                <sc-if value="{{ c.isText }}" hint-placeholder-val="{{ true }}">
+                  <span style="color:{{ c.mainColor }};font-weight:{{ c.mainWeight }};font-variant-numeric:tabular-nums">{{ c.main }}</span>
+                  <sc-if value="{{ c.sub }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:{{ c.subColor }};font-weight:{{ c.subWeight }}">{{ c.sub }}</div></sc-if>
+                </sc-if>
+              </td>
+            </sc-for>
+          </tr>
+        </sc-for>
+        <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+          <tr><td colSpan="{{ colCount }}" style="padding:34px 14px;text-align:center;color:#66707D">Ничего не найдено. Измените фильтры или сбросьте их.</td></tr>
+        </sc-if>
+      </tbody>
+    </table>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12.5px;color:#66707D;flex-wrap:wrap;gap:6px">
+    <div>Показано {{ shown }} из {{ total }} · просрочено: <span style="color:#B91C1C;font-weight:600">{{ overdueCount }}</span></div>
+    <div>Просроченные строки подсвечены. Клик по строке откроет карточку перевозки.</div>
+  </div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showClosed&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Таблица&quot;},&quot;highlightOverdue&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Таблица&quot;},&quot;deptHeadView&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Права роли&quot;}}">
+class Component extends DCLogic {
+  state = Object.assign(
+    { status: 'all', q: '', transport: 'Транспорт: все', entity: 'Юрлицо: все', onlyOverdue: false, colsOpen: false, dragKey: '', colOrder: null, colHidden: null },
+    (() => { try { return JSON.parse(localStorage.getItem('ava-logist-cols-v1')) || {}; } catch (e) { return {}; } })()
+  );
+  saveCols(colOrder, colHidden) {
+    this.setState({ colOrder, colHidden });
+    try { localStorage.setItem('ava-logist-cols-v1', JSON.stringify({ colOrder, colHidden })); } catch (e) {}
+  }
+  renderVals() {
+    const TODAY = '2026-07-17';
+    const ST = {
+      accepted:  { l: 'Заявка принята', bg: '#E7E9FD', fg: '#4F46E5' },
+      picked:    { l: 'Груз забран',    bg: '#D5F0EC', fg: '#0F766E' },
+      transit:   { l: 'В пути',         bg: '#FDF0D5', fg: '#B45309' },
+      customs:   { l: 'Таможня',        bg: '#EFE9FD', fg: '#7C3AED' },
+      delivered: { l: 'Доставлен',      bg: '#DCF5E4', fg: '#15803D' },
+      closed:    { l: 'Закрыта',        bg: '#EDF0F4', fg: '#66707D' }
+    };
+    const ENT = { AVA: 'AVA Solution', ALT: 'ALT Corp', TT: 'Transit Trail' };
+    const COLS = {
+      num: { label: '№ / груз', lock: true },
+      client: { label: 'Клиент' },
+      route: { label: 'Маршрут' },
+      transport: { label: 'Вид транспорта' },
+      leg: { label: 'Участок · субподрядчик' },
+      status: { label: 'Статус' },
+      plan: { label: 'Выгрузка (план)' },
+      fact: { label: 'Выгрузка (факт)' },
+      manager: { label: 'Ответственный' },
+      loadPlan: { label: 'Погрузка (план)' },
+      loadFact: { label: 'Погрузка (факт)' },
+      vehicle: { label: 'Машина / контейнер' },
+      weight: { label: 'Вес, кг' },
+      volume: { label: 'Объём, м³' },
+      daysTransit: { label: 'Дней в пути', calc: true },
+      overdueDays: { label: 'Просрочка, дней', calc: true },
+      legsCount: { label: 'Участков', calc: true }
+    };
+    const DEFAULT_ORDER = ['num', 'client', 'route', 'transport', 'leg', 'status', 'plan', 'fact', 'manager', 'loadPlan', 'loadFact', 'vehicle', 'weight', 'volume', 'daysTransit', 'overdueDays', 'legsCount'];
+    const DEFAULT_HIDDEN = ['loadPlan', 'loadFact', 'vehicle', 'weight', 'volume', 'daysTransit', 'overdueDays', 'legsCount'];
+    const DATA = [
+      { num: 'AVA-2026-0145/1', cargo: 'Электроника · 12 мест · 3,4 т', client: 'Alma Electronics', route: 'Гуанчжоу → Алматы', transport: 'Мультимодальная', legRoute: 'Хоргос → Алматы', legSub: 'ТОО ТрансАзия', st: 'customs', plan: '2026-07-20', fact: '', manager: 'Айгерим С.', loadPlan: '2026-07-06', loadFact: '2026-07-07', vehicle: 'CSNU 4021587', weight: '3 400', volume: '18', legs: 3 },
+      { num: 'AVA-2026-0143/1', cargo: 'Сантехника · 3,2 т', client: 'ТОО Ромашка', route: 'Сиань → Алматы', transport: 'Ж/д', legRoute: 'Хоргос → Алматы', legSub: 'КТЖ Экспресс', st: 'transit', plan: '2026-07-19', fact: '', manager: 'Айгерим С.', loadPlan: '2026-07-10', loadFact: '2026-07-10', vehicle: 'ваг. 94682110', weight: '3 200', volume: '12', legs: 2 },
+      { num: 'AVA-2026-0141/1', cargo: 'Стройматериалы · 20 т', client: 'ТОО КазТрейд', route: 'Урумчи → Астана', transport: 'Авто', legRoute: 'Урумчи → Астана', legSub: 'China Trans', st: 'transit', plan: '2026-07-15', fact: '', manager: 'Марат Б.', loadPlan: '2026-07-11', loadFact: '2026-07-12', vehicle: 'A 452 KMA 05', weight: '20 000', volume: '86', legs: 1 },
+      { num: 'ALT-2026-0075/1', cargo: 'Зерно · 60 т', client: 'ТОО AgroExport', route: 'Костанай → Ташкент', transport: 'Ж/д', legRoute: 'Костанай → Ташкент', legSub: 'КТЖ Экспресс', st: 'accepted', plan: '2026-08-05', fact: '', manager: 'Дана К.', loadPlan: '2026-07-28', loadFact: '', vehicle: '', weight: '60 000', volume: '—', legs: 1 },
+      { num: 'ALT-2026-0072/1', cargo: 'Оборудование · 18 т', client: 'ТОО SilkWay', route: 'Шэньчжэнь → Алматы', transport: 'Ж/д', legRoute: 'Шэньчжэнь → Хоргос', legSub: 'CR Intermodal', st: 'picked', plan: '2026-07-30', fact: '', manager: 'Марат Б.', loadPlan: '2026-07-14', loadFact: '2026-07-15', vehicle: 'CRIU 5507213', weight: '18 000', volume: '40', legs: 2 },
+      { num: 'ALT-2026-0068/1', cargo: 'Полимеры · 24 т', client: 'ТОО Chem Trade', route: 'Сиань → Алматы', transport: 'Ж/д', legRoute: 'Таможня Хоргос', legSub: 'КТЖ Экспресс', st: 'customs', plan: '2026-07-12', fact: '', manager: 'Марат Б.', loadPlan: '2026-07-02', loadFact: '2026-07-03', vehicle: 'ваг. 96237845', weight: '24 000', volume: '55', legs: 2 },
+      { num: 'TT-2026-0158/1', cargo: 'ТНП · 8,2 т', client: 'ИП Сериков', route: 'Алматы → Ташкент', transport: 'Авто', legRoute: 'Алматы → Ташкент', legSub: 'ИП Иванов', st: 'accepted', plan: '2026-07-25', fact: '', manager: 'Айгерим С.', loadPlan: '2026-07-22', loadFact: '', vehicle: '', weight: '8 200', volume: '36', legs: 1 },
+      { num: 'AVA-2026-0139/2', cargo: 'Продукты питания · 15 т', client: 'ТОО Ромашка', route: 'Алматы → Бишкек', transport: 'Авто', legRoute: 'Алматы → Бишкек', legSub: 'Logist KZ', st: 'delivered', plan: '2026-07-14', fact: '2026-07-16', manager: 'Дана К.', loadPlan: '2026-07-12', loadFact: '2026-07-12', vehicle: 'B 731 OKA 02', weight: '15 000', volume: '60', legs: 1 },
+      { num: 'AVA-2026-0137/1', cargo: 'Автозапчасти · 6 мест · 1,9 т', client: 'ТОО AutoParts KZ', route: 'Гданьск → Алматы', transport: 'Авто', legRoute: 'Гданьск → Алматы', legSub: 'EuroLine Logistics', st: 'transit', plan: '2026-07-22', fact: '', manager: 'Дана К.', loadPlan: '2026-07-08', loadFact: '2026-07-09', vehicle: 'WGM 4512E', weight: '1 900', volume: '14', legs: 1 },
+      { num: 'TT-2026-0154/1', cargo: 'Мебель · 12 т', client: 'ТОО КазТрейд', route: 'Алматы → Караганда', transport: 'Авто', legRoute: 'Алматы → Караганда', legSub: 'ИП Сериков', st: 'delivered', plan: '2026-07-17', fact: '2026-07-17', manager: 'Айгерим С.', loadPlan: '2026-07-16', loadFact: '2026-07-16', vehicle: 'A 118 NBA 05', weight: '12 000', volume: '48', legs: 1 },
+      { num: 'AVA-2026-0132/1', cargo: 'Текстиль · 22 места · 4,1 т', client: 'ТОО SilkWay', route: 'Стамбул → Алматы', transport: 'Мультимодальная', legRoute: 'Мерсин → Актау', legSub: 'SeaBridge Shipping', st: 'picked', plan: '2026-08-02', fact: '', manager: 'Дана К.', loadPlan: '2026-07-13', loadFact: '2026-07-14', vehicle: 'MSKU 7702145', weight: '4 100', volume: '28', legs: 3 },
+      { num: 'AVA-2026-0128/1', cargo: 'Бытовая техника · 10 т', client: 'Alma Electronics', route: 'Урумчи → Алматы', transport: 'Авто', legRoute: 'Урумчи → Алматы', legSub: 'China Trans', st: 'closed', plan: '2026-07-08', fact: '2026-07-07', manager: 'Марат Б.', loadPlan: '2026-07-01', loadFact: '2026-07-01', vehicle: 'C 904 AER 05', weight: '10 000', volume: '42', legs: 1 }
+    ];
+    const showClosed = this.props.showClosed ?? true;
+    const highlight = this.props.highlightOverdue ?? true;
+    const CURRENT_LOGIST = 'Ержан Т.';
+    const canSeeAll = this.props.deptHeadView ?? false; // руководитель отдела видит весь отдел
+    const OWNER = { 'AVA-2026-0145/1': 'Ержан Т.', 'AVA-2026-0143/1': 'Ержан Т.', 'AVA-2026-0141/1': 'Марат Б.', 'ALT-2026-0075/1': 'Дана К.', 'ALT-2026-0072/1': 'Ержан Т.', 'ALT-2026-0068/1': 'Марат Б.', 'TT-2026-0158/1': 'Ержан Т.', 'AVA-2026-0139/2': 'Дана К.', 'AVA-2026-0137/1': 'Ержан Т.', 'TT-2026-0154/1': 'Дана К.', 'AVA-2026-0132/1': 'Ержан Т.', 'AVA-2026-0128/1': 'Марат Б.' };
+    DATA.forEach(d => { d.logist = OWNER[d.num] || CURRENT_LOGIST; });
+    const fmt = iso => iso ? iso.slice(8, 10) + '.' + iso.slice(5, 7) + '.' + iso.slice(0, 4) : '—';
+    const days = (a, b) => Math.round((new Date(a) - new Date(b)) / 86400000);
+    const isOverdue = d => d.fact ? d.fact > d.plan : (TODAY > d.plan && d.st !== 'delivered' && d.st !== 'closed');
+    const scoped = canSeeAll ? DATA : DATA.filter(d => d.logist === CURRENT_LOGIST);
+    const base = scoped.filter(d => showClosed || d.st !== 'closed');
+    const { status, q, transport, entity, onlyOverdue, colsOpen, dragKey } = this.state;
+    const order = (this.state.colOrder || DEFAULT_ORDER).filter(k => COLS[k]);
+    const hidden = this.state.colHidden || DEFAULT_HIDDEN;
+    const visible = order.filter(k => !hidden.includes(k));
+    const ql = q.trim().toLowerCase();
+    const filtered = base.filter(d => {
+      if (status !== 'all' && d.st !== status) return false;
+      if (transport !== 'Транспорт: все' && d.transport !== transport) return false;
+      if (entity !== 'Юрлицо: все' && ENT[d.num.split('-')[0]] !== entity) return false;
+      if (onlyOverdue && !isOverdue(d)) return false;
+      if (ql && ![d.num, d.client, d.route, d.legSub, d.cargo, d.vehicle].join(' ').toLowerCase().includes(ql)) return false;
+      return true;
+    });
+    const txt = (main, extra) => Object.assign({ isText: true, isBadge: false, main, mainColor: '#1B2430', mainWeight: 400, sub: '', subColor: '#66707D', subWeight: 400 }, extra || {});
+    const cellFor = (k, d, od, n) => {
+      switch (k) {
+        case 'num': return txt(d.num, { mainWeight: 600, sub: d.cargo });
+        case 'client': return txt(d.client);
+        case 'route': return txt(d.route);
+        case 'transport': return txt(d.transport, { mainColor: '#66707D' });
+        case 'leg': return txt(d.legRoute, { sub: d.legSub });
+        case 'status': return { isBadge: true, isText: false, main: ST[d.st].l, bg: ST[d.st].bg, fg: ST[d.st].fg };
+        case 'plan': return txt(fmt(d.plan), od ? { sub: 'Просрочка ' + n + ' дн.', subColor: '#B91C1C', subWeight: 600 } : {});
+        case 'fact': return txt(fmt(d.fact), { mainColor: d.fact ? (d.fact > d.plan ? '#B91C1C' : '#1B2430') : '#66707D' });
+        case 'manager': return txt(d.manager, { mainColor: '#66707D' });
+        case 'loadPlan': return txt(fmt(d.loadPlan));
+        case 'loadFact': return txt(fmt(d.loadFact), { mainColor: d.loadFact ? (d.loadFact > d.loadPlan ? '#B91C1C' : '#1B2430') : '#66707D' });
+        case 'vehicle': return txt(d.vehicle || '—', { mainColor: d.vehicle ? '#1B2430' : '#66707D' });
+        case 'weight': return txt(d.weight);
+        case 'volume': return txt(d.volume);
+        case 'daysTransit': return txt(d.loadFact ? String(days(d.fact || TODAY, d.loadFact)) : '—', { mainColor: d.loadFact ? '#1B2430' : '#66707D' });
+        case 'overdueDays': return txt(od ? String(n) : '—', od ? { mainColor: '#B91C1C', mainWeight: 600 } : { mainColor: '#66707D' });
+        case 'legsCount': return txt(String(d.legs));
+      }
+    };
+    const rows = filtered.map(d => {
+      const od = isOverdue(d);
+      const n = od ? days(d.fact || TODAY, d.plan) : 0;
+      return {
+        cells: visible.map(k => cellFor(k, d, od, n)),
+        rowBg: od && highlight ? '#FFF3F3' : '#fff',
+        rowShadow: od && highlight ? 'inset 3px 0 0 #B91C1C' : 'none',
+        hoverBg: od && highlight ? '#FDE9E9' : '#F6F8FB'
+      };
+    });
+    const chipDefs = [{ k: 'all', l: 'Все', count: base.length }]
+      .concat(Object.keys(ST).map(k => ({ k, l: ST[k].l, count: base.filter(d => d.st === k).length })));
+    const chips = chipDefs.map(c => {
+      const active = status === c.k;
+      return {
+        label: c.l, count: c.count,
+        bg: active ? '#1B2430' : '#fff', fg: active ? '#fff' : '#1B2430', bd: active ? '#1B2430' : '#E3E8EF',
+        onClick: () => this.setState({ status: c.k })
+      };
+    });
+    const colItems = order.map(k => {
+      const vis = !hidden.includes(k);
+      return {
+        label: COLS[k].label, calcNote: COLS[k].calc ? 'выч.' : '', visible: vis, lock: !!COLS[k].lock,
+        fg: vis ? '#1B2430' : '#66707D',
+        bg: dragKey === k ? '#F3F5F8' : '#fff',
+        toggle: () => this.saveCols(order, vis ? hidden.concat(k) : hidden.filter(h => h !== k)),
+        onDragStart: e => { e.dataTransfer.effectAllowed = 'move'; this.setState({ dragKey: k }); },
+        onDragOver: e => {
+          e.preventDefault();
+          const dk = this.state.dragKey;
+          if (!dk || dk === k) return;
+          const next = order.filter(o => o !== dk);
+          next.splice(next.indexOf(k), 0, dk);
+          this.saveCols(next, hidden);
+        },
+        onDragEnd: () => this.setState({ dragKey: '' })
+      };
+    });
+    const overdueCount = base.filter(isOverdue).length;
+    const hasFilters = status !== 'all' || ql || transport !== 'Транспорт: все' || entity !== 'Юрлицо: все' || onlyOverdue;
+    return {
+      chips, rows, headers: visible.map(k => ({ label: COLS[k].label })), colCount: visible.length,
+      isEmpty: rows.length === 0, shown: rows.length, total: base.length, overdueCount,
+      scopeLabel: canSeeAll ? 'Перевозки отдела (руководитель)' : 'Мои перевозки · ' + CURRENT_LOGIST,
+      q, transport, entity, onlyOverdue, hasFilters,
+      openCard: () => { window.location.href = 'Карточка перевозки.dc.html'; },
+      colsOpen, colItems,
+      colsBtnBg: colsOpen ? '#F3F5F8' : '#fff', colsBtnBd: colsOpen ? '#C9D1DB' : '#E3E8EF',
+      toggleCols: () => this.setState(s => ({ colsOpen: !s.colsOpen })),
+      closeCols: () => this.setState({ colsOpen: false }),
+      resetCols: () => this.saveCols(DEFAULT_ORDER, DEFAULT_HIDDEN),
+      setQ: e => this.setState({ q: e.target.value }),
+      setTransport: e => this.setState({ transport: e.target.value }),
+      setEntity: e => this.setState({ entity: e.target.value }),
+      toggleOverdue: () => this.setState(s => ({ onlyOverdue: !s.onlyOverdue })),
+      reset: () => this.setState({ status: 'all', q: '', transport: 'Транспорт: все', entity: 'Юрлицо: все', onlyOverdue: false })
+    };
+  }
+}
+</script>
+</body>
+</html>
