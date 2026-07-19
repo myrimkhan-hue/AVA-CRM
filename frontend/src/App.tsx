@@ -4,6 +4,7 @@ import { AppLayout } from './components/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
 import { LoginPage } from './pages/LoginPage';
 import { UsersPage } from './pages/UsersPage';
+import { ContractorsPage } from './pages/ContractorsPage';
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
+          <Route path="contractors" element={<ContractorsPage />} />
           <Route path="users" element={<UsersPage />} />
         </Route>
       </Route>

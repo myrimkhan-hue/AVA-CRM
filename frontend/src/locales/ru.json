@@ -33,7 +33,8 @@
   "common": {
     "save": "Сохранить",
     "cancel": "Отмена",
-    "notSpecified": "Не указано"
+    "notSpecified": "Не указано",
+    "dash": "—"
   },
   "validation": {
     "emailRequired": "Введите email",
@@ -46,6 +47,25 @@
   "errors": {
     "connection": "Не удалось связаться с сервером",
     "request": "Не удалось выполнить запрос"
+  },
+  "contractors": {
+    "title": "Контрагенты",
+    "subtitle": "Единый справочник клиентов, перевозчиков и партнёров",
+    "add": "Добавить контрагента",
+    "filters": { "search": "Поиск по названию, БИН, телефону или контактному лицу", "type": "Тип контрагента", "includeDeleted": "Показать удалённых" },
+    "columns": { "name": "Название", "types": "Типы", "bin": "БИН/ИИН", "country": "Страна", "payment": "Условия оплаты", "contact": "Контакт", "actions": "Действия" },
+    "types": { "CLIENT": "Клиент", "CARRIER": "Перевозчик", "CUSTOMS_BROKER": "Таможенный брокер", "WAREHOUSE": "Склад", "SUPPLIER": "Поставщик", "OTHER": "Прочее" },
+    "payment": { "PREPAYMENT": "Предоплата", "POSTPAYMENT": "Постоплата", "postpaymentDays": "Постоплата {{days}} дн." },
+    "status": { "blacklisted": "Не работаем", "problem": "Проблемный", "deleted": "Удалён" },
+    "actions": { "open": "Открыть", "edit": "Изменить", "delete": "Удалить", "restore": "Восстановить" },
+    "confirm": { "deleteTitle": "Удалить контрагента?", "deleteText": "Контрагент {{name}} будет мягко удалён. Администратор сможет восстановить его позднее." },
+    "messages": { "created": "Контрагент создан", "updated": "Контрагент обновлён", "deleted": "Контрагент удалён", "restored": "Контрагент восстановлен" },
+    "duplicates": { "title": "Возможный дубль", "item": "{{name}} — БИН/ИИН: {{bin}}" },
+    "form": {
+      "createTitle": "Новый контрагент", "editTitle": "Редактирование контрагента", "name": "Название", "types": "Типы", "bin": "БИН/ИИН", "country": "Страна", "legalAddress": "Юридический адрес", "paymentTerm": "Условия оплаты", "postpaymentDays": "Количество дней постоплаты", "notes": "Заметки", "problem": "Проблемный контрагент", "problemComment": "Комментарий о проблеме", "blacklisted": "Не работаем (чёрный список)", "blacklistReason": "Причина добавления в чёрный список", "contacts": "Контактные лица", "contactFullName": "ФИО", "position": "Должность", "phone": "Телефон", "email": "Email", "whatsapp": "WhatsApp", "addContact": "Добавить контакт", "bankAccounts": "Банковские счета", "bankName": "Банк", "accountNumber": "Номер счёта", "currency": "Валюта", "accountNotes": "Примечание", "addAccount": "Добавить счёт"
+    },
+    "validation": { "name": "Укажите название контрагента", "types": "Выберите хотя бы один тип", "postpaymentDays": "Укажите количество дней постоплаты", "blacklistReason": "Укажите причину добавления в чёрный список", "contactName": "Укажите ФИО контактного лица", "email": "Введите корректный email", "bankName": "Укажите банк", "accountNumber": "Укажите номер счёта", "currency": "Выберите валюту" },
+    "details": { "blacklisted": "Контрагент в чёрном списке — не работаем", "problem": "Проблемный контрагент", "requisites": "Реквизиты и условия", "contacts": "Контактные лица", "accounts": "Банковские счета", "noContacts": "Контактные лица не добавлены", "noAccounts": "Банковские счета не добавлены", "whatsappValue": "WhatsApp: {{value}}", "accountTitle": "{{bank}} · {{currency}}" }
   },
   "users": {
     "title": "Пользователи",

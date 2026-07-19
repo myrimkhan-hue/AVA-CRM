@@ -7,9 +7,10 @@ import { HealthController } from './health/health.controller';
 import { PrismaModule } from './prisma/prisma.module';
 import { ReferencesModule } from './references/references.module';
 import { UsersModule } from './users/users.module';
+import { ContractorsModule } from './contractors/contractors.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, ReferencesModule],
+  imports: [PrismaModule, AuthModule, UsersModule, ReferencesModule, ContractorsModule],
   controllers: [HealthController],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

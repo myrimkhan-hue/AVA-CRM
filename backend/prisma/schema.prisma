@@ -14,6 +14,20 @@ enum AuditAction {
   RESTORE
 }
 
+enum ContractorType {
+  CLIENT
+  CARRIER
+  CUSTOMS_BROKER
+  WAREHOUSE
+  SUPPLIER
+  OTHER
+}
+
+enum PaymentTerm {
+  PREPAYMENT
+  POSTPAYMENT
+}
+
 model User {
   id           String      @id @default(cuid())
   fullName     String      @map("full_name")
@@ -83,4 +97,52 @@ model AuditLog {
   actorUser   User?       @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
 
   @@map("audit_logs")
+}
+
+model Contractor {
+  id              String                  @id @default(cuid())
+  name            String
+  types           ContractorType[]
+  bin             String?
+  country         String?
+  legalAddress    String?                 @map("legal_address")
+  paymentTerm     PaymentTerm?            @map("payment_term")
+  postpaymentDays Int?                    @map("postpayment_days")
+  notes           String?
+  isProblem       Boolean                 @default(false) @map("is_problem")
+  problemComment  String?                 @map("problem_comment")
+  isBlacklisted   Boolean                 @default(false) @map("is_blacklisted")
+  blacklistReason String?                 @map("blacklist_reason")
+  deletedAt       DateTime?               @map("deleted_at")
+  createdAt       DateTime                @default(now()) @map("created_at")
+  updatedAt       DateTime                @updatedAt @map("updated_at")
+  contacts        ContractorContact[]
+  bankAccounts    ContractorBankAccount[]
+
+  @@map("contractors")
+}
+
+model ContractorContact {
+  id           String     @id @default(cuid())
+  contractorId String     @map("contractor_id")
+  fullName     String     @map("full_name")
+  position     String?
+  phone        String?
+  email        String?
+  whatsapp     String?
+  contractor   Contractor @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+
+  @@map("contractor_contacts")
+}
+
+model ContractorBankAccount {
+  id            String     @id @default(cuid())
+  contractorId  String     @map("contractor_id")
+  bankName      String     @map("bank_name")
+  accountNumber String     @map("account_number")
+  currency      String
+  notes         String?
+  contractor    Contractor @relation(fields: [contractorId], references: [id], onDelete: Cascade)
+
+  @@map("contractor_bank_accounts")
 }

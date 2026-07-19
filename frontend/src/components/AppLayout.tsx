@@ -24,7 +24,7 @@ export function AppLayout() {
   const items = useMemo(
     () => [
       { key: 'transportations', icon: <CarOutlined />, label: t('nav.transportations'), disabled: true },
-      { key: 'contractors', icon: <ApartmentOutlined />, label: t('nav.contractors'), disabled: true },
+      { key: '/contractors', icon: <ApartmentOutlined />, label: t('nav.contractors') },
       { key: 'deals', icon: <ApartmentOutlined />, label: t('nav.deals'), disabled: true },
       ...(isAdmin
         ? [{ key: '/users', icon: <TeamOutlined />, label: t('nav.users') }]
