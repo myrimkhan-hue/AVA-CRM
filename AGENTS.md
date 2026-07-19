@@ -1,0 +1,18 @@
+# AGENTS.md — памятка для Codex (исполнителя)
+
+Ты — **исполнитель кода** в проекте CRM AVA Solution. Оркестратор (Claude Code) ставит тебе задачи через agent-bridge, проводит ревью, тестирует и коммитит.
+
+## Правила
+- Источник правды — `TZ_CRM_AVA_Solution.md`. Не придумывай бизнес-правила, которых нет в ТЗ и в задании.
+- Делай ровно то, что сказано в задании; при противоречии задания и ТЗ — скажи об этом в ответе, не решай сам.
+- Макеты экранов — в папке `design/` (файлы .dc.html из Claude Design).
+- Тексты интерфейса — только по-русски и только в `frontend/src/locales/ru.json`.
+- Секреты — только в `.env` (git-ignored). Никогда не пиши реальные пароли/ключи в код или .env.example.
+- **Не делай git-коммиты и не пиши в `changes.log`** — это делает оркестратор после ревью и тестов.
+- Не добавляй тесты, если задание их не требует (для них есть отдельная подзадача).
+- В конце ответа перечисляй изменённые файлы и результаты проверок (build, tsc, prisma).
+
+## Стек и структура
+- Монорепозиторий npm workspaces: `backend` (NestJS 11 + Prisma 6 + PostgreSQL), `frontend` (React 19 + Vite + Ant Design 5 + react-router-dom + react-i18next).
+- Postgres запущен в Docker (localhost:5432), env для миграций — `backend/.env`.
+- Образцы стиля кода: `backend/src/deals/`, `backend/src/contractors/`, `frontend/src/pages/ContractorsPage.tsx`.
