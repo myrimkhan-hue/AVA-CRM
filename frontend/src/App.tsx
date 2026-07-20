@@ -6,7 +6,8 @@ import { UsersPage } from './pages/UsersPage';
 import { ContractorsPage } from './pages/ContractorsPage';
 import { DealsPage } from './pages/DealsPage';
 import { TransportationsPage } from './pages/TransportationsPage';
-import { TransportationPlaceholderPage } from './pages/TransportationPlaceholderPage';
+import { NewTransportationPage } from './pages/NewTransportationPage';
+import { TransportationDetailPage } from './pages/TransportationDetailPage';
 import { useAuth } from './auth/AuthContext';
 
 function DealsRoute() {
@@ -23,8 +24,8 @@ export default function App() {
         <Route path="/" element={<AppLayout />}>
           <Route index element={<Navigate to="/transportations" replace />} />
           <Route path="transportations" element={<TransportationsPage />} />
-          <Route path="transportations/new" element={<TransportationPlaceholderPage mode="new" />} />
-          <Route path="transportations/:id" element={<TransportationPlaceholderPage mode="detail" />} />
+          <Route path="transportations/new" element={<NewTransportationPage />} />
+          <Route path="transportations/:id" element={<TransportationDetailPage />} />
           <Route path="contractors" element={<ContractorsPage />} />
           <Route path="deals" element={<DealsRoute />} />
           <Route path="users" element={<UsersPage />} />

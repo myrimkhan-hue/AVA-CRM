@@ -288,6 +288,7 @@ model TransportationLeg {
   actualStartDate        DateTime?        @map("actual_start_date") @db.Date
   actualEndDate          DateTime?        @map("actual_end_date") @db.Date
   vehicleNumber          String?          @map("vehicle_number")
+  trailerNumber          String?          @map("trailer_number")
   status                 LegStatus        @default(WAITING)
   driverFullName         String?          @map("driver_full_name")
   driverPhone            String?          @map("driver_phone")

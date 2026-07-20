@@ -80,6 +80,17 @@ button, input { font: inherit; }
 .column-settings-reset { margin-top: 7px; border-top: 1px solid #e3e8ef; border-radius: 0; text-align: left; }
 .column-settings-help { padding: 4px 8px; color: #66707d; font-size: 11.5px; line-height: 1.45; }
 .transportation-placeholder { width: min(100%, 760px); margin: 0 auto; }
+.transportation-workspace { width:min(100%,1400px); margin:0 auto; }
+.transportation-workspace h2.ant-typography { margin:8px 0 18px; }
+.wizard-page .ant-steps { margin:0 auto 18px; max-width:980px; }
+.transport-card { border-color:#e3e8ef; box-shadow:0 1px 2px rgba(16,24,40,.05); }
+.wizard-card { max-width:1040px; margin:0 auto; }
+.form-grid { display:grid; gap:0 18px; }.form-grid.two{grid-template-columns:repeat(2,1fr)}.form-grid.three{grid-template-columns:repeat(3,1fr)}.span-all{grid-column:1/-1}
+.money-number{width:100%}.currency-select{width:90px}.optional-collapse{margin-bottom:16px}.wizard-card .ant-card{margin-bottom:14px}
+.wizard-actions{display:flex;justify-content:space-between;border-top:1px solid #e3e8ef;padding-top:16px;margin-top:8px}.create-green{color:#fff;background:#15803d;border-color:#15803d}.create-green:hover{background:#166534!important;color:#fff!important}
+.summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.success-modal{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}.success-modal>span.anticon{font-size:52px;color:#15803d}
+.detail-spin{display:block;margin:100px auto}.detail-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.detail-heading h2.ant-typography{margin:8px 0 18px}.status-card{margin-bottom:14px}.status-scale{display:flex;overflow-x:auto}.status-step{position:relative;flex:1;min-width:115px;text-align:center}.status-line{position:absolute;left:0;right:0;top:14px;height:2px;background:#e3e8ef}.status-line.done{background:#15803d}.status-dot{position:relative;z-index:1;display:grid;place-items:center;width:28px;height:28px;margin:auto;background:#fff;border:2px solid #c9d1db;border-radius:50%;font-size:12px}.status-dot.done{color:#fff;background:#15803d;border-color:#15803d}.status-dot.current{color:#fff;background:#e4140e;border-color:#e4140e}.status-step small{display:block;margin-top:7px}.status-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid #e3e8ef;margin-top:14px;padding-top:13px}.status-actions .ant-typography{font-size:12px;margin-left:auto}
+.detail-columns{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px}.detail-main,.detail-side{display:flex;flex-direction:column;gap:14px}.data-grid{display:grid;gap:12px 18px}.data-grid.two{grid-template-columns:repeat(2,1fr)}.data-grid.four{grid-template-columns:repeat(4,1fr)}.data-grid .ant-typography{font-size:12px}.route-row{display:flex;gap:10px;border-top:1px solid #e3e8ef;margin-top:14px;padding-top:12px}.route-row span{margin-left:auto;color:#66707d;font-size:12px}.completion{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin-bottom:14px}.completion span{color:#66707d;font-size:12px}.completion .ant-progress{grid-column:1/-1}.leg-card+.leg-card{margin-top:10px}.locked-rate{color:#66707d}.locked-rate .anticon{margin-right:8px}.motivation-note{border-top:1px solid #e3e8ef;margin-top:10px;padding-top:10px;font-size:12px}.history-list{display:flex;flex-direction:column;gap:14px}.history-list>div{display:flex;flex-direction:column;border-left:3px solid #15803d;padding-left:10px}.history-list small{color:#66707d}.history-list .rollback-event{border-color:#e4140e;color:#b91c1c}
 
 @media (max-width: 760px) {
   .login-page { grid-template-columns: 1fr; }
@@ -98,6 +109,7 @@ button, input { font: inherit; }
   .transportations-heading-side { align-items: stretch; flex-direction: column; gap: 10px; }
   .transportation-filters { grid-template-columns: 1fr; }
   .transportations-footer { flex-direction: column; }
+  .form-grid.two,.form-grid.three,.summary-grid,.data-grid.two,.data-grid.four,.detail-columns{grid-template-columns:1fr}.detail-heading{align-items:flex-start;flex-direction:column}.detail-side{order:-1}.route-row{flex-wrap:wrap}.route-row span{width:100%;margin-left:0}
 }
 .deal-number {
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;

@@ -35,7 +35,9 @@
     "save": "Сохранить",
     "cancel": "Отмена",
     "notSpecified": "Не указано",
-    "dash": "—"
+    "dash": "—",
+    "yes": "Да",
+    "no": "Нет"
   },
   "validation": {
     "emailRequired": "Введите email",
@@ -160,6 +162,28 @@
         "description": "Карточка перевозки будет добавлена в следующей подзадаче."
       }
     }
+  },
+  "transportationWizard": {
+    "title": "Новая перевозка", "back": "← Активные перевозки",
+    "steps": { "deal": "Сделка и клиент", "cargo": "Груз", "route": "Маршрут и перевозчик", "review": "Проверка" },
+    "sections": { "deal": "Сделка и клиент", "cargo": "Груз", "route": "Маршрут и перевозчик", "addresses": "Уточнить адреса и контакты", "client": "Клиент", "carrier": "Перевозчик", "driver": "Водитель", "review": "Проверьте данные" },
+    "dealsUnavailable": "Сделок нет или недоступны", "askManager": "Попросите менеджера создать сделку", "dealPlaceholder": "НОМЕР · Клиент", "customDoc": "+ Свой",
+    "fields": { "deal": "Сделка", "client": "Клиент", "legalEntity": "Юрлицо", "logist": "Ответственный логист", "plannedDelivery": "Плановая дата доставки", "cargoName": "Наименование", "places": "Мест", "weight": "Вес, кг", "volume": "Объём, м³", "cargoValue": "Стоимость груза", "transportMode": "Вид транспорта", "dangerous": "Опасный груз (ADR)", "temperature": "Температурный режим", "shipper": "Грузоотправитель", "consignee": "Грузополучатель", "docs": "Сопроводительные документы", "origin": "Пункт отправления", "destination": "Пункт назначения", "loadingAddress": "Адрес погрузки", "loadingDateTime": "Дата и время погрузки", "loadingContact": "Контакт на погрузке", "loadingPhone": "Телефон на погрузке", "unloadingAddress": "Адрес выгрузки", "unloadingContact": "Контакт на выгрузке", "unloadingPhone": "Телефон на выгрузке", "bodyType": "Тип кузова", "specialConditions": "Особые условия", "clientRate": "Ставка клиента", "carrier": "Субподрядчик", "subcontractorRate": "Ставка субподрядчика", "vat": "НДС", "plannedPickup": "Плановый забор груза", "vehicle": "№ машины", "trailer": "№ прицепа", "driverName": "ФИО водителя", "driverPhone": "Телефон", "iin": "ИИН", "license": "№ в/у", "licenseDate": "Дата выдачи", "licenseIssuer": "Кем выдано", "route": "Маршрут", "currency": "Валюта" },
+    "units": { "паллеты": "паллеты", "коробки": "коробки", "ролики": "ролики", "биг-бэги": "биг-бэги", "места": "места" },
+    "bodyTypes": { "TENT": "Тент", "REFRIGERATOR": "Рефрижератор", "CONTAINER": "Контейнер", "OPEN_PLATFORM": "Открытая платформа", "ISOTHERM": "Изотерм" },
+    "vat": { "NO_VAT": "Без НДС", "VAT_12": "С НДС 12%" },
+    "validation": { "deal": "Выберите сделку", "origin": "Укажите пункт отправления", "destination": "Укажите пункт назначения" },
+    "actions": { "back": "Назад", "next": "Далее", "create": "Создать перевозку" },
+    "success": { "title": "Перевозка создана", "number": "Номер: {{number}}", "list": "К списку", "open": "Открыть карточку" }
+  },
+  "transportationDetail": {
+    "back": "← Активные перевозки", "title": "Перевозка {{number}}", "edit": "Изменить", "editTitle": "Изменение перевозки", "stage3": "Появится на Этапе 3", "requestCarrier": "Заявка перевозчику", "requestClient": "Заявка клиенту", "planned": "План доставки: {{date}}", "filled": "заполнено {{count}} из 11", "waiting": "ждём: {{fields}}", "clientRate": "Ставка клиента", "rateHidden": "Ставка клиента скрыта для вашей роли", "created": "Создана", "actualDelivery": "Факт доставки", "unloadingFact": "Дата выгрузки (факт)", "motivation": "Дата выгрузки определяет месяц расчёта мотивации.",
+    "sections": { "cargo": "Груз и маршрут", "request": "Данные для заявки", "driver": "Водитель и транспорт", "legs": "Участки маршрута", "carrier": "Перевозчик", "info": "Сведения", "history": "История статусов" },
+    "status": { "advance": "Перевести в «{{status}}»", "rollback": "← Откатить статус", "rollbackTitle": "Откатить статус?", "rollbackText": "Откат будет записан в журнал", "journal": "Смена и откат статуса записываются в журнал", "dateTitles": { "CARGO_PICKED": "Фактическая дата забора груза", "DELIVERED": "Фактическая дата выгрузки" }, "dateHints": { "CARGO_PICKED": "Статус часто проставляют на следующий день — укажите реальную дату", "DELIVERED": "Дата выгрузки определяет месяц расчёта мотивации" } },
+    "requestFields": { "shipperName": "Грузоотправитель", "consigneeName": "Грузополучатель", "loadingAddress": "Адрес погрузки", "loadingDateTime": "Дата/время погрузки", "loadingContactName": "Контакт на погрузке", "loadingContactPhone": "Телефон на погрузке", "unloadingAddress": "Адрес выгрузки", "unloadingContactName": "Контакт на выгрузке", "bodyType": "Тип кузова", "accompanyingDocs": "Сопроводительные документы", "specialConditions": "Особые условия" },
+    "legModes": { "AUTO": "Авто", "RAIL": "Ж/д", "SEA": "Море", "AIR": "Авиа", "BROKER": "Брокер" }, "legStatuses": { "WAITING": "Ожидает", "IN_PROGRESS": "В работе", "DONE": "Завершён" },
+    "legs": { "add": "+ Добавить участок", "merge": "← Объединить в одну перевозку", "split": "Разбить на участки", "splitTitle": "Разбить перевозку на участки?", "number": "Участок {{number}}", "plan": "Даты план", "fact": "Даты факт", "addTitle": "Новый участок", "editTitle": "Изменение участка", "deleteTitle": "Удалить участок?", "delete": "Удалить", "plannedStartDate": "Плановый забор", "plannedEndDate": "Плановая доставка", "actualStartDate": "Фактический забор", "actualEndDate": "Фактическая доставка" },
+    "history": { "rollback": "Откат: {{from}} → {{to}}", "eventDate": "Дата события: {{date}}" }
   },
   "users": {
     "title": "Пользователи",

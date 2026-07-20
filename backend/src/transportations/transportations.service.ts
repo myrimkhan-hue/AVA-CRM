@@ -509,7 +509,7 @@ export class TransportationsService {
       subcontractorRateCurrency: dto.subcontractorRateCurrency?.toUpperCase(), vatMode: dto.vatMode,
       plannedStartDate: this.date(dto.plannedStartDate), plannedEndDate: this.date(dto.plannedEndDate),
       actualStartDate: this.date(dto.actualStartDate), actualEndDate: this.date(dto.actualEndDate),
-      vehicleNumber: this.text(dto.vehicleNumber), status: dto.status,
+      vehicleNumber: this.text(dto.vehicleNumber), trailerNumber: this.text(dto.trailerNumber), status: dto.status,
       driverFullName: this.text(dto.driverFullName), driverPhone: this.text(dto.driverPhone), driverIin: this.text(dto.driverIin),
       driverLicenseNumber: this.text(dto.driverLicenseNumber), driverLicenseDate: this.date(dto.driverLicenseDate),
       driverLicenseIssuer: this.text(dto.driverLicenseIssuer),

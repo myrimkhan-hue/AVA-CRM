@@ -63,6 +63,8 @@ export class CreateTransportationLegDto {
 
   @IsOptional()
   @IsString({ message: 'Номер прицепа должен быть строкой' })
+  trailerNumber?: string;
+
   @IsOptional()
   @IsEnum(LegStatus, { message: 'Указан неизвестный статус участка' })
   status?: LegStatus;
