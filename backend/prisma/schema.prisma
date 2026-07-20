@@ -72,11 +72,6 @@ enum LegTransportMode {
   BROKER
 }
 
-enum VatMode {
-  NO_VAT
-  VAT_12
-}
-
 enum LegStatus {
   WAITING
   IN_PROGRESS
@@ -282,7 +277,6 @@ model TransportationLeg {
   subcontractorId        String?          @map("subcontractor_id")
   subcontractorRate      Decimal?         @map("subcontractor_rate") @db.Decimal(18, 2)
   subcontractorRateCurrency String?        @map("subcontractor_rate_currency") @db.VarChar(3)
-  vatMode                VatMode          @default(NO_VAT) @map("vat_mode")
   plannedStartDate       DateTime?        @map("planned_start_date") @db.Date
   plannedEndDate         DateTime?        @map("planned_end_date") @db.Date
   actualStartDate        DateTime?        @map("actual_start_date") @db.Date

@@ -506,7 +506,7 @@ export class TransportationsService {
     return this.removeUndefined({
       fromPoint: dto.fromPoint?.trim(), toPoint: dto.toPoint?.trim(), mode: dto.mode,
       subcontractorId: dto.subcontractorId, subcontractorRate: dto.subcontractorRate,
-      subcontractorRateCurrency: dto.subcontractorRateCurrency?.toUpperCase(), vatMode: dto.vatMode,
+      subcontractorRateCurrency: dto.subcontractorRateCurrency?.toUpperCase(),
       plannedStartDate: this.date(dto.plannedStartDate), plannedEndDate: this.date(dto.plannedEndDate),
       actualStartDate: this.date(dto.actualStartDate), actualEndDate: this.date(dto.actualEndDate),
       vehicleNumber: this.text(dto.vehicleNumber), trailerNumber: this.text(dto.trailerNumber), status: dto.status,

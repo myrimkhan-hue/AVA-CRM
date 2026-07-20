@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { LegStatus, LegTransportMode, VatMode } from '@prisma/client';
+import { LegStatus, LegTransportMode } from '@prisma/client';
 import {
   IsDateString,
   IsEnum,
@@ -36,10 +36,6 @@ export class CreateTransportationLegDto {
   @IsString({ message: 'Валюта ставки субподрядчика должна быть строкой' })
   @Matches(/^[A-Za-z]{3}$/, { message: 'Валюта ставки субподрядчика должна состоять из трёх букв' })
   subcontractorRateCurrency?: string;
-
-  @IsOptional()
-  @IsEnum(VatMode, { message: 'Указан неизвестный режим НДС' })
-  vatMode?: VatMode;
 
   @IsOptional()
   @IsDateString({}, { message: 'Плановая дата забора указана неверно' })
