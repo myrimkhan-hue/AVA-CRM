@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body{margin:0;background:#F6F7F9;color:#1B2430;font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  a{color:#E4140E;text-decoration:none}a:hover{color:#C10F0A}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:#E4140E;box-shadow:0 0 0 3px rgba(228,20,14,.12)}
+</style>
+</helmet>
+<header data-screen-label="Карточка сделки" style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#fff;border-bottom:1px solid #E3E8EF">
+  <div style="display:flex;align-items:center;gap:12px">
+    <img src="assets/ava-logo.svg" alt="AVA" style="width:38px;height:38px;display:block">
+    <div>
+      <h1 style="font-size:18px;margin:0;font-weight:700">Сделки</h1>
+      <div style="font-size:12px;color:#66707D;margin-top:-2px">AVA Solution · Логист</div>
+    </div>
+  </div>
+  <nav style="display:flex;align-items:center;gap:4px">
+    <a href="Экран логиста.dc.html" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Перевозки</a>
+    <a href="Сделки.dc.html" style="color:#1B2430;font-weight:600;font-size:14px;padding:7px 13px;border-radius:8px;background:#F3F5F8">Сделки</a>
+    <a href="#" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Контрагенты</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#66707D">
+    <span style="width:28px;height:28px;border-radius:50%;background:#E7E9FD;color:#4F46E5;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">ЕТ</span>
+    Ержан Т.
+  </div>
+</header>
+<main style="max-width:1400px;margin:0 auto;padding:20px 24px">
+  <div style="margin-bottom:6px;font-size:13px"><a href="Сделки.dc.html">← Все сделки</a></div>
+  <!-- Заголовок: "Сделка AVA-2026-0145" + бейдж текущей стадии, справа кнопки "Отказ" / "Изменить" / "+ Перевозка в сделку" -->
+  <!-- Шкала стадий кликабельными "шевронами" (chevron), как в примере ниже, НО с 7 реальными стадиями из ТЗ
+       (Новая заявка → Расчёт ставки → Ставка отправлена → Согласована → В работе → Выполнена → Закрыта),
+       не с 5 стадиями макета. Клик по этапу вперёд/назад аналогичен смене статуса в карточке перевозки. -->
+  <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px;margin-bottom:14px">
+    <div style="display:flex;gap:0;align-items:stretch;overflow-x:auto">
+      <button style="flex:1;min-width:120px;border:none;background:#7C3AED;color:#fff;padding:12px 10px 12px 24px;font-size:13px;font-weight:700;cursor:pointer;position:relative;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 50%,calc(100% - 12px) 100%,0 100%,12px 50%);text-align:left">
+        <div style="font-size:11px;opacity:.7">Этап N</div>Название стадии
+      </button>
+    </div>
+    <div style="font-size:12px;color:#66707D;margin-top:10px">Клик по этапу меняет стадию сделки. При «Отказе» указывается причина (список из ТЗ: дорого, сроки, ушёл к конкуренту, не вышел на связь, другое) — она попадёт в аналитику потерь.</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:14px;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <!-- Карточка "Перевозки в сделке": таблица № / маршрут / статус / план доставки, клик открывает карточку перевозки -->
+      <!-- Карточка "Условия сделки": ТОЛЬКО поля, которые реально есть в модели Deal (без Направление/Инкотермс/Валюта расчёта/
+           Источник лида/Ожид.закрытие - владелец решил их не добавлять). Заметки (notes) сделки показать здесь. -->
+      <!-- Финансовый блок (сумма клиенту / затраты / маржа) из макета ИСКЛЮЧЁН полностью - Этап 2 -->
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <!-- Карточка "Стороны": клиент (ссылка + БИН), юрлицо, менеджер (ответственный), отдел -->
+      <!-- Карточка "Хронология": история смены стадий (кто, когда), причина отказа если есть -->
+    </div>
+  </div>
+</main>
+<!-- Модалка "Отказ по сделке": причина (select) + комментарий (textarea) - уже реализовано в текущем DealsPage, перенести стиль -->
+</x-dc>
+</body>
+</html>

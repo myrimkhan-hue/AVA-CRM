@@ -38,7 +38,7 @@ export class TableSettingsService {
   }
 
   private assertTableKey(tableKey: string): void {
-    if (tableKey !== 'transportations') {
+    if (!['transportations', 'contractors', 'deals'].includes(tableKey)) {
       throw new BadRequestException('Указана неизвестная таблица');
     }
   }

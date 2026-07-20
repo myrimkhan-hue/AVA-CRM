@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body{margin:0;background:#F6F7F9;color:#1B2430;font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  a{color:#E4140E;text-decoration:none}a:hover{color:#C10F0A}
+  input:focus,select:focus{outline:none;border-color:#E4140E;box-shadow:0 0 0 3px rgba(228,20,14,.12)}
+</style>
+</helmet>
+<header data-screen-label="Контрагенты" style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#fff;border-bottom:1px solid #E3E8EF">
+  <div style="display:flex;align-items:center;gap:12px">
+    <img src="assets/ava-logo.svg" alt="AVA" style="width:38px;height:38px;display:block">
+    <div>
+      <h1 style="font-size:18px;margin:0;font-weight:700">Контрагенты</h1>
+      <div style="font-size:12px;color:#66707D;margin-top:-2px">AVA Solution · Логист</div>
+    </div>
+  </div>
+  <nav style="display:flex;align-items:center;gap:4px">
+    <a href="Экран логиста.dc.html" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Перевозки</a>
+    <a href="Сделки.dc.html" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Сделки</a>
+    <a href="#" style="color:#1B2430;font-weight:600;font-size:14px;padding:7px 13px;border-radius:8px;background:#F3F5F8">Контрагенты</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#66707D">
+    <span style="width:28px;height:28px;border-radius:50%;background:#E7E9FD;color:#4F46E5;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">ЕТ</span>
+    Ержан Т.
+  </div>
+</header>
+<main style="max-width:1400px;margin:0 auto;padding:20px 24px">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <h2 style="font-size:22px;font-weight:700;margin:0">Справочник контрагентов</h2>
+      <div style="display:inline-flex;background:#EDF0F4;border-radius:9px;padding:3px">
+        <button onClick="{{ setCards }}" style="border:none;padding:5px 14px;border-radius:7px;font-size:13px;font-weight:{{ cardsW }};background:{{ cardsBg }};color:{{ cardsFg }};cursor:pointer;box-shadow:{{ cardsSh }}">Карточки</button>
+        <button onClick="{{ setTableV }}" style="border:none;padding:5px 14px;border-radius:7px;font-size:13px;font-weight:{{ tableW }};background:{{ tableBg }};color:{{ tableFg }};cursor:pointer;box-shadow:{{ tableSh }}">Таблица</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <sc-if value="{{ isTable }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative">
+          <button onClick="{{ toggleCols }}" style="border:1.5px solid {{ colsBtnBd }};background:{{ colsBtnBg }};color:#1B2430;border-radius:8px;padding:8px 14px;font-size:13.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:8px" style-hover="background:#F3F5F8">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="0.75" y="0.75" width="3.5" height="12.5" rx="1" stroke="#66707D" stroke-width="1.5"></rect><rect x="5.25" y="0.75" width="3.5" height="12.5" rx="1" stroke="#66707D" stroke-width="1.5"></rect><rect x="9.75" y="0.75" width="3.5" height="12.5" rx="1" stroke="#66707D" stroke-width="1.5"></rect></svg>
+            Колонки
+          </button>
+          <sc-if value="{{ colsOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeCols }}" style="position:fixed;inset:0;z-index:40"></div>
+            <div style="position:absolute;right:0;top:calc(100% + 6px);z-index:50;background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 8px 24px rgba(16,24,40,.14);width:280px;padding:8px">
+              <div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;padding:6px 10px 8px">Колонки таблицы</div>
+              <sc-for list="{{ colItems }}" as="ci" hint-placeholder-count="8">
+                <div draggable="{{ true }}" onDragStart="{{ ci.onDragStart }}" onDragOver="{{ ci.onDragOver }}" onDragEnd="{{ ci.onDragEnd }}" style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;background:{{ ci.bg }};cursor:grab">
+                  <svg width="10" height="14" viewBox="0 0 10 14" fill="#B9C0C9"><circle cx="2.5" cy="2.5" r="1.4"></circle><circle cx="7.5" cy="2.5" r="1.4"></circle><circle cx="2.5" cy="7" r="1.4"></circle><circle cx="7.5" cy="7" r="1.4"></circle><circle cx="2.5" cy="11.5" r="1.4"></circle><circle cx="7.5" cy="11.5" r="1.4"></circle></svg>
+                  <input type="checkbox" checked="{{ ci.visible }}" disabled="{{ ci.lock }}" onChange="{{ ci.toggle }}" style="width:15px;height:15px;accent-color:#E4140E;cursor:pointer">
+                  <span style="font-size:13.5px;flex:1;color:{{ ci.fg }}">{{ ci.label }}</span>
+                </div>
+              </sc-for>
+              <div style="border-top:1px solid #E3E8EF;margin-top:6px;padding-top:6px">
+                <button onClick="{{ resetCols }}" style="border:none;background:none;color:#E4140E;font-size:13px;font-weight:500;cursor:pointer;padding:7px 10px;border-radius:8px;width:100%;text-align:left" style-hover="background:#FDEBEA">Сбросить к стандартному виду</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+      <button onClick="{{ openAdd }}" style="background:#E4140E;border:1px solid #E4140E;color:#fff;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:500;cursor:pointer" style-hover="background:#C10F0A">+ Новый контрагент</button>
+    </div>
+  </div>
+  <sc-if value="{{ isTable }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+      <input value="{{ q }}" onChange="{{ setQ }}" placeholder="Поиск: название или БИН/ИИН" style="flex:1;min-width:240px;max-width:360px;padding:9px 12px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:8px;color:#1B2430;background:#fff;box-sizing:border-box">
+      <sc-for list="{{ typeChips }}" as="c" hint-placeholder-count="5">
+        <button onClick="{{ c.onClick }}" style="border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:500;cursor:pointer">{{ c.label }} <span style="opacity:.7;font-weight:700">{{ c.count }}</span></button>
+      </sc-for>
+    </div>
+    <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;overflow-x:auto;box-shadow:0 1px 2px rgba(16,24,40,.05)">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <sc-for list="{{ tHeaders }}" as="h" hint-placeholder-count="7">
+            <th style="padding:11px 14px;text-align:{{ h.align }};white-space:nowrap;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF;background:#FAFBFC">{{ h.label }}</th>
+          </sc-for>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ tableRows }}" as="r" hint-placeholder-count="7">
+            <tr onClick="{{ r.open }}" style="border-bottom:1px solid #E3E8EF;cursor:pointer" style-hover="background:#F6F8FB">
+              <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="7">
+                <td style="padding:11px 14px;white-space:nowrap;text-align:{{ c.align }}">
+                  <sc-if value="{{ c.isBadge }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:{{ c.bg }};color:{{ c.fg }}">{{ c.main }}</span>
+                  </sc-if>
+                  <sc-if value="{{ c.isText }}" hint-placeholder-val="{{ true }}">
+                    <span style="color:{{ c.mainColor }};font-weight:{{ c.mainWeight }};font-variant-numeric:tabular-nums">{{ c.main }}</span>
+                  </sc-if>
+                </td>
+              </sc-for>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;font-size:12.5px;color:#66707D">Показано {{ shownT }} из {{ totalT }}. Настройки колонок хранятся в профиле. Клик по строке открывает карточку.</div>
+  </sc-if>
+  <sc-if value="{{ isCards }}" hint-placeholder-val="{{ true }}">
+  <div style="display:grid;grid-template-columns:420px 1fr;gap:14px;align-items:start">
+    <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);overflow:hidden">
+      <div style="padding:12px 14px;border-bottom:1px solid #E3E8EF">
+        <input value="{{ q }}" onChange="{{ setQ }}" placeholder="Поиск: название или БИН/ИИН" style="width:100%;padding:9px 12px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:8px;color:#1B2430;background:#fff;box-sizing:border-box;margin-bottom:10px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <sc-for list="{{ typeChips }}" as="c" hint-placeholder-count="4">
+            <button onClick="{{ c.onClick }}" style="border:1px solid {{ c.bd }};background:{{ c.bg }};color:{{ c.fg }};border-radius:999px;padding:4px 11px;font-size:12.5px;font-weight:500;cursor:pointer">{{ c.label }} <span style="opacity:.7;font-weight:700">{{ c.count }}</span></button>
+          </sc-for>
+        </div>
+      </div>
+      <div style="max-height:560px;overflow-y:auto">
+        <sc-for list="{{ list }}" as="c" hint-placeholder-count="8">
+          <div onClick="{{ c.select }}" style="display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid #EEF1F5;cursor:pointer;background:{{ c.rowBg }};box-shadow:{{ c.rowShadow }}" style-hover="background:#F6F8FB">
+            <span style="width:34px;height:34px;border-radius:9px;background:{{ c.avBg }};color:{{ c.avFg }};display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">{{ c.initials }}</span>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:7px">
+                <b style="font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</b>
+                <sc-if value="{{ c.problem }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:700;color:#B91C1C;background:#FDE9E9;border-radius:999px;padding:1px 7px;white-space:nowrap">проблемный</span></sc-if>
+              </div>
+              <div style="font-size:12px;color:#66707D">{{ c.typeLabel }} · БИН {{ c.bin }}</div>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:30px 14px;text-align:center;color:#66707D;font-size:13px">Ничего не найдено.</div>
+        </sc-if>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <sc-if value="{{ dupWarning }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFF7E6;border:1px solid #F5D98B;border-radius:12px;padding:12px 16px;display:flex;gap:11px;align-items:flex-start">
+          <span style="width:22px;height:22px;border-radius:6px;background:#F5D98B;color:#7A5A00;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">!</span>
+          <div style="font-size:13px;color:#7A5A00">{{ dupWarning }}</div>
+        </div>
+      </sc-if>
+      <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:18px 20px">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+          <span style="width:52px;height:52px;border-radius:12px;background:{{ sel.avBg }};color:{{ sel.avFg }};display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0">{{ sel.initials }}</span>
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+              <h3 style="font-size:19px;font-weight:700;margin:0">{{ sel.name }}</h3>
+              <span style="display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border-radius:999px;font-size:12px;font-weight:600;background:{{ sel.typeBg }};color:{{ sel.typeFg }}">{{ sel.typeLabel }}</span>
+              <sc-if value="{{ sel.problem }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;color:#B91C1C;background:#FDE9E9;border-radius:999px;padding:3px 11px">⚠ проблемный</span></sc-if>
+            </div>
+            <div style="font-size:13px;color:#66707D;margin-top:2px">{{ sel.legalName }}</div>
+          </div>
+          <button onClick="{{ toggleProblem }}" style="border:1px solid {{ sel.problem ? '#E3E8EF' : '#E3B4B2' }};background:#fff;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;color:{{ sel.problem ? '#66707D' : '#B91C1C' }}" style-hover="background:#F3F5F8">{{ sel.problemBtn }}</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px 20px">
+          <div><div style="font-size:12px;color:#66707D">БИН / ИИН</div><div style="font-variant-numeric:tabular-nums">{{ sel.bin }}</div></div>
+          <div><div style="font-size:12px;color:#66707D">Страна</div><div>{{ sel.country }}</div></div>
+          <div><div style="font-size:12px;color:#66707D">Телефон</div><div style="font-variant-numeric:tabular-nums">{{ sel.phone }}</div></div>
+          <div><div style="font-size:12px;color:#66707D">E-mail</div><div>{{ sel.email }}</div></div>
+          <div><div style="font-size:12px;color:#66707D">Контактное лицо</div><div>{{ sel.contact }}</div></div>
+          <div><div style="font-size:12px;color:#66707D">Менеджер AVA</div><div>{{ sel.manager }}</div></div>
+        </div>
+        <sc-if value="{{ sel.problem }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FDF2F1;border:1px solid #F1D3D1;border-radius:10px;padding:11px 14px;margin-top:16px;font-size:13px;color:#8A2A22">
+            <b style="font-weight:600">Причина метки:</b> {{ sel.problemReason }}
+          </div>
+        </sc-if>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+        <sc-for list="{{ sel.stats }}" as="s" hint-placeholder-count="3">
+          <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:14px 16px">
+            <div style="font-size:12px;color:#66707D">{{ s.label }}</div>
+            <div style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums">{{ s.value }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{ sel.isCarrier }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <h3 style="font-size:15px;font-weight:600;margin:0">Качество перевозчика</h3>
+            <button onClick="{{ toggleBlacklist }}" style="border:1px solid {{ sel.blacklisted ? '#E3E8EF' : '#E3B4B2' }};background:{{ sel.blacklisted ? '#fff' : '#fff' }};border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;color:{{ sel.blacklisted ? '#66707D' : '#B91C1C' }}" style-hover="background:#F3F5F8">{{ sel.blacklistBtn }}</button>
+          </div>
+          <sc-if value="{{ sel.blacklisted }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#FDF2F1;border:1px solid #F1D3D1;border-radius:10px;padding:11px 14px;margin-bottom:14px;font-size:13px;color:#8A2A22;display:flex;align-items:center;gap:9px">
+              <span style="width:22px;height:22px;border-radius:6px;background:#F1C6C3;color:#8A2A22;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">⛔</span>
+              <div><b style="font-weight:600">В чёрном списке — «Не работаем».</b> При выборе в новой перевозке система предупредит логиста.</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ sel.isFirst }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#FFF7E6;border:1px solid #F5D98B;border-radius:10px;padding:11px 14px;margin-bottom:14px;font-size:13px;color:#7A5A00">Новый перевозчик — ещё не было завершённых перевозок. В карточке перевозки будет метка «первая перевозка».</div>
+          </sc-if>
+          <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="font-size:32px;font-weight:800;color:{{ sel.ratingColor }};font-variant-numeric:tabular-nums;line-height:1">{{ sel.rating }}</span>
+              <span style="font-size:14px;color:#F5B800">{{ sel.stars }}</span>
+            </div>
+            <div style="font-size:12.5px;color:#66707D">средняя оценка<br>по {{ sel.ratingCount }} перевозкам</div>
+            <div style="margin-left:auto;display:flex;gap:16px">
+              <div><div style="font-size:12px;color:#66707D">В срок</div><div style="font-weight:700;font-variant-numeric:tabular-nums">{{ sel.onTime }}%</div></div>
+              <div><div style="font-size:12px;color:#66707D">Проблемные</div><div style="font-weight:700;font-variant-numeric:tabular-nums;color:{{ sel.issuesColor }}">{{ sel.issues }}</div></div>
+            </div>
+          </div>
+          <div style="border-top:1px solid #E3E8EF;margin-top:14px;padding-top:12px">
+            <div style="font-size:12px;color:#66707D;margin-bottom:9px">Оценки логистов после перевозок</div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ sel.reviews }}" as="rv" hint-placeholder-count="3">
+                <div style="display:flex;gap:10px;align-items:flex-start">
+                  <span style="font-size:13px;color:#F5B800;flex-shrink:0;width:66px">{{ rv.stars }}</span>
+                  <div style="flex:1"><div style="font-size:13px">{{ rv.text }}</div><div style="font-size:11.5px;color:#66707D">{{ rv.meta }}</div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+      <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:16px 18px">
+        <h3 style="font-size:15px;font-weight:600;margin:0 0 12px">Связанные перевозки</h3>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr>
+            <th style="text-align:left;padding:8px 10px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF">№</th>
+            <th style="text-align:left;padding:8px 10px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF">Маршрут / роль</th>
+            <th style="text-align:left;padding:8px 10px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF">Статус</th>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ sel.shipments }}" as="s" hint-placeholder-count="3">
+              <tr onClick="{{ s.open }}" style="border-bottom:1px solid #EEF1F5;cursor:pointer" style-hover="background:#F6F8FB">
+                <td style="padding:10px;white-space:nowrap"><b style="font-weight:600">{{ s.num }}</b></td>
+                <td style="padding:10px;white-space:nowrap">{{ s.route }}<div style="font-size:12px;color:#66707D">{{ s.role }}</div></td>
+                <td style="padding:10px;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:{{ s.stBg }};color:{{ s.stFg }}" style-before="content:'';width:5px;height:5px;border-radius:50%;background:currentColor">{{ s.stLabel }}</span></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+</main>
+</x-dc>
+</body>
+</html>

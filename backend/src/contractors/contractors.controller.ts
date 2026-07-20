@@ -21,6 +21,11 @@ export class ContractorsController {
     return this.contractorsService.findDuplicates(query);
   }
 
+  @Get(':id/transportations')
+  findTransportations(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.contractorsService.findTransportations(id, user);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.contractorsService.findOne(id, user.roles);

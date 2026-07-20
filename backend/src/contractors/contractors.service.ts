@@ -5,10 +5,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { AuditAction, PaymentTerm, Prisma } from '@prisma/client';
+import { AuthUser } from '../auth/auth-user.type';
 import { PrismaService } from '../prisma/prisma.service';
+import { transportationVisibilityWhere } from '../transportations/transportation-policy';
 import { ContractorBankAccountDto } from './dto/contractor-bank-account.dto';
 import { ContractorContactDto } from './dto/contractor-contact.dto';
 import { ContractorQueryDto, DuplicateQueryDto } from './dto/contractor-query.dto';
+import { ContractorTransportationDto } from './dto/contractor-transportation.dto';
 import { CreateContractorDto } from './dto/create-contractor.dto';
 import { UpdateContractorDto } from './dto/update-contractor.dto';
 
@@ -78,6 +81,45 @@ export class ContractorsService {
       throw new NotFoundException('Контрагент не найден');
     }
     return contractor;
+  }
+
+  async findTransportations(id: string, user: AuthUser): Promise<ContractorTransportationDto[]> {
+    await this.findOne(id, user.roles);
+    const rows = await this.prisma.transportation.findMany({
+      where: {
+        AND: [
+          transportationVisibilityWhere(user),
+          { deletedAt: null },
+          {
+            OR: [
+              { deal: { clientId: id } },
+              { legs: { some: { subcontractorId: id } } },
+            ],
+          },
+        ],
+      },
+      select: {
+        id: true,
+        number: true,
+        originPoint: true,
+        destinationPoint: true,
+        status: true,
+        deal: { select: { clientId: true } },
+        legs: {
+          where: { subcontractorId: id },
+          select: { orderIndex: true },
+          orderBy: { orderIndex: 'asc' },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map(({ deal, legs, ...transportation }) => ({
+      ...transportation,
+      role: {
+        isClient: deal.clientId === id,
+        legOrderIndexes: legs.map((leg) => leg.orderIndex),
+      },
+    }));
   }
 
   async create(dto: CreateContractorDto, actorUserId: string): Promise<ContractorWithRelations> {

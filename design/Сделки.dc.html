@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body{margin:0;background:#F6F7F9;color:#1B2430;font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  a{color:#E4140E;text-decoration:none}a:hover{color:#C10F0A}
+  input:focus,select:focus{outline:none;border-color:#E4140E;box-shadow:0 0 0 3px rgba(228,20,14,.12)}
+</style>
+</helmet>
+<header data-screen-label="Сделки" style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#fff;border-bottom:1px solid #E3E8EF">
+  <div style="display:flex;align-items:center;gap:12px">
+    <img src="assets/ava-logo.svg" alt="AVA" style="width:38px;height:38px;display:block">
+    <div>
+      <h1 style="font-size:18px;margin:0;font-weight:700">Сделки</h1>
+      <div style="font-size:12px;color:#66707D;margin-top:-2px">AVA Solution · Менеджер</div>
+    </div>
+  </div>
+  <nav style="display:flex;align-items:center;gap:4px">
+    <a href="Экран логиста.dc.html" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Перевозки</a>
+    <a href="#" style="color:#1B2430;font-weight:600;font-size:14px;padding:7px 13px;border-radius:8px;background:#F3F5F8">Сделки</a>
+    <a href="Контрагенты.dc.html" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Контрагенты</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#66707D">
+    <span style="width:28px;height:28px;border-radius:50%;background:#DCEFFB;color:#0369A1;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">АС</span>
+    Айгерим С.
+  </div>
+</header>
+<main style="max-width:1440px;margin:0 auto;padding:20px 24px">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <h2 style="font-size:22px;font-weight:700;margin:0">Сделки</h2>
+      <div style="display:inline-flex;background:#EDF0F4;border-radius:9px;padding:3px">
+        <button style="border:none;padding:5px 14px;border-radius:7px;font-size:13px;font-weight:600;background:#fff;color:#1B2430;cursor:pointer;box-shadow:0 1px 2px rgba(16,24,40,.08)">Таблица</button>
+        <button style="border:none;padding:5px 14px;border-radius:7px;font-size:13px;font-weight:500;background:transparent;color:#66707D;cursor:pointer">Канбан</button>
+      </div>
+    </div>
+    <a href="Новая перевозка.dc.html" style="background:#E4140E;border:1px solid #E4140E;color:#fff;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:500;text-decoration:none">+ Новая сделка</a>
+  </div>
+  <!-- Фильтры: поиск, менеджер, юрлицо, отдел + кнопка "Колонки" -->
+  <!-- Табличный вид: настраиваемые колонки (№, клиент, менеджер, отдел, юрлицо, стадия, создана, перевозок) -->
+  <!-- ВАЖНО: финансовые колонки (сумма ставок клиента, грязная маржа, оплачено %) из макета исключены -->
+  <!-- владелец решил: счета и маржа - Этап 2, эти колонки/данные сейчас не показываем -->
+  <!-- Канбан: колонки по стадиям сделки (7 реальных стадий из ТЗ, не 6 как в макете), карточки с номером/клиентом/менеджером/юрлицом -->
+</main>
+</x-dc>
+</body>
+</html>

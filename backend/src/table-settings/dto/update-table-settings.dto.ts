@@ -7,7 +7,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-const TRANSPORTATION_COLUMN_KEYS = [
+const TABLE_COLUMN_KEYS = [
   'num',
   'client',
   'route',
@@ -21,10 +21,17 @@ const TRANSPORTATION_COLUMN_KEYS = [
   'weight',
   'volume',
   'legsCount',
+  'name',
+  'types',
+  'bin',
+  'country',
+  'payment',
+  'contact',
+  'actions',
 ] as const;
 
 export class TableColumnSettingDto {
-  @IsIn(TRANSPORTATION_COLUMN_KEYS, { message: 'Указана неизвестная колонка таблицы' })
+  @IsIn(TABLE_COLUMN_KEYS, { message: 'Указана неизвестная колонка таблицы' })
   key!: string;
 
   @IsBoolean({ message: 'Видимость колонки должна быть логическим значением' })
@@ -33,7 +40,7 @@ export class TableColumnSettingDto {
 
 export class UpdateTableSettingsDto {
   @IsArray({ message: 'Настройки колонок должны быть списком' })
-  @ArrayMaxSize(TRANSPORTATION_COLUMN_KEYS.length, { message: 'Слишком много колонок в настройках' })
+  @ArrayMaxSize(TABLE_COLUMN_KEYS.length, { message: 'Слишком много колонок в настройках' })
   @ValidateNested({ each: true })
   @Type(() => TableColumnSettingDto)
   columns!: TableColumnSettingDto[];
