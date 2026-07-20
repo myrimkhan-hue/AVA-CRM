@@ -28,6 +28,13 @@ const TABLE_COLUMN_KEYS = [
   'payment',
   'contact',
   'actions',
+  'number',
+  'legalEntity',
+  'responsible',
+  'department',
+  'stage',
+  'createdAt',
+  'transportations',
 ] as const;
 
 export class TableColumnSettingDto {

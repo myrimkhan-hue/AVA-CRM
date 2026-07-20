@@ -1,74 +1,77 @@
 import {
-  DeleteOutlined,
-  EditOutlined,
   EyeOutlined,
+  HolderOutlined,
   PlusOutlined,
   RedoOutlined,
-  SwapOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 import {
   App,
   Button,
-  Card,
-  Descriptions,
-  Drawer,
+  Checkbox,
   Form,
   Input,
   Modal,
+  Popover,
+  Segmented,
   Select,
   Space,
-  Switch,
   Table,
   Tag,
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import {
+  DEAL_STAGE_COLORS,
+  DEAL_STAGES,
+  Deal,
+  DealLegalEntity,
+  DealStage,
+} from '../deals/shared';
 
-type DealStage = 'NEW' | 'RATE_CALCULATION' | 'RATE_SENT' | 'AGREED' | 'IN_PROGRESS' | 'COMPLETED' | 'CLOSED' | 'REJECTED';
-type RejectReason = 'EXPENSIVE' | 'TIMING' | 'COMPETITOR' | 'NO_CONTACT' | 'OTHER';
-
-interface Reference { id: string; name: string }
-interface LegalEntity extends Reference { numberingPrefix: string }
 interface UserReference { id: string; fullName: string; isActive?: boolean }
 interface ContractorReference { id: string; name: string }
-interface Deal {
-  id: string;
-  number: string;
-  client: Reference;
-  legalEntity: LegalEntity;
-  responsible: { id: string; fullName: string };
-  department: Reference | null;
-  stage: DealStage;
-  rejectReason: RejectReason | null;
-  rejectComment: string | null;
-  notes: string | null;
-  deletedAt: string | null;
-  createdAt: string;
-}
 interface CreateValues { clientId: string; legalEntityId: string; responsibleId?: string; notes?: string }
-interface StageValues { stage: DealStage; rejectReason?: RejectReason; rejectComment?: string }
-interface NotesValues { notes?: string }
+interface ColumnSetting { key: ColumnKey; visible: boolean }
+interface SettingsResponse { columns: unknown }
 
-const STAGES: DealStage[] = ['NEW', 'RATE_CALCULATION', 'RATE_SENT', 'AGREED', 'IN_PROGRESS', 'COMPLETED', 'CLOSED', 'REJECTED'];
-const REASONS: RejectReason[] = ['EXPENSIVE', 'TIMING', 'COMPETITOR', 'NO_CONTACT', 'OTHER'];
-const STAGE_COLORS: Record<DealStage, string> = {
-  NEW: 'default', RATE_CALCULATION: 'blue', RATE_SENT: 'blue', AGREED: 'cyan',
-  IN_PROGRESS: 'orange', COMPLETED: 'green', CLOSED: '#237804', REJECTED: 'red',
-};
+const COLUMN_KEYS = ['number', 'client', 'responsible', 'department', 'legalEntity', 'stage', 'createdAt', 'transportations', 'actions'] as const;
+type ColumnKey = (typeof COLUMN_KEYS)[number];
+type ViewMode = 'table' | 'kanban';
+
+const DEFAULT_SETTINGS: ColumnSetting[] = COLUMN_KEYS.map((key) => ({ key, visible: true }));
+
+function normalizeSettings(value: unknown): ColumnSetting[] {
+  if (!Array.isArray(value)) return DEFAULT_SETTINGS;
+  const seen = new Set<ColumnKey>();
+  const normalized: ColumnSetting[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== 'object') continue;
+    const candidate = item as { key?: unknown; visible?: unknown };
+    if (!COLUMN_KEYS.includes(candidate.key as ColumnKey) || seen.has(candidate.key as ColumnKey)) continue;
+    const key = candidate.key as ColumnKey;
+    seen.add(key);
+    normalized.push({ key, visible: key === 'number' ? true : candidate.visible === true });
+  }
+  for (const item of DEFAULT_SETTINGS) {
+    if (!seen.has(item.key)) normalized.push(item);
+  }
+  return normalized;
+}
 
 export function DealsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
-  const { message, modal } = App.useApp();
+  const navigate = useNavigate();
+  const { message } = App.useApp();
   const [createForm] = Form.useForm<CreateValues>();
-  const [stageForm] = Form.useForm<StageValues>();
-  const [notesForm] = Form.useForm<NotesValues>();
   const [deals, setDeals] = useState<Deal[]>([]);
-  const [legalEntities, setLegalEntities] = useState<LegalEntity[]>([]);
+  const [legalEntities, setLegalEntities] = useState<DealLegalEntity[]>([]);
   const [clients, setClients] = useState<ContractorReference[]>([]);
   const [users, setUsers] = useState<UserReference[]>([]);
   const [canSelectResponsible, setCanSelectResponsible] = useState(false);
@@ -79,15 +82,16 @@ export function DealsPage() {
   const [stageFilter, setStageFilter] = useState<DealStage>();
   const [legalEntityFilter, setLegalEntityFilter] = useState<string>();
   const [includeDeleted, setIncludeDeleted] = useState(false);
-  const [viewing, setViewing] = useState<Deal | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [stageOpen, setStageOpen] = useState(false);
-  const [notesOpen, setNotesOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [settings, setSettings] = useState<ColumnSetting[]>(DEFAULT_SETTINGS);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [draggedKey, setDraggedKey] = useState<ColumnKey>();
+  const lastSavedSettings = useRef('');
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
-  const isFinancierOnly = Boolean(user?.roles.includes('FINANCIER') && !user.roles.some((role) => ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'].includes(role)));
+  const mayEditDeals = Boolean(user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'].includes(role)));
   const mayRequestUsers = Boolean(user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD'].includes(role)));
-  const selectedStage = Form.useWatch('stage', stageForm);
-  const selectedReason = Form.useWatch('rejectReason', stageForm);
 
   const showError = useCallback((error: unknown) => {
     void message.error(error instanceof ApiError ? error.message || t('errors.request') : t('errors.connection'));
@@ -108,25 +112,70 @@ export function DealsPage() {
       if (includeDeleted && isAdmin) params.set('includeDeleted', 'true');
       const query = params.toString();
       setDeals(await apiRequest<Deal[]>(`/deals${query ? `?${query}` : ''}`));
-    } catch (error) { showError(error); }
-    finally { setLoading(false); }
+    } catch (error) {
+      showError(error);
+    } finally {
+      setLoading(false);
+    }
   }, [includeDeleted, isAdmin, legalEntityFilter, search, showError, stageFilter]);
 
   useEffect(() => { void loadDeals(); }, [loadDeals]);
   useEffect(() => {
-    apiRequest<LegalEntity[]>('/legal-entities').then(setLegalEntities).catch(showError);
+    apiRequest<DealLegalEntity[]>('/legal-entities').then(setLegalEntities).catch(showError);
   }, [showError]);
+
+  useEffect(() => {
+    let active = true;
+    const loadSettings = async () => {
+      try {
+        const saved = await apiRequest<SettingsResponse | null>('/me/table-settings/deals');
+        if (!active) return;
+        const nextSettings = normalizeSettings(saved?.columns);
+        setSettings(nextSettings);
+        lastSavedSettings.current = JSON.stringify(nextSettings);
+      } catch (error) {
+        if (active) showError(error);
+      } finally {
+        if (active) setSettingsLoaded(true);
+      }
+    };
+    void loadSettings();
+    return () => { active = false; };
+  }, [showError]);
+
+  useEffect(() => {
+    if (!settingsLoaded) return;
+    const signature = JSON.stringify(settings);
+    if (signature === lastSavedSettings.current) return;
+    const timer = window.setTimeout(async () => {
+      try {
+        await apiRequest<SettingsResponse>('/me/table-settings/deals', {
+          method: 'PUT',
+          body: JSON.stringify({ columns: settings }),
+        });
+        lastSavedSettings.current = signature;
+      } catch (error) {
+        showError(error);
+      }
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [settings, settingsLoaded, showError]);
 
   const loadClients = useCallback(async (value = '') => {
     try {
       const params = new URLSearchParams({ type: 'CLIENT' });
       if (value.trim()) params.set('search', value.trim());
       setClients(await apiRequest<ContractorReference[]>(`/contractors?${params.toString()}`));
-    } catch (error) { showError(error); }
+    } catch (error) {
+      showError(error);
+    }
   }, [showError]);
 
   const loadUsers = useCallback(async () => {
-    if (!mayRequestUsers) { setCanSelectResponsible(false); return; }
+    if (!mayRequestUsers) {
+      setCanSelectResponsible(false);
+      return;
+    }
     try {
       const result = await apiRequest<UserReference[]>('/users');
       setUsers(result.filter((item) => item.isActive !== false));
@@ -162,105 +211,173 @@ export function DealsPage() {
       void message.success(t('deals.messages.created', { number: created.number }));
       setCreateOpen(false);
       await loadDeals();
-    } catch (error) { showError(error); }
-    finally { setSaving(false); }
+    } catch (error) {
+      showError(error);
+    } finally {
+      setSaving(false);
+    }
   };
-
-  const saveStage = async (values: StageValues) => {
-    if (!viewing) return;
-    setSaving(true);
-    try {
-      const updated = await apiRequest<Deal>(`/deals/${viewing.id}/stage`, { method: 'PATCH', body: JSON.stringify(values) });
-      setViewing(updated);
-      setStageOpen(false);
-      void message.success(t('deals.messages.stageUpdated'));
-      await loadDeals();
-    } catch (error) { showError(error); }
-    finally { setSaving(false); }
-  };
-
-  const saveNotes = async (values: NotesValues) => {
-    if (!viewing) return;
-    setSaving(true);
-    try {
-      const updated = await apiRequest<Deal>(`/deals/${viewing.id}`, { method: 'PATCH', body: JSON.stringify(values) });
-      setViewing(updated);
-      setNotesOpen(false);
-      void message.success(t('deals.messages.notesUpdated'));
-      await loadDeals();
-    } catch (error) { showError(error); }
-    finally { setSaving(false); }
-  };
-
-  const removeDeal = (deal: Deal) => modal.confirm({
-    title: t('deals.confirm.deleteTitle'),
-    content: t('deals.confirm.deleteText', { number: deal.number }),
-    okText: t('deals.actions.delete'), cancelText: t('common.cancel'), okButtonProps: { danger: true },
-    async onOk() {
-      try {
-        await apiRequest(`/deals/${deal.id}`, { method: 'DELETE' });
-        setViewing(null);
-        void message.success(t('deals.messages.deleted'));
-        await loadDeals();
-      } catch (error) { showError(error); throw error; }
-    },
-  });
 
   const restoreDeal = async (deal: Deal) => {
     try {
       await apiRequest(`/deals/${deal.id}/restore`, { method: 'PATCH' });
       void message.success(t('deals.messages.restored'));
       await loadDeals();
-    } catch (error) { showError(error); }
+    } catch (error) {
+      showError(error);
+    }
   };
 
-  const stageTag = (stage: DealStage) => <Tag color={STAGE_COLORS[stage]}>{t(`deals.stages.${stage}`)}</Tag>;
-  const date = (value: string) => new Intl.DateTimeFormat('ru-RU').format(new Date(value));
-  const stageOptions = STAGES.map((value) => ({ value, label: t(`deals.stages.${value}`) }));
-  const reasonOptions = REASONS.map((value) => ({ value, label: t(`deals.reasons.${value}`) }));
+  const formatDate = useCallback((value: string) => (
+    new Intl.DateTimeFormat(i18n.language).format(new Date(value))
+  ), [i18n.language]);
+  const stageTag = useCallback((stage: DealStage) => (
+    <Tag bordered={false} style={DEAL_STAGE_COLORS[stage]}>{t(`deals.stages.${stage}`)}</Tag>
+  ), [t]);
+  const stageOptions = DEAL_STAGES.map((value) => ({ value, label: t(`deals.stages.${value}`) }));
 
-  const columns: ColumnsType<Deal> = [
-    { title: t('deals.columns.number'), dataIndex: 'number', render: (value: string, item) => <Space><Typography.Text strong className="deal-number">{value}</Typography.Text>{item.deletedAt && <Tag>{t('deals.status.deleted')}</Tag>}</Space> },
-    { title: t('deals.columns.client'), dataIndex: ['client', 'name'] },
-    { title: t('deals.columns.legalEntity'), dataIndex: 'legalEntity', render: (value: LegalEntity) => <Tag>{value.numberingPrefix}</Tag> },
-    { title: t('deals.columns.responsible'), dataIndex: ['responsible', 'fullName'] },
-    { title: t('deals.columns.department'), dataIndex: 'department', render: (value: Reference | null) => value?.name || t('common.dash') },
-    { title: t('deals.columns.stage'), dataIndex: 'stage', render: stageTag },
-    { title: t('deals.columns.createdAt'), dataIndex: 'createdAt', render: date },
-    { title: t('deals.columns.actions'), key: 'actions', render: (_, item) => item.deletedAt ? (isAdmin && <Button size="small" icon={<RedoOutlined />} onClick={() => void restoreDeal(item)}>{t('deals.actions.restore')}</Button>) : <Button size="small" icon={<EyeOutlined />} onClick={() => setViewing(item)}>{t('deals.actions.open')}</Button> },
-  ];
+  const allColumns = useMemo<Record<ColumnKey, ColumnsType<Deal>[number]>>(() => ({
+    number: {
+      title: t('deals.columns.number'), key: 'number', fixed: 'left', width: 190,
+      render: (_, item) => <Space><Typography.Text strong className="deal-number">{item.number}</Typography.Text>{item.deletedAt && <Tag>{t('deals.status.deleted')}</Tag>}</Space>,
+    },
+    client: { title: t('deals.columns.client'), key: 'client', width: 220, render: (_, item) => item.client.name },
+    responsible: { title: t('deals.columns.responsible'), key: 'responsible', width: 190, render: (_, item) => item.responsible.fullName },
+    department: { title: t('deals.columns.department'), key: 'department', width: 170, render: (_, item) => item.department?.name || t('common.dash') },
+    legalEntity: { title: t('deals.columns.legalEntity'), key: 'legalEntity', width: 160, render: (_, item) => <Tag bordered={false}>{item.legalEntity.numberingPrefix}</Tag> },
+    stage: { title: t('deals.columns.stage'), key: 'stage', width: 180, render: (_, item) => stageTag(item.stage) },
+    createdAt: { title: t('deals.columns.createdAt'), key: 'createdAt', width: 140, render: (_, item) => formatDate(item.createdAt) },
+    transportations: { title: t('deals.columns.transportations'), key: 'transportations', width: 130, align: 'right', render: (_, item) => item._count.transportations },
+    actions: {
+      title: t('deals.columns.actions'), key: 'actions', width: 145,
+      render: (_, item) => item.deletedAt && isAdmin
+        ? <Button size="small" icon={<RedoOutlined />} onClick={(event) => { event.stopPropagation(); void restoreDeal(item); }}>{t('deals.actions.restore')}</Button>
+        : <Button size="small" type="text" icon={<EyeOutlined />} onClick={(event) => { event.stopPropagation(); navigate(`/deals/${item.id}`); }}>{t('deals.actions.open')}</Button>,
+    },
+  }), [formatDate, isAdmin, navigate, stageTag, t]);
 
-  return <Card>
-    <div className="page-heading">
-      <div><Typography.Title level={2}>{t('deals.title')}</Typography.Title><Typography.Text type="secondary">{t('deals.subtitle')}</Typography.Text></div>
-      {!isFinancierOnly && <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>{t('deals.add')}</Button>}
+  const columns = useMemo(
+    () => settings.filter((item) => item.visible).map((item) => allColumns[item.key]),
+    [allColumns, settings],
+  );
+
+  const moveSetting = (targetKey: ColumnKey) => {
+    if (!draggedKey || draggedKey === targetKey) return;
+    setSettings((current) => {
+      const next = [...current];
+      const sourceIndex = next.findIndex((item) => item.key === draggedKey);
+      const targetIndex = next.findIndex((item) => item.key === targetKey);
+      const [moved] = next.splice(sourceIndex, 1);
+      next.splice(targetIndex, 0, moved);
+      return next;
+    });
+  };
+
+  const settingsContent = <div className="column-settings-panel">
+    <div className="column-settings-title">{t('deals.settings.title')}</div>
+    <div className="column-settings-list">
+      {settings.map((item) => (
+        <div
+          key={item.key}
+          draggable
+          className={`column-setting${draggedKey === item.key ? ' dragging' : ''}`}
+          onDragStart={() => setDraggedKey(item.key)}
+          onDragOver={(event) => { event.preventDefault(); moveSetting(item.key); }}
+          onDragEnd={() => setDraggedKey(undefined)}
+        >
+          <HolderOutlined className="column-drag-handle" />
+          <Checkbox
+            checked={item.visible}
+            disabled={item.key === 'number'}
+            onChange={(event) => setSettings((current) => current.map((column) => column.key === item.key ? { ...column, visible: event.target.checked } : column))}
+          />
+          <span>{t(`deals.columns.${item.key}`)}</span>
+        </div>
+      ))}
     </div>
-    <div className="contractor-filters">
-      <Input.Search allowClear value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder={t('deals.filters.search')} />
-      <Select allowClear value={stageFilter} onChange={setStageFilter} placeholder={t('deals.filters.stage')} options={stageOptions} />
-      <Select allowClear value={legalEntityFilter} onChange={setLegalEntityFilter} placeholder={t('deals.filters.legalEntity')} options={legalEntities.map((item) => ({ value: item.id, label: item.name }))} />
-      {isAdmin && <Space><Switch checked={includeDeleted} onChange={setIncludeDeleted} /><Typography.Text>{t('deals.filters.includeDeleted')}</Typography.Text></Space>}
-    </div>
-    <Table rowKey="id" columns={columns} dataSource={deals} loading={loading} scroll={{ x: 1250 }} rowClassName={(item) => item.deletedAt ? 'inactive-row' : ''} pagination={{ pageSize: 10, showSizeChanger: false }} />
+    <Button type="text" danger block className="column-settings-reset" onClick={() => setSettings(DEFAULT_SETTINGS)}>{t('deals.settings.reset')}</Button>
+    <div className="column-settings-help">{t('deals.settings.help')}</div>
+  </div>;
 
-    <Drawer open={Boolean(viewing)} width={680} title={viewing?.number} onClose={() => setViewing(null)} extra={viewing && !viewing.deletedAt && isAdmin ? <Button danger icon={<DeleteOutlined />} onClick={() => removeDeal(viewing)}>{t('deals.actions.delete')}</Button> : null}>
-      {viewing && <>
-        <Descriptions column={1} bordered size="small" items={[
-          { key: 'client', label: t('deals.details.client'), children: viewing.client.name },
-          { key: 'entity', label: t('deals.details.legalEntity'), children: `${viewing.legalEntity.name} (${viewing.legalEntity.numberingPrefix})` },
-          { key: 'responsible', label: t('deals.details.responsible'), children: viewing.responsible.fullName },
-          { key: 'department', label: t('deals.details.department'), children: viewing.department?.name || t('common.dash') },
-          { key: 'stage', label: t('deals.details.stage'), children: stageTag(viewing.stage) },
-          ...(viewing.rejectReason ? [{ key: 'reason', label: t('deals.details.rejectReason'), children: <>{t(`deals.reasons.${viewing.rejectReason}`)}{viewing.rejectComment ? ` — ${viewing.rejectComment}` : ''}</> }] : []),
-          { key: 'notes', label: t('deals.details.notes'), children: viewing.notes || t('common.dash') },
-          { key: 'created', label: t('deals.details.createdAt'), children: date(viewing.createdAt) },
-        ]} />
-        {!viewing.deletedAt && !isFinancierOnly && <Space wrap className="deal-actions">
-          <Button icon={<SwapOutlined />} onClick={() => { stageForm.setFieldsValue({ stage: viewing.stage, rejectReason: viewing.rejectReason ?? undefined, rejectComment: viewing.rejectComment ?? undefined }); setStageOpen(true); }}>{t('deals.actions.changeStage')}</Button>
-          <Button icon={<EditOutlined />} onClick={() => { notesForm.setFieldsValue({ notes: viewing.notes ?? undefined }); setNotesOpen(true); }}>{t('deals.actions.editNotes')}</Button>
-        </Space>}
-      </>}
-    </Drawer>
+  return <>
+    <section className="deals-page">
+      <div className="deals-heading">
+        <div className="deals-title-row">
+          <div>
+            <Typography.Title level={2}>{t('deals.title')}</Typography.Title>
+            <Typography.Text type="secondary">{t('deals.subtitle')}</Typography.Text>
+          </div>
+          <Segmented<ViewMode>
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              { value: 'table', label: t('deals.views.table') },
+              { value: 'kanban', label: t('deals.views.kanban') },
+            ]}
+          />
+        </div>
+        {mayEditDeals && <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>{t('deals.add')}</Button>}
+      </div>
+
+      <div className="deals-filters">
+        <Input.Search allowClear value={searchInput} onChange={(event) => setSearchInput(event.target.value)} placeholder={t('deals.filters.search')} />
+        <Select allowClear value={stageFilter} onChange={setStageFilter} placeholder={t('deals.filters.stage')} options={stageOptions} />
+        <Select allowClear value={legalEntityFilter} onChange={setLegalEntityFilter} placeholder={t('deals.filters.legalEntity')} options={legalEntities.map((item) => ({ value: item.id, label: item.name }))} />
+        {isAdmin && <Checkbox checked={includeDeleted} onChange={(event) => setIncludeDeleted(event.target.checked)}>{t('deals.filters.includeDeleted')}</Checkbox>}
+        {viewMode === 'table' && <Popover trigger="click" placement="bottomRight" open={settingsOpen} onOpenChange={setSettingsOpen} content={settingsContent}>
+          <Button icon={<SettingOutlined />}>{t('deals.settings.button')}</Button>
+        </Popover>}
+      </div>
+
+      {viewMode === 'table' ? <>
+        <Table<Deal>
+          className="deals-table"
+          rowKey="id"
+          columns={columns}
+          dataSource={deals}
+          loading={loading}
+          scroll={{ x: 'max-content' }}
+          rowClassName={(item) => item.deletedAt ? 'inactive-row' : ''}
+          pagination={{ pageSize: 20, showSizeChanger: false, showTotal: (total) => t('deals.footer.shown', { total }) }}
+          locale={{ emptyText: t('deals.empty') }}
+          onRow={(item) => ({ onClick: () => navigate(`/deals/${item.id}`) })}
+        />
+        <div className="deals-footer">{t('deals.footer.summary', { total: deals.length })}</div>
+      </> : <div className="deal-kanban" aria-busy={loading}>
+        {DEAL_STAGES.map((stage) => {
+          const stageDeals = deals.filter((deal) => deal.stage === stage);
+          return <section className="deal-kanban-column" key={stage}>
+            <div className="deal-kanban-column-heading">
+              {stageTag(stage)}
+              <span>{stageDeals.length}</span>
+            </div>
+            <div className="deal-kanban-cards">
+              {stageDeals.map((deal) => <article
+                className="deal-kanban-card"
+                key={deal.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(`/deals/${deal.id}`)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    navigate(`/deals/${deal.id}`);
+                  }
+                }}
+              >
+                <span className="deal-kanban-number">{deal.number}{deal.deletedAt && <Tag>{t('deals.status.deleted')}</Tag>}</span>
+                <strong>{deal.client.name}</strong>
+                <span>{t('deals.kanban.responsible')}: {deal.responsible.fullName}</span>
+                <span>{t('deals.kanban.department')}: {deal.department?.name || t('common.dash')}</span>
+                <span>{t('deals.kanban.legalEntity')}: {deal.legalEntity.numberingPrefix}</span>
+                {deal.deletedAt && isAdmin && <Button size="small" icon={<RedoOutlined />} onClick={(event) => { event.stopPropagation(); void restoreDeal(deal); }}>{t('deals.actions.restore')}</Button>}
+              </article>)}
+              {!loading && stageDeals.length === 0 && <div className="deal-kanban-empty">{t('deals.kanban.empty')}</div>}
+            </div>
+          </section>;
+        })}
+      </div>}
+    </section>
 
     <Modal open={createOpen} title={t('deals.form.createTitle')} okText={t('common.save')} cancelText={t('common.cancel')} confirmLoading={saving} onOk={() => createForm.submit()} onCancel={() => setCreateOpen(false)} destroyOnHidden>
       <Form<CreateValues> form={createForm} layout="vertical" requiredMark={false} onFinish={createDeal}>
@@ -270,19 +387,5 @@ export function DealsPage() {
         <Form.Item name="notes" label={t('deals.form.notes')}><Input.TextArea rows={4} /></Form.Item>
       </Form>
     </Modal>
-
-    <Modal open={stageOpen} title={t('deals.stageModal.title')} okText={t('common.save')} cancelText={t('common.cancel')} confirmLoading={saving} onOk={() => stageForm.submit()} onCancel={() => setStageOpen(false)} destroyOnHidden>
-      <Form<StageValues> form={stageForm} layout="vertical" requiredMark={false} onFinish={saveStage}>
-        <Form.Item name="stage" label={t('deals.form.stage')} rules={[{ required: true, message: t('deals.validation.stage') }]}><Select options={stageOptions} onChange={(value) => { if (value !== 'REJECTED') stageForm.setFieldsValue({ rejectReason: undefined, rejectComment: undefined }); }} /></Form.Item>
-        {selectedStage === 'REJECTED' && <>
-          <Form.Item name="rejectReason" label={t('deals.form.rejectReason')} rules={[{ required: true, message: t('deals.validation.rejectReason') }]}><Select options={reasonOptions} /></Form.Item>
-          <Form.Item name="rejectComment" label={t('deals.form.rejectComment')} rules={selectedReason === 'OTHER' ? [{ required: true, whitespace: true, message: t('deals.validation.rejectComment') }] : []}><Input.TextArea rows={3} /></Form.Item>
-        </>}
-      </Form>
-    </Modal>
-
-    <Modal open={notesOpen} title={t('deals.notesModal.title')} okText={t('common.save')} cancelText={t('common.cancel')} confirmLoading={saving} onOk={() => notesForm.submit()} onCancel={() => setNotesOpen(false)} destroyOnHidden>
-      <Form<NotesValues> form={notesForm} layout="vertical" onFinish={saveNotes}><Form.Item name="notes" label={t('deals.form.notes')}><Input.TextArea rows={5} /></Form.Item></Form>
-    </Modal>
-  </Card>;
+  </>;
 }

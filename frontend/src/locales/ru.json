@@ -80,8 +80,9 @@
     "title": "Сделки",
     "subtitle": "Заявки клиентов и этапы работы по ним",
     "add": "Новая сделка",
+    "views": { "table": "Таблица", "kanban": "Канбан" },
     "filters": { "search": "Поиск по номеру или названию клиента", "stage": "Стадия", "legalEntity": "Юрлицо", "includeDeleted": "Показать удалённые" },
-    "columns": { "number": "Номер", "client": "Клиент", "legalEntity": "Юрлицо", "responsible": "Ответственный", "department": "Отдел", "stage": "Стадия", "createdAt": "Создана", "actions": "Действия" },
+    "columns": { "number": "Номер", "client": "Клиент", "legalEntity": "Юрлицо", "responsible": "Ответственный", "department": "Отдел", "stage": "Стадия", "createdAt": "Создана", "transportations": "Перевозок", "actions": "Действия" },
     "stages": { "NEW": "Новая заявка", "RATE_CALCULATION": "Расчёт ставки", "RATE_SENT": "Ставка отправлена", "AGREED": "Согласована", "IN_PROGRESS": "В работе", "COMPLETED": "Выполнена", "CLOSED": "Закрыта", "REJECTED": "Отказ" },
     "reasons": { "EXPENSIVE": "Дорого", "TIMING": "Сроки", "COMPETITOR": "Ушёл к конкуренту", "NO_CONTACT": "Не вышел на связь", "OTHER": "Другое" },
     "status": { "deleted": "Удалена" },
@@ -90,9 +91,25 @@
     "validation": { "client": "Выберите клиента", "legalEntity": "Выберите юрлицо", "stage": "Выберите стадию", "rejectReason": "Выберите причину отказа", "rejectComment": "Укажите комментарий для причины «Другое»" },
     "details": { "client": "Клиент", "legalEntity": "Юрлицо", "responsible": "Ответственный", "department": "Отдел", "stage": "Стадия", "rejectReason": "Причина отказа", "notes": "Заметки", "createdAt": "Дата создания" },
     "stageModal": { "title": "Изменение стадии" },
+    "rejectModal": { "title": "Отказ по сделке" },
     "notesModal": { "title": "Редактирование заметок" },
     "confirm": { "deleteTitle": "Удалить сделку?", "deleteText": "Сделка {{number}} будет мягко удалена. Администратор сможет восстановить её позднее." },
-    "messages": { "created": "Сделка {{number}} создана", "stageUpdated": "Стадия сделки изменена", "notesUpdated": "Заметки обновлены", "deleted": "Сделка удалена", "restored": "Сделка восстановлена" }
+    "messages": { "created": "Сделка {{number}} создана", "stageUpdated": "Стадия сделки изменена", "notesUpdated": "Заметки обновлены", "deleted": "Сделка удалена", "restored": "Сделка восстановлена" },
+    "settings": { "button": "Колонки", "title": "Колонки таблицы", "reset": "Сбросить к стандартному виду", "help": "Перетаскивайте колонки, чтобы изменить порядок. Настройки сохраняются автоматически в вашем профиле." },
+    "empty": "Сделки не найдены. Измените фильтры или сбросьте их.",
+    "footer": { "shown": "Показано: {{total}}", "summary": "Показано сделок: {{total}}. Нажмите на строку, чтобы открыть карточку." },
+    "kanban": { "responsible": "Ответственный", "department": "Отдел", "legalEntity": "Юрлицо", "empty": "Нет сделок" },
+    "detail": {
+      "back": "← Все сделки",
+      "title": "Сделка {{number}}",
+      "loadFailed": "Не удалось открыть сделку",
+      "stageNumber": "Этап {{number}}",
+      "stageHint": "Нажмите на этап, чтобы изменить стадию сделки. Для отказа используйте кнопку в шапке.",
+      "actions": { "reject": "Отказ", "edit": "Изменить" },
+      "sections": { "transportations": "Перевозки в сделке", "notes": "Заметки", "parties": "Стороны", "timeline": "Хронология" },
+      "transportations": { "number": "№", "route": "Маршрут", "status": "Статус", "plan": "Плановая дата доставки", "empty": "В сделке пока нет перевозок" },
+      "timeline": { "currentStage": "Текущая стадия", "created": "Сделка создана", "noComment": "Комментарий не указан" }
+    }
   },
   "transportations": {
     "title": "Активные перевозки",

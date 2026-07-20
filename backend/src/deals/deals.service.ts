@@ -17,6 +17,7 @@ const dealInclude = {
   legalEntity: { select: { id: true, name: true, numberingPrefix: true } },
   responsible: { select: { id: true, fullName: true } },
   department: { select: { id: true, name: true } },
+  _count: { select: { transportations: { where: { deletedAt: null } } } },
 } satisfies Prisma.DealInclude;
 
 type DealWithRelations = Prisma.DealGetPayload<{ include: typeof dealInclude }>;

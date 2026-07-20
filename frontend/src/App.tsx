@@ -8,12 +8,19 @@ import { DealsPage } from './pages/DealsPage';
 import { TransportationsPage } from './pages/TransportationsPage';
 import { NewTransportationPage } from './pages/NewTransportationPage';
 import { TransportationDetailPage } from './pages/TransportationDetailPage';
+import { DealDetailPage } from './pages/DealDetailPage';
 import { useAuth } from './auth/AuthContext';
 
 function DealsRoute() {
   const { user } = useAuth();
   const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
   return isLogistOnly ? <Navigate to="/transportations" replace /> : <DealsPage />;
+}
+
+function DealDetailRoute() {
+  const { user } = useAuth();
+  const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
+  return isLogistOnly ? <Navigate to="/transportations" replace /> : <DealDetailPage />;
 }
 
 export default function App() {
@@ -28,6 +35,7 @@ export default function App() {
           <Route path="transportations/:id" element={<TransportationDetailPage />} />
           <Route path="contractors" element={<ContractorsPage />} />
           <Route path="deals" element={<DealsRoute />} />
+          <Route path="deals/:id" element={<DealDetailRoute />} />
           <Route path="users" element={<UsersPage />} />
         </Route>
       </Route>
