@@ -1,4 +1,10 @@
-import { CheckOutlined, DeleteOutlined, EditOutlined, StopOutlined } from '@ant-design/icons';
+import {
+  CheckOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  FileAddOutlined,
+  StopOutlined,
+} from '@ant-design/icons';
 import {
   App,
   Button,
@@ -30,6 +36,7 @@ import {
   RejectReason,
 } from '../deals/shared';
 import { STATUS_COLORS, TransportationStatus } from '../transportations/shared';
+import { CreateInvoiceModal } from '../components/CreateInvoiceModal';
 
 interface Transportation {
   id: string;
@@ -64,9 +71,17 @@ export function DealDetailPage() {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const selectedReason = Form.useWatch('rejectReason', rejectForm);
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
   const mayEditDeals = Boolean(user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'].includes(role)));
+  const mayManageInvoices = Boolean(user?.roles.some((role) => [
+    'ADMIN',
+    'DIRECTOR',
+    'DEPARTMENT_HEAD',
+    'MANAGER',
+    'FINANCIER',
+  ].includes(role)));
 
   const showError = useCallback((error: unknown) => {
     void message.error(error instanceof ApiError ? error.message || t('errors.request') : t('errors.connection'));
@@ -205,6 +220,15 @@ export function DealDetailPage() {
         {deal.deletedAt && <Tag>{t('deals.status.deleted')}</Tag>}
       </Space>
       <Space wrap>
+        {mayManageInvoices && activeDeal && (
+          <Button
+            type="primary"
+            icon={<FileAddOutlined />}
+            onClick={() => setInvoiceOpen(true)}
+          >
+            {t('invoices.actions.issue')}
+          </Button>
+        )}
         {mayEditDeals && activeDeal && <Button danger icon={<StopOutlined />} onClick={openReject}>{t('deals.detail.actions.reject')}</Button>}
         {mayEditDeals && activeDeal && <Button icon={<EditOutlined />} onClick={openNotes}>{t('deals.detail.actions.edit')}</Button>}
         {isAdmin && activeDeal && <Button danger type="text" icon={<DeleteOutlined />} onClick={removeDeal}>{t('deals.actions.delete')}</Button>}
@@ -309,5 +333,12 @@ export function DealDetailPage() {
         <Form.Item name="notes" label={t('deals.form.notes')}><Input.TextArea rows={6} /></Form.Item>
       </Form>
     </Modal>
+
+    <CreateInvoiceModal
+      dealId={deal.id}
+      open={invoiceOpen}
+      onClose={() => setInvoiceOpen(false)}
+      onCreated={(invoice) => navigate(`/invoices/${invoice.id}`)}
+    />
   </section>;
 }

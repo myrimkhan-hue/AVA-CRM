@@ -258,6 +258,18 @@ button, input { font: inherit; }
 .deal-timeline span { margin-top: 2px; color: #66707d; font-size: 12px; }
 .deal-timeline .rejected-event { color: #b91c1c; border-color: #e4140e; }
 
+.invoice-list-page, .invoice-detail-page { width: min(100%, 1400px); margin: 0 auto; }
+.invoice-list-page .ant-table-tbody > tr { cursor: pointer; }
+.invoice-status-filter { width: 220px; }
+.invoice-create-hint { margin: 14px 0; }
+.invoice-lines-form { display: flex; width: 100%; margin-bottom: 18px; }
+.invoice-line-form { padding: 12px 12px 0; background: #fafbfc; border: 1px solid #e3e8ef; border-radius: 10px; }
+.invoice-line-form .ant-input-number, .invoice-detail-page .ant-input-number { width: 100%; }
+.invoice-detail-page { display: flex; flex-direction: column; gap: 14px; }
+.invoice-detail-page > .deal-detail-back { align-self: flex-start; margin-bottom: -7px; }
+.invoice-totals { width: min(100%, 390px); margin: 18px 0 0 auto; }
+.invoice-totals .ant-descriptions-item-label { width: 190px; }
+
 @media (max-width: 900px) {
   .deals-filters { grid-template-columns: 1fr 1fr; }
   .deals-filters > .ant-input-search { grid-column: 1 / -1; }

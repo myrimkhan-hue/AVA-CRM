@@ -14,6 +14,7 @@ import { TableSettingsModule } from './table-settings/table-settings.module';
 import { LegalEntitiesModule } from './legal-entities/legal-entities.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CurrenciesModule } from './currencies/currencies.module';
+import { InvoicesModule } from './invoices/invoices.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { CurrenciesModule } from './currencies/currencies.module';
     LegalEntitiesModule,
     ScheduleModule.forRoot(),
     CurrenciesModule,
+    InvoicesModule,
   ],
   controllers: [HealthController],
   providers: [

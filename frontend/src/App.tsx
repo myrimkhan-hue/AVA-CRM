@@ -13,6 +13,16 @@ import { useAuth } from './auth/AuthContext';
 import { LegalEntitiesPage } from './pages/LegalEntitiesPage';
 import { SettingsLayout } from './components/SettingsLayout';
 import { CurrenciesPage } from './pages/CurrenciesPage';
+import { InvoicesPage } from './pages/InvoicesPage';
+import { InvoiceDetailPage } from './pages/InvoiceDetailPage';
+
+const INVOICE_ROLES = [
+  'ADMIN',
+  'DIRECTOR',
+  'DEPARTMENT_HEAD',
+  'MANAGER',
+  'FINANCIER',
+];
 
 function DealsRoute() {
   const { user } = useAuth();
@@ -24,6 +34,15 @@ function DealDetailRoute() {
   const { user } = useAuth();
   const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
   return isLogistOnly ? <Navigate to="/transportations" replace /> : <DealDetailPage />;
+}
+
+function InvoicesRoute({ detail = false }: { detail?: boolean }) {
+  const { user } = useAuth();
+  const canAccess = Boolean(
+    user?.roles.some((role) => INVOICE_ROLES.includes(role)),
+  );
+  if (!canAccess) return <Navigate to="/transportations" replace />;
+  return detail ? <InvoiceDetailPage /> : <InvoicesPage />;
 }
 
 export default function App() {
@@ -39,6 +58,8 @@ export default function App() {
           <Route path="contractors" element={<ContractorsPage />} />
           <Route path="deals" element={<DealsRoute />} />
           <Route path="deals/:id" element={<DealDetailRoute />} />
+          <Route path="invoices" element={<InvoicesRoute />} />
+          <Route path="invoices/:id" element={<InvoicesRoute detail />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="settings" element={<SettingsLayout />}>
             <Route index element={<Navigate to="legal-entities" replace />} />

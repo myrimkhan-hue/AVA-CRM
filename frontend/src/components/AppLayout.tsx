@@ -18,12 +18,24 @@ export function AppLayout() {
     user?.roles.some((role) => role === 'ADMIN' || role === 'FINANCIER'),
   );
   const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
+  const canAccessInvoices = Boolean(
+    user?.roles.some((role) => [
+      'ADMIN',
+      'DIRECTOR',
+      'DEPARTMENT_HEAD',
+      'MANAGER',
+      'FINANCIER',
+    ].includes(role)),
+  );
 
   const navigation = useMemo(
     () => [
       { path: '/transportations', label: t('nav.transportations') },
       { path: '/contractors', label: t('nav.contractors') },
       ...(!isLogistOnly ? [{ path: '/deals', label: t('nav.deals') }] : []),
+      ...(canAccessInvoices
+        ? [{ path: '/invoices', label: t('nav.invoices') }]
+        : []),
       ...(isAdmin ? [{ path: '/users', label: t('nav.users') }] : []),
       ...(canManageLegalEntities
         ? [{
@@ -32,7 +44,7 @@ export function AppLayout() {
         }]
         : []),
     ],
-    [canManageLegalEntities, isAdmin, isLogistOnly, t],
+    [canAccessInvoices, canManageLegalEntities, isAdmin, isLogistOnly, t],
   );
 
   const initials = useMemo(

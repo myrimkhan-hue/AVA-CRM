@@ -31,9 +31,3 @@ ALTER TABLE "exchange_rates" ADD CONSTRAINT "exchange_rates_currency_code_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "exchange_rates" ADD CONSTRAINT "exchange_rates_created_by_user_id_fkey" FOREIGN KEY ("created_by_user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- RenameIndex
-ALTER INDEX "legal_entity_tax_rates_legal_entity_id_kind_effective_fr_key" RENAME TO "legal_entity_tax_rates_legal_entity_id_kind_effective_from_key";
-
--- RenameIndex
-ALTER INDEX "legal_entity_tax_rates_legal_entity_id_kind_effective_fro_idx" RENAME TO "legal_entity_tax_rates_legal_entity_id_kind_effective_from_idx";

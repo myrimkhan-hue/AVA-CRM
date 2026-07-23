@@ -30,6 +30,12 @@ enum RateSource {
   MANUAL
 }
 
+enum InvoiceStatus {
+  ISSUED
+  PARTIALLY_PAID
+  PAID
+}
+
 enum ContractorType {
   CLIENT
   CARRIER
@@ -113,6 +119,7 @@ model User {
   tableSettings              UserTableSettings[]
   createdLegalEntityTaxRates LegalEntityTaxRate[]        @relation("LegalEntityTaxRateCreatedBy")
   createdExchangeRates       ExchangeRate[]              @relation("ExchangeRateCreatedBy")
+  createdInvoicePayments     InvoicePayment[]            @relation("InvoicePaymentCreatedBy")
 
   @@map("users")
 }
@@ -158,18 +165,20 @@ model Department {
 }
 
 model LegalEntity {
-  id                  String               @id @default(cuid())
+  id                  String                  @id @default(cuid())
   name                String
-  numberingPrefix     String               @unique @map("numbering_prefix")
+  numberingPrefix     String                  @unique @map("numbering_prefix")
   bin                 String?
-  legalAddress        String?              @map("legal_address")
-  taxRegime           TaxRegime            @default(GENERAL) @map("tax_regime")
-  isActive            Boolean              @default(true) @map("is_active")
-  createdAt           DateTime             @default(now()) @map("created_at")
-  updatedAt           DateTime             @updatedAt @map("updated_at")
+  legalAddress        String?                 @map("legal_address")
+  taxRegime           TaxRegime               @default(GENERAL) @map("tax_regime")
+  isActive            Boolean                 @default(true) @map("is_active")
+  createdAt           DateTime                @default(now()) @map("created_at")
+  updatedAt           DateTime                @updatedAt @map("updated_at")
   deals               Deal[]
   dealNumberSequences DealNumberSequence[]
   taxRates            LegalEntityTaxRate[]
+  invoices            Invoice[]
+  invoiceSequences    InvoiceNumberSequence[]
 
   @@map("legal_entities")
 }
@@ -198,6 +207,7 @@ model Currency {
   isBase        Boolean        @default(false) @map("is_base")
   isActive      Boolean        @default(true) @map("is_active")
   exchangeRates ExchangeRate[]
+  invoices      Invoice[]
 
   @@map("currencies")
 }
@@ -251,6 +261,7 @@ model Contractor {
   bankAccounts       ContractorBankAccount[]
   deals              Deal[]
   transportationLegs TransportationLeg[]     @relation("TransportationLegSubcontractor")
+  clientInvoices     Invoice[]
 
   @@map("contractors")
 }
@@ -274,6 +285,7 @@ model Deal {
   responsible     User              @relation(fields: [responsibleId], references: [id])
   department      Department?       @relation(fields: [departmentId], references: [id])
   transportations Transportation[]
+  invoices        Invoice[]
 
   @@map("deals")
 }
@@ -387,6 +399,77 @@ model DealNumberSequence {
 
   @@unique([legalEntityId, year])
   @@map("deal_number_sequences")
+}
+
+model InvoiceNumberSequence {
+  id            String      @id @default(cuid())
+  legalEntityId String      @map("legal_entity_id")
+  year          Int
+  lastNumber    Int         @map("last_number")
+  legalEntity   LegalEntity @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
+
+  @@unique([legalEntityId, year])
+  @@map("invoice_number_sequences")
+}
+
+model Invoice {
+  id            String           @id @default(cuid())
+  number        String           @unique
+  dealId        String           @map("deal_id")
+  legalEntityId String           @map("legal_entity_id")
+  clientId      String           @map("client_id")
+  currencyCode  String           @map("currency_code") @db.VarChar(3)
+  issueDate     DateTime         @map("issue_date") @db.Date
+  dueDate       DateTime         @map("due_date") @db.Date
+  status        InvoiceStatus    @default(ISSUED)
+  notes         String?
+  deletedAt     DateTime?        @map("deleted_at")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  deal          Deal             @relation(fields: [dealId], references: [id], onDelete: Restrict)
+  legalEntity   LegalEntity      @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
+  client        Contractor       @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  currency      Currency         @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  lines         InvoiceLine[]
+  payments      InvoicePayment[]
+
+  @@index([dealId])
+  @@index([clientId])
+  @@index([legalEntityId])
+  @@index([status])
+  @@map("invoices")
+}
+
+model InvoiceLine {
+  id             String   @id @default(cuid())
+  invoiceId      String   @map("invoice_id")
+  sortOrder      Int      @map("sort_order")
+  serviceName    String   @map("service_name")
+  quantity       Decimal  @db.Decimal(12, 3)
+  unitPrice      Decimal  @map("unit_price") @db.Decimal(18, 2)
+  hasVat         Boolean  @map("has_vat")
+  vatRatePercent Decimal? @map("vat_rate_percent") @db.Decimal(5, 2)
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([invoiceId, sortOrder])
+  @@map("invoice_lines")
+}
+
+model InvoicePayment {
+  id                 String    @id @default(cuid())
+  invoiceId          String    @map("invoice_id")
+  paymentDate        DateTime  @map("payment_date") @db.Date
+  amount             Decimal   @db.Decimal(18, 2)
+  manualExchangeRate Decimal?  @map("manual_exchange_rate") @db.Decimal(18, 6)
+  note               String?
+  createdByUserId    String    @map("created_by_user_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  deletedAt          DateTime? @map("deleted_at")
+  invoice            Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdBy          User      @relation("InvoicePaymentCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@index([invoiceId, paymentDate])
+  @@map("invoice_payments")
 }
 
 model ContractorContact {
