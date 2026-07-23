@@ -308,6 +308,7 @@ model Transportation {
   isTempControlled      Boolean                     @default(false) @map("is_temp_controlled")
   originPoint           String                      @map("origin_point")
   destinationPoint      String                      @map("destination_point")
+  isDomestic            Boolean?                    @map("is_domestic")
   transportMode         TransportMode               @map("transport_mode")
   clientRate            Decimal?                    @map("client_rate") @db.Decimal(18, 2)
   clientRateCurrency    String?                     @map("client_rate_currency") @db.VarChar(3)

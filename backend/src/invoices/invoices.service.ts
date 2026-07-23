@@ -138,6 +138,53 @@ export class InvoicesService {
       currencies.some((currency) => currency.code === clientRateCurrency)
         ? clientRateCurrency
         : null;
+    const currencyCode =
+      suggestedCurrency ??
+      currencies.find((currency) => currency.code === 'KZT')?.code ??
+      currencies[0]?.code ??
+      null;
+    const legCurrencies = transportation.legs.map((leg) =>
+      leg.subcontractorRateCurrency?.toUpperCase() ?? null,
+    );
+    const canCalculateCarrierRate =
+      transportation.legs.length > 0 &&
+      currencyCode !== null &&
+      transportation.legs.every(
+        (leg) =>
+          leg.subcontractorRate !== null &&
+          leg.subcontractorRateCurrency !== null,
+      ) &&
+      new Set(legCurrencies).size === 1 &&
+      legCurrencies[0] === currencyCode;
+    const carrierRate = canCalculateCarrierRate
+      ? transportation.legs.reduce(
+          (total, leg) => total.plus(leg.subcontractorRate!),
+          new Prisma.Decimal(0),
+        )
+      : null;
+    const canCalculateReward =
+      carrierRate !== null &&
+      transportation.clientRate !== null &&
+      transportation.clientRateCurrency?.toUpperCase() === currencyCode;
+    const reward = canCalculateReward
+      ? transportation.clientRate!.minus(carrierRate)
+      : null;
+    const vehicleNumbers = [
+      ...new Set(
+        transportation.legs
+          .map((leg) => leg.vehicleNumber?.trim())
+          .filter((value): value is string => Boolean(value)),
+      ),
+    ];
+    const vehicleSuffix =
+      vehicleNumbers.length === 1 ? ` ${vehicleNumbers[0]}` : '';
+    const isVatPayer = vatRate?.isVatPayer === true;
+    const rewardVat =
+      isVatPayer && transportation.isDomestic === true
+        ? vatRate.ratePercent
+        : isVatPayer && transportation.isDomestic === false
+          ? new Prisma.Decimal(0)
+          : null;
 
     return {
       transportation: {
@@ -145,6 +192,7 @@ export class InvoicesService {
         number: transportation.number,
         originPoint: transportation.originPoint,
         destinationPoint: transportation.destinationPoint,
+        isDomestic: transportation.isDomestic,
         clientRate: transportation.clientRate,
         clientRateCurrency: transportation.clientRateCurrency,
       },
@@ -156,22 +204,27 @@ export class InvoicesService {
       },
       currencies,
       suggested: {
-        currencyCode:
-          suggestedCurrency ??
-          currencies.find((currency) => currency.code === 'KZT')?.code ??
-          currencies[0]?.code ??
-          null,
+        currencyCode,
         issueDate: this.dateString(issueDate),
         dueDate: this.dateString(dueDate),
-        hasVat: vatRate?.isVatPayer === true,
-        vatRatePercent:
-          vatRate?.isVatPayer === true ? vatRate.ratePercent : null,
-        serviceName:
-          transportation.clientRate !== null
-            ? `${transportation.originPoint} — ${transportation.destinationPoint}`
-            : '',
-        quantity: 1,
-        unitPrice: transportation.clientRate,
+        lines: [
+          {
+            serviceName:
+              `Транспортно-Экспедиторские услуги ` +
+              `${transportation.originPoint} — ${transportation.destinationPoint}${vehicleSuffix}`,
+            quantity: 1,
+            unitPrice: carrierRate,
+            hasVat: false,
+            vatRatePercent: null,
+          },
+          {
+            serviceName: 'Вознаграждение экспедитора',
+            quantity: 1,
+            unitPrice: reward,
+            hasVat: rewardVat !== null,
+            vatRatePercent: rewardVat,
+          },
+        ],
       },
     };
   }
@@ -520,8 +573,17 @@ export class InvoicesService {
         number: true,
         originPoint: true,
         destinationPoint: true,
+        isDomestic: true,
         clientRate: true,
         clientRateCurrency: true,
+        legs: {
+          select: {
+            subcontractorRate: true,
+            subcontractorRateCurrency: true,
+            vehicleNumber: true,
+          },
+          orderBy: { orderIndex: 'asc' },
+        },
         deal: {
           select: {
             id: true,

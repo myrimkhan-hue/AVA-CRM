@@ -73,6 +73,10 @@ export class CreateTransportationDto {
   @MinLength(1, { message: 'Укажите пункт назначения' })
   destinationPoint!: string;
 
+  @IsOptional()
+  @IsBoolean({ message: 'Признак маршрута по РК должен быть логическим значением' })
+  isDomestic?: boolean;
+
   @IsEnum(TransportMode, { message: 'Указан неизвестный вид транспорта' })
   transportMode!: TransportMode;
 

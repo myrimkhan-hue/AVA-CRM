@@ -34,6 +34,7 @@ interface CreateContext {
     destinationPoint: string;
     clientRate: string | null;
     clientRateCurrency: string | null;
+    isDomestic: boolean | null;
   };
   deal: {
     id: string;
@@ -46,11 +47,13 @@ interface CreateContext {
     currencyCode: string | null;
     issueDate: string;
     dueDate: string;
-    hasVat: boolean;
-    vatRatePercent: string | null;
-    serviceName: string;
-    quantity: number;
-    unitPrice: string | null;
+    lines: Array<{
+      serviceName: string;
+      quantity: number;
+      unitPrice: string | null;
+      hasVat: boolean;
+      vatRatePercent: string | null;
+    }>;
   };
 }
 
@@ -111,17 +114,15 @@ export function CreateInvoiceModal({
         currencyCode: result.suggested.currencyCode ?? undefined,
         issueDate: result.suggested.issueDate,
         dueDate: result.suggested.dueDate,
-        lines: [{
-          serviceName: result.suggested.serviceName,
-          quantity: result.suggested.quantity,
-          unitPrice: result.suggested.unitPrice === null
-            ? 0
-            : Number(result.suggested.unitPrice),
-          hasVat: result.suggested.hasVat,
-          vatRatePercent: result.suggested.vatRatePercent === null
+        lines: result.suggested.lines.map((line) => ({
+          serviceName: line.serviceName,
+          quantity: line.quantity,
+          unitPrice: line.unitPrice === null ? 0 : Number(line.unitPrice),
+          hasVat: line.hasVat,
+          vatRatePercent: line.vatRatePercent === null
             ? undefined
-            : Number(result.suggested.vatRatePercent),
-        }],
+            : Number(line.vatRatePercent),
+        })),
       });
     } catch (error) {
       showError(error);
@@ -354,10 +355,14 @@ export function CreateInvoiceModal({
                     serviceName: '',
                     quantity: 1,
                     unitPrice: 0,
-                    hasVat: context?.suggested.hasVat ?? false,
-                    vatRatePercent: context?.suggested.vatRatePercent === null
+                    hasVat: context?.suggested.lines[1]?.hasVat ?? false,
+                    vatRatePercent:
+                      context?.suggested.lines[1]?.vatRatePercent === null ||
+                      context?.suggested.lines[1]?.vatRatePercent === undefined
                       ? undefined
-                      : Number(context?.suggested.vatRatePercent),
+                      : Number(
+                        context?.suggested.lines[1]?.vatRatePercent,
+                      ),
                   })}
                 >
                   {t('invoices.actions.addLine')}

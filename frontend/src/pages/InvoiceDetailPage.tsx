@@ -161,8 +161,13 @@ export function TransportationInvoiceCard({
           : Number(line.vatRatePercent),
       });
     } else {
-      let hasVat = false;
-      let vatRatePercent: number | undefined;
+      let suggestedLine: {
+        serviceName: string;
+        quantity: number;
+        unitPrice: string | null;
+        hasVat: boolean;
+        vatRatePercent: string | null;
+      } | undefined;
       try {
         const params = new URLSearchParams({
           transportationId,
@@ -170,23 +175,35 @@ export function TransportationInvoiceCard({
         });
         const context = await apiRequest<{
           suggested: {
-            hasVat: boolean;
-            vatRatePercent: string | null;
+            lines: Array<{
+              serviceName: string;
+              quantity: number;
+              unitPrice: string | null;
+              hasVat: boolean;
+              vatRatePercent: string | null;
+            }>;
           };
         }>(`/invoices/create-context?${params.toString()}`);
-        hasVat = context.suggested.hasVat;
-        vatRatePercent = context.suggested.vatRatePercent === null
-          ? undefined
-          : Number(context.suggested.vatRatePercent);
+        suggestedLine = context.suggested.lines.find((suggestion) =>
+          !invoice?.lines.some(
+            (existing) => existing.serviceName === suggestion.serviceName,
+          ),
+        );
       } catch (error) {
         showError(error);
       }
       lineForm.setFieldsValue({
-        serviceName: '',
-        quantity: 1,
-        unitPrice: 0,
-        hasVat,
-        vatRatePercent,
+        serviceName: suggestedLine?.serviceName ?? '',
+        quantity: suggestedLine?.quantity ?? 1,
+        unitPrice: suggestedLine?.unitPrice === null ||
+          suggestedLine?.unitPrice === undefined
+          ? 0
+          : Number(suggestedLine.unitPrice),
+        hasVat: suggestedLine?.hasVat ?? false,
+        vatRatePercent: suggestedLine?.vatRatePercent === null ||
+          suggestedLine?.vatRatePercent === undefined
+          ? undefined
+          : Number(suggestedLine.vatRatePercent),
       });
     }
     setLineOpen(true);
