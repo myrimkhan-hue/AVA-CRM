@@ -9,8 +9,8 @@ import {
 
 export class InvoiceQueryDto {
   @IsOptional()
-  @IsString({ message: 'dealId должен быть строкой' })
-  dealId?: string;
+  @IsString({ message: 'transportationId должен быть строкой' })
+  transportationId?: string;
 
   @IsOptional()
   @IsString({ message: 'clientId должен быть строкой' })

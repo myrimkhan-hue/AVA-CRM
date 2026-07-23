@@ -32,11 +32,17 @@ export interface Invoice {
   notes: string | null;
   deletedAt: string | null;
   isOverdue: boolean;
-  deal: {
+  transportation: {
     id: string;
     number: string;
-    responsible: { id: string; fullName: string };
-    department: { id: string; name: string } | null;
+    originPoint: string;
+    destinationPoint: string;
+    deal: {
+      id: string;
+      number: string;
+      responsible: { id: string; fullName: string };
+      department: { id: string; name: string } | null;
+    };
   };
   client: { id: string; name: string };
   legalEntity: { id: string; name: string; numberingPrefix: string };

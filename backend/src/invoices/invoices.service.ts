@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -22,14 +23,22 @@ import { UpdateInvoiceLineDto } from './dto/update-invoice-line.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 
 const invoiceInclude = {
-  deal: {
+  transportation: {
     select: {
       id: true,
       number: true,
-      responsibleId: true,
-      departmentId: true,
-      responsible: { select: { id: true, fullName: true } },
-      department: { select: { id: true, name: true } },
+      originPoint: true,
+      destinationPoint: true,
+      deal: {
+        select: {
+          id: true,
+          number: true,
+          responsibleId: true,
+          departmentId: true,
+          responsible: { select: { id: true, fullName: true } },
+          department: { select: { id: true, name: true } },
+        },
+      },
     },
   },
   legalEntity: {
@@ -70,7 +79,7 @@ export class InvoicesService {
           this.visibilityWhere(user),
           {
             deletedAt: query.includeDeleted ? undefined : null,
-            dealId: query.dealId,
+            transportationId: query.transportationId,
             clientId: query.clientId,
             status: query.status,
             legalEntityId: query.legalEntityId,
@@ -96,7 +105,11 @@ export class InvoicesService {
     const issueDate = query.issueDate
       ? this.parseDate(query.issueDate)
       : this.today();
-    const deal = await this.getVisibleDeal(query.dealId, user);
+    const transportation = await this.getVisibleTransportation(
+      query.transportationId,
+      user,
+    );
+    const deal = transportation.deal;
     const [currencies, vatRate] = await Promise.all([
       this.prisma.currency.findMany({
         where: { isActive: true },
@@ -116,8 +129,25 @@ export class InvoicesService {
         : 0;
     const dueDate = new Date(issueDate);
     dueDate.setUTCDate(dueDate.getUTCDate() + postpaymentDays);
+    const clientRateCurrency =
+      transportation.clientRate !== null
+        ? transportation.clientRateCurrency
+        : null;
+    const suggestedCurrency =
+      clientRateCurrency &&
+      currencies.some((currency) => currency.code === clientRateCurrency)
+        ? clientRateCurrency
+        : null;
 
     return {
+      transportation: {
+        id: transportation.id,
+        number: transportation.number,
+        originPoint: transportation.originPoint,
+        destinationPoint: transportation.destinationPoint,
+        clientRate: transportation.clientRate,
+        clientRateCurrency: transportation.clientRateCurrency,
+      },
       deal: {
         id: deal.id,
         number: deal.number,
@@ -127,6 +157,7 @@ export class InvoicesService {
       currencies,
       suggested: {
         currencyCode:
+          suggestedCurrency ??
           currencies.find((currency) => currency.code === 'KZT')?.code ??
           currencies[0]?.code ??
           null,
@@ -135,15 +166,37 @@ export class InvoicesService {
         hasVat: vatRate?.isVatPayer === true,
         vatRatePercent:
           vatRate?.isVatPayer === true ? vatRate.ratePercent : null,
+        serviceName:
+          transportation.clientRate !== null
+            ? `${transportation.originPoint} — ${transportation.destinationPoint}`
+            : '',
+        quantity: 1,
+        unitPrice: transportation.clientRate,
       },
     };
   }
 
   async create(dto: CreateInvoiceDto, user: AuthUser) {
-    const deal = await this.getVisibleDeal(dto.dealId, user);
+    const transportation = await this.getVisibleTransportation(
+      dto.transportationId,
+      user,
+    );
+    const deal = transportation.deal;
     if (this.isManagerOnly(user) && deal.responsibleId !== user.id) {
       throw new ForbiddenException(
-        'Менеджер может создавать счета только по своим сделкам',
+        'Менеджер может создавать счета только по перевозкам своих сделок',
+      );
+    }
+    const existingInvoice = await this.prisma.invoice.findFirst({
+      where: {
+        transportationId: transportation.id,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+    if (existingInvoice) {
+      throw new ConflictException(
+        'Для этой перевозки счёт уже существует',
       );
     }
     const currencyCode = dto.currencyCode.trim().toUpperCase();
@@ -184,7 +237,7 @@ export class InvoicesService {
           const invoice = await tx.invoice.create({
             data: {
               number,
-              dealId: deal.id,
+              transportationId: transportation.id,
               legalEntityId: deal.legalEntityId,
               clientId: deal.clientId,
               currencyCode,
@@ -211,6 +264,11 @@ export class InvoicesService {
         });
         return this.toResponse(created);
       } catch (error: unknown) {
+        if (this.isTransportationConflict(error)) {
+          throw new ConflictException(
+            'Для этой перевозки счёт уже существует',
+          );
+        }
         if (this.isUniqueConflict(error) && attempt < 3) continue;
         if (this.isUniqueConflict(error)) {
           throw new BadRequestException(
@@ -412,22 +470,21 @@ export class InvoicesService {
     ) {
       return {};
     }
-    const conditions: Prisma.DealWhereInput[] = [];
+    const conditions: Prisma.TransportationWhereInput[] = [];
     if (user.roles.includes('DEPARTMENT_HEAD') && user.departmentId) {
-      conditions.push({ departmentId: user.departmentId });
+      conditions.push({ deal: { departmentId: user.departmentId } });
     }
-    if (
-      user.roles.includes('DEPARTMENT_HEAD') ||
-      user.roles.includes('MANAGER')
-    ) {
-      conditions.push({ responsibleId: user.id });
+    if (user.roles.includes('MANAGER')) {
+      conditions.push({ deal: { responsibleId: user.id } });
     }
     return conditions.length
-      ? { deal: { is: { OR: conditions } } }
+      ? { transportation: { is: { OR: conditions } } }
       : { id: { in: [] } };
   }
 
-  private dealVisibilityWhere(user: AuthUser): Prisma.DealWhereInput {
+  private transportationVisibilityWhere(
+    user: AuthUser,
+  ): Prisma.TransportationWhereInput {
     if (
       user.roles.some((role) =>
         ['ADMIN', 'DIRECTOR', 'FINANCIER'].includes(role),
@@ -435,50 +492,63 @@ export class InvoicesService {
     ) {
       return {};
     }
-    const conditions: Prisma.DealWhereInput[] = [];
+    const conditions: Prisma.TransportationWhereInput[] = [];
     if (user.roles.includes('DEPARTMENT_HEAD') && user.departmentId) {
-      conditions.push({ departmentId: user.departmentId });
+      conditions.push({ deal: { departmentId: user.departmentId } });
     }
-    if (
-      user.roles.includes('DEPARTMENT_HEAD') ||
-      user.roles.includes('MANAGER')
-    ) {
-      conditions.push({ responsibleId: user.id });
+    if (user.roles.includes('MANAGER')) {
+      conditions.push({ deal: { responsibleId: user.id } });
     }
     return conditions.length ? { OR: conditions } : { id: { in: [] } };
   }
 
-  private async getVisibleDeal(id: string, user: AuthUser) {
-    const exists = await this.prisma.deal.findUnique({
+  private async getVisibleTransportation(id: string, user: AuthUser) {
+    const exists = await this.prisma.transportation.findUnique({
       where: { id },
       select: { id: true },
     });
-    if (!exists) throw new NotFoundException('Сделка не найдена');
-    const deal = await this.prisma.deal.findFirst({
+    if (!exists) throw new NotFoundException('Перевозка не найдена');
+    const transportation = await this.prisma.transportation.findFirst({
       where: {
-        AND: [{ id, deletedAt: null }, this.dealVisibilityWhere(user)],
+        AND: [
+          { id, deletedAt: null, deal: { deletedAt: null } },
+          this.transportationVisibilityWhere(user),
+        ],
       },
       select: {
         id: true,
         number: true,
-        clientId: true,
-        legalEntityId: true,
-        responsibleId: true,
-        legalEntity: {
-          select: { id: true, name: true, numberingPrefix: true },
-        },
-        client: {
+        originPoint: true,
+        destinationPoint: true,
+        clientRate: true,
+        clientRateCurrency: true,
+        deal: {
           select: {
             id: true,
-            name: true,
-            paymentTerm: true,
-            postpaymentDays: true,
+            number: true,
+            clientId: true,
+            legalEntityId: true,
+            responsibleId: true,
+            departmentId: true,
+            legalEntity: {
+              select: { id: true, name: true, numberingPrefix: true },
+            },
+            client: {
+              select: {
+                id: true,
+                name: true,
+                paymentTerm: true,
+                postpaymentDays: true,
+              },
+            },
           },
         },
       },
     });
-    if (!deal) throw new ForbiddenException('Нет доступа к этой сделке');
-    return deal;
+    if (!transportation) {
+      throw new ForbiddenException('Нет доступа к счёту этой перевозки');
+    }
+    return transportation;
   }
 
   private async getVisibleInvoice(
@@ -660,6 +730,15 @@ export class InvoicesService {
     );
   }
 
+  private isTransportationConflict(error: unknown): boolean {
+    if (!this.isUniqueConflict(error)) return false;
+    const target = (error as Prisma.PrismaClientKnownRequestError).meta
+      ?.target;
+    return Array.isArray(target)
+      ? target.includes('transportation_id')
+      : String(target ?? '').includes('transportation_id');
+  }
+
   private creationChanges(invoice: InvoiceWithRelations): Changes {
     const changes: Changes = {};
     for (const [key, value] of Object.entries(this.snapshot(invoice))) {
@@ -686,7 +765,7 @@ export class InvoicesService {
   private snapshot(invoice: InvoiceWithRelations): Record<string, unknown> {
     return {
       number: invoice.number,
-      dealId: invoice.dealId,
+      transportationId: invoice.transportationId,
       legalEntityId: invoice.legalEntityId,
       clientId: invoice.clientId,
       currencyCode: invoice.currencyCode,

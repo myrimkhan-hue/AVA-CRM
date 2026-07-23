@@ -1,8 +1,8 @@
 import { IsDateString, IsOptional, IsString } from 'class-validator';
 
 export class InvoiceContextQueryDto {
-  @IsString({ message: 'dealId должен быть строкой' })
-  dealId!: string;
+  @IsString({ message: 'transportationId должен быть строкой' })
+  transportationId!: string;
 
   @IsOptional()
   @IsDateString(

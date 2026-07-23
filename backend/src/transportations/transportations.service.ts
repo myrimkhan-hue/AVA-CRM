@@ -52,6 +52,15 @@ const transportationInclude = {
     include: { subcontractor: { select: { id: true, name: true } } },
     orderBy: { orderIndex: 'asc' as const },
   },
+  invoices: {
+    where: { deletedAt: null },
+    take: 1,
+    select: {
+      id: true,
+      number: true,
+      status: true,
+    },
+  },
 } satisfies Prisma.TransportationInclude;
 
 const eventInclude = {
@@ -418,8 +427,20 @@ export class TransportationsService {
   }
 
   private present(row: TransportationWithRelations, user: AuthUser) {
-    if (this.canSeeClientRate(user, row)) return row;
-    const { clientRate: _clientRate, clientRateCurrency: _clientRateCurrency, ...visible } = row;
+    if (this.canSeeClientRate(user, row)) {
+      const invoice = row.invoices[0] ?? null;
+      const { invoices: _invoices, ...transportation } = row;
+      return {
+        ...transportation,
+        invoice,
+      };
+    }
+    const {
+      clientRate: _clientRate,
+      clientRateCurrency: _clientRateCurrency,
+      invoices: _invoices,
+      ...visible
+    } = row;
     return visible;
   }
 

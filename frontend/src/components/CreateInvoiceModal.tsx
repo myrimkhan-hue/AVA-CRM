@@ -26,6 +26,14 @@ interface Currency {
 }
 
 interface CreateContext {
+  transportation: {
+    id: string;
+    number: string;
+    originPoint: string;
+    destinationPoint: string;
+    clientRate: string | null;
+    clientRateCurrency: string | null;
+  };
   deal: {
     id: string;
     number: string;
@@ -39,6 +47,9 @@ interface CreateContext {
     dueDate: string;
     hasVat: boolean;
     vatRatePercent: string | null;
+    serviceName: string;
+    quantity: number;
+    unitPrice: string | null;
   };
 }
 
@@ -59,14 +70,14 @@ interface CreateValues {
 }
 
 interface Props {
-  dealId: string;
+  transportationId: string;
   open: boolean;
   onClose: () => void;
   onCreated: (invoice: Invoice) => void;
 }
 
 export function CreateInvoiceModal({
-  dealId,
+  transportationId,
   open,
   onClose,
   onCreated,
@@ -89,7 +100,7 @@ export function CreateInvoiceModal({
   const loadContext = useCallback(async (issueDate?: string) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ dealId });
+      const params = new URLSearchParams({ transportationId });
       if (issueDate) params.set('issueDate', issueDate);
       const result = await apiRequest<CreateContext>(
         `/invoices/create-context?${params.toString()}`,
@@ -100,9 +111,11 @@ export function CreateInvoiceModal({
         issueDate: result.suggested.issueDate,
         dueDate: result.suggested.dueDate,
         lines: [{
-          serviceName: '',
-          quantity: 1,
-          unitPrice: 0,
+          serviceName: result.suggested.serviceName,
+          quantity: result.suggested.quantity,
+          unitPrice: result.suggested.unitPrice === null
+            ? 0
+            : Number(result.suggested.unitPrice),
           hasVat: result.suggested.hasVat,
           vatRatePercent: result.suggested.vatRatePercent === null
             ? undefined
@@ -114,7 +127,7 @@ export function CreateInvoiceModal({
     } finally {
       setLoading(false);
     }
-  }, [dealId, form, showError]);
+  }, [form, showError, transportationId]);
 
   useEffect(() => {
     if (open) void loadContext();
@@ -129,7 +142,7 @@ export function CreateInvoiceModal({
     try {
       const invoice = await apiRequest<Invoice>('/invoices', {
         method: 'POST',
-        body: JSON.stringify({ ...values, dealId }),
+        body: JSON.stringify({ ...values, transportationId }),
       });
       void message.success(
         t('invoices.messages.created', { number: invoice.number }),
@@ -168,6 +181,11 @@ export function CreateInvoiceModal({
               size="small"
               column={3}
               items={[
+                {
+                  key: 'transportation',
+                  label: t('invoices.fields.transportation'),
+                  children: context.transportation.number,
+                },
                 {
                   key: 'deal',
                   label: t('invoices.fields.deal'),

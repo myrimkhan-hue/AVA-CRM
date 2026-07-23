@@ -14,7 +14,6 @@ import { LegalEntitiesPage } from './pages/LegalEntitiesPage';
 import { SettingsLayout } from './components/SettingsLayout';
 import { CurrenciesPage } from './pages/CurrenciesPage';
 import { InvoicesPage } from './pages/InvoicesPage';
-import { InvoiceDetailPage } from './pages/InvoiceDetailPage';
 
 const INVOICE_ROLES = [
   'ADMIN',
@@ -36,13 +35,13 @@ function DealDetailRoute() {
   return isLogistOnly ? <Navigate to="/transportations" replace /> : <DealDetailPage />;
 }
 
-function InvoicesRoute({ detail = false }: { detail?: boolean }) {
+function InvoicesRoute() {
   const { user } = useAuth();
   const canAccess = Boolean(
     user?.roles.some((role) => INVOICE_ROLES.includes(role)),
   );
   if (!canAccess) return <Navigate to="/transportations" replace />;
-  return detail ? <InvoiceDetailPage /> : <InvoicesPage />;
+  return <InvoicesPage />;
 }
 
 export default function App() {
@@ -59,7 +58,6 @@ export default function App() {
           <Route path="deals" element={<DealsRoute />} />
           <Route path="deals/:id" element={<DealDetailRoute />} />
           <Route path="invoices" element={<InvoicesRoute />} />
-          <Route path="invoices/:id" element={<InvoicesRoute detail />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="settings" element={<SettingsLayout />}>
             <Route index element={<Navigate to="legal-entities" replace />} />

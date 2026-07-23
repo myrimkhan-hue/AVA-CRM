@@ -266,6 +266,9 @@ button, input { font: inherit; }
 .invoice-line-form { padding: 12px 12px 0; background: #fafbfc; border: 1px solid #e3e8ef; border-radius: 10px; }
 .invoice-line-form .ant-input-number, .invoice-detail-page .ant-input-number { width: 100%; }
 .invoice-detail-page { display: flex; flex-direction: column; gap: 14px; }
+.transportation-invoice-section { display: flex; flex-direction: column; gap: 14px; }
+.transportation-invoice-section .deal-detail-heading { margin-bottom: 0; }
+.transportation-invoice-section .deal-detail-heading h4.ant-typography { margin: 0; }
 .invoice-detail-page > .deal-detail-back { align-self: flex-start; margin-bottom: -7px; }
 .invoice-totals { width: min(100%, 390px); margin: 18px 0 0 auto; }
 .invoice-totals .ant-descriptions-item-label { width: 190px; }

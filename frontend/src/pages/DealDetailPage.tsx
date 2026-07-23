@@ -2,7 +2,6 @@ import {
   CheckOutlined,
   DeleteOutlined,
   EditOutlined,
-  FileAddOutlined,
   StopOutlined,
 } from '@ant-design/icons';
 import {
@@ -36,7 +35,10 @@ import {
   RejectReason,
 } from '../deals/shared';
 import { STATUS_COLORS, TransportationStatus } from '../transportations/shared';
-import { CreateInvoiceModal } from '../components/CreateInvoiceModal';
+import {
+  INVOICE_STATUS_COLORS,
+  InvoiceStatus,
+} from '../invoices/shared';
 
 interface Transportation {
   id: string;
@@ -45,6 +47,11 @@ interface Transportation {
   destinationPoint: string;
   status: TransportationStatus;
   plannedDeliveryDate: string | null;
+  invoice?: {
+    id: string;
+    number: string;
+    status: InvoiceStatus;
+  } | null;
 }
 
 interface RejectValues {
@@ -71,17 +78,9 @@ export function DealDetailPage() {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
-  const [invoiceOpen, setInvoiceOpen] = useState(false);
   const selectedReason = Form.useWatch('rejectReason', rejectForm);
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
   const mayEditDeals = Boolean(user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'].includes(role)));
-  const mayManageInvoices = Boolean(user?.roles.some((role) => [
-    'ADMIN',
-    'DIRECTOR',
-    'DEPARTMENT_HEAD',
-    'MANAGER',
-    'FINANCIER',
-  ].includes(role)));
 
   const showError = useCallback((error: unknown) => {
     void message.error(error instanceof ApiError ? error.message || t('errors.request') : t('errors.connection'));
@@ -199,6 +198,15 @@ export function DealDetailPage() {
       render: (status: TransportationStatus) => <Tag bordered={false} style={STATUS_COLORS[status]}>{t(`transportations.statuses.${status}`)}</Tag>,
     },
     {
+      title: t('deals.detail.transportations.invoice'), dataIndex: 'invoice', width: 210,
+      render: (invoice: Transportation['invoice']) => invoice
+        ? <Space direction="vertical" size={2}>
+          <Typography.Text strong>{invoice.number}</Typography.Text>
+          <Tag color={INVOICE_STATUS_COLORS[invoice.status]}>{t(`invoices.statuses.${invoice.status}`)}</Tag>
+        </Space>
+        : t('common.dash'),
+    },
+    {
       title: t('deals.detail.transportations.plan'), dataIndex: 'plannedDeliveryDate', width: 165,
       render: (value: string | null) => formatDate(value),
     },
@@ -220,15 +228,6 @@ export function DealDetailPage() {
         {deal.deletedAt && <Tag>{t('deals.status.deleted')}</Tag>}
       </Space>
       <Space wrap>
-        {mayManageInvoices && activeDeal && (
-          <Button
-            type="primary"
-            icon={<FileAddOutlined />}
-            onClick={() => setInvoiceOpen(true)}
-          >
-            {t('invoices.actions.issue')}
-          </Button>
-        )}
         {mayEditDeals && activeDeal && <Button danger icon={<StopOutlined />} onClick={openReject}>{t('deals.detail.actions.reject')}</Button>}
         {mayEditDeals && activeDeal && <Button icon={<EditOutlined />} onClick={openNotes}>{t('deals.detail.actions.edit')}</Button>}
         {isAdmin && activeDeal && <Button danger type="text" icon={<DeleteOutlined />} onClick={removeDeal}>{t('deals.actions.delete')}</Button>}
@@ -333,12 +332,5 @@ export function DealDetailPage() {
         <Form.Item name="notes" label={t('deals.form.notes')}><Input.TextArea rows={6} /></Form.Item>
       </Form>
     </Modal>
-
-    <CreateInvoiceModal
-      dealId={deal.id}
-      open={invoiceOpen}
-      onClose={() => setInvoiceOpen(false)}
-      onCreated={(invoice) => navigate(`/invoices/${invoice.id}`)}
-    />
   </section>;
 }

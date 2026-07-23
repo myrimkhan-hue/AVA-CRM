@@ -78,8 +78,13 @@ export function InvoicesPage() {
       render: (value: string) => <Typography.Text strong>{value}</Typography.Text>,
     },
     {
+      title: t('invoices.columns.transportation'),
+      dataIndex: ['transportation', 'number'],
+      width: 180,
+    },
+    {
       title: t('invoices.columns.deal'),
-      dataIndex: ['deal', 'number'],
+      dataIndex: ['transportation', 'deal', 'number'],
       width: 160,
     },
     {
@@ -172,10 +177,12 @@ export function InvoicesPage() {
           loading={loading}
           columns={columns}
           dataSource={invoices}
-          scroll={{ x: 1120 }}
+          scroll={{ x: 1280 }}
           locale={{ emptyText: t('invoices.empty') }}
           onRow={(invoice) => ({
-            onClick: () => navigate(`/invoices/${invoice.id}`),
+            onClick: () => navigate(
+              `/transportations/${invoice.transportation.id}`,
+            ),
           })}
         />
       </Card>

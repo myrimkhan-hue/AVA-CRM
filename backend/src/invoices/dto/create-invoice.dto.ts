@@ -11,8 +11,8 @@ import {
 import { InvoiceLineDto } from './invoice-line.dto';
 
 export class CreateInvoiceDto {
-  @IsString({ message: 'dealId должен быть строкой' })
-  dealId!: string;
+  @IsString({ message: 'transportationId должен быть строкой' })
+  transportationId!: string;
 
   @Matches(/^[A-Z]{3}$/, {
     message: 'Код валюты должен состоять из трёх латинских букв',

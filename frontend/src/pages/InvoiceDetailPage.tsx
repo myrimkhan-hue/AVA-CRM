@@ -25,9 +25,9 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { CreateInvoiceModal } from '../components/CreateInvoiceModal';
 import {
   INVOICE_STATUS_COLORS,
   Invoice,
@@ -56,9 +56,11 @@ interface PaymentValues {
   note?: string;
 }
 
-export function InvoiceDetailPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
+export function TransportationInvoiceCard({
+  transportationId,
+}: {
+  transportationId: string;
+}) {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const { message, modal } = App.useApp();
@@ -72,6 +74,7 @@ export function InvoiceDetailPage() {
   const [headerOpen, setHeaderOpen] = useState(false);
   const [lineOpen, setLineOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
   const [editingLine, setEditingLine] = useState<InvoiceLine>();
   const selectedHasVat = Form.useWatch('hasVat', lineForm);
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
@@ -85,18 +88,20 @@ export function InvoiceDetailPage() {
   }, [message, t]);
 
   const loadInvoice = useCallback(async () => {
-    if (!id) return;
     setLoading(true);
     setLoadFailed(false);
     try {
-      setInvoice(await apiRequest<Invoice>(`/invoices/${id}`));
+      const invoices = await apiRequest<Invoice[]>(
+        `/invoices?transportationId=${encodeURIComponent(transportationId)}`,
+      );
+      setInvoice(invoices[0]);
     } catch (error) {
       setLoadFailed(true);
       showError(error);
     } finally {
       setLoading(false);
     }
-  }, [id, showError]);
+  }, [showError, transportationId]);
 
   useEffect(() => {
     void loadInvoice();
@@ -159,7 +164,7 @@ export function InvoiceDetailPage() {
       let vatRatePercent: number | undefined;
       try {
         const params = new URLSearchParams({
-          dealId: invoice?.deal.id ?? '',
+          transportationId,
           issueDate: invoice?.issueDate.slice(0, 10) ?? '',
         });
         const context = await apiRequest<{
@@ -275,7 +280,7 @@ export function InvoiceDetailPage() {
         try {
           await apiRequest(`/invoices/${invoice.id}`, { method: 'DELETE' });
           void message.success(t('invoices.messages.deleted'));
-          navigate('/invoices', { replace: true });
+          setInvoice(undefined);
         } catch (error) {
           showError(error);
           throw error;
@@ -388,30 +393,63 @@ export function InvoiceDetailPage() {
     },
   ], [formatDate, formatMoney, t]);
 
-  if (loading) return <Spin className="detail-spin" />;
-  if (loadFailed || !invoice) {
+  if (loading) return <Card className="transport-card"><Spin /></Card>;
+  if (loadFailed) {
     return (
-      <Result
-        status="warning"
-        title={t('invoices.detail.loadFailed')}
-        extra={(
-          <Button onClick={() => navigate('/invoices')}>
-            {t('invoices.detail.back')}
-          </Button>
-        )}
-      />
+      <Card className="transport-card" title={t('invoices.sections.invoice')}>
+        <Result
+          status="warning"
+          title={t('invoices.detail.loadFailed')}
+          extra={(
+            <Button onClick={() => void loadInvoice()}>
+              {t('invoices.actions.retry')}
+            </Button>
+          )}
+        />
+      </Card>
+    );
+  }
+  if (!invoice) {
+    return (
+      <>
+        <Card
+          className="transport-card"
+          title={t('invoices.sections.invoice')}
+          extra={(
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setCreateOpen(true)}
+            >
+              {t('invoices.actions.issue')}
+            </Button>
+          )}
+        >
+          <Typography.Text type="secondary">
+            {t('invoices.emptyForTransportation')}
+          </Typography.Text>
+        </Card>
+        <CreateInvoiceModal
+          transportationId={transportationId}
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          onCreated={(created) => {
+            setInvoice(created);
+            setCreateOpen(false);
+          }}
+        />
+      </>
     );
   }
 
   return (
-    <section className="invoice-detail-page">
-      <Link className="deal-detail-back" to="/invoices">
-        {t('invoices.detail.back')}
-      </Link>
+    <section className="transportation-invoice-section">
       <div className="deal-detail-heading">
         <Space wrap>
-          <Typography.Title level={2}>
-            {t('invoices.detail.title', { number: invoice.number })}
+          <Typography.Title level={4}>
+            {t('invoices.sections.invoiceWithNumber', {
+              number: invoice.number,
+            })}
           </Typography.Title>
           <Tag color={INVOICE_STATUS_COLORS[invoice.status]}>
             {t(`invoices.statuses.${invoice.status}`)}
@@ -444,13 +482,14 @@ export function InvoiceDetailPage() {
           column={{ xs: 1, md: 2, lg: 4 }}
           items={[
             {
+              key: 'transportation',
+              label: t('invoices.fields.transportation'),
+              children: invoice.transportation.number,
+            },
+            {
               key: 'deal',
               label: t('invoices.fields.deal'),
-              children: (
-                <Link to={`/deals/${invoice.deal.id}`}>
-                  {invoice.deal.number}
-                </Link>
-              ),
+              children: invoice.transportation.deal.number,
             },
             {
               key: 'client',
@@ -480,7 +519,7 @@ export function InvoiceDetailPage() {
             {
               key: 'responsible',
               label: t('invoices.fields.responsible'),
-              children: invoice.deal.responsible.fullName,
+              children: invoice.transportation.deal.responsible.fullName,
             },
             {
               key: 'notes',
