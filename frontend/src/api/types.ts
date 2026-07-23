@@ -61,3 +61,32 @@ export interface LegalEntityTaxRate {
   createdByUserId: string | null;
   createdBy: { id: string; fullName: string } | null;
 }
+
+export interface CurrencyRecord {
+  code: string;
+  name: string;
+  isBase: boolean;
+  isActive: boolean;
+}
+
+export type RateSource = 'NBRK_AUTO' | 'MANUAL';
+
+export interface ExchangeRateRecord {
+  currencyCode: string;
+  rateDate: string;
+  rate: string;
+  source: RateSource;
+  createdByUserId: string | null;
+  createdAt: string;
+  currency: CurrencyRecord;
+  createdBy: { id: string; fullName: string } | null;
+}
+
+export interface FetchNbrkResult {
+  requestedDate: string;
+  publishedDate: string | null;
+  received: number;
+  saved: number;
+  skippedManual: number;
+  missingCurrencyCodes: string[];
+}

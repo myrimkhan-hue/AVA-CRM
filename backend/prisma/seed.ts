@@ -18,6 +18,14 @@ const roles = [
 
 const departments = ['Отдел Китая', 'РК/РФ'];
 
+const currencies = [
+  { code: 'KZT', name: 'Казахстанский тенге', isBase: true },
+  { code: 'USD', name: 'Доллар США', isBase: false },
+  { code: 'CNY', name: 'Китайский юань', isBase: false },
+  { code: 'RUB', name: 'Российский рубль', isBase: false },
+  { code: 'EUR', name: 'Евро', isBase: false },
+];
+
 const legalEntities = [
   {
     name: 'ИП Transit Trail',
@@ -105,6 +113,18 @@ async function main(): Promise<void> {
       where: { name },
       update: {},
       create: { name },
+    });
+  }
+
+  for (const currency of currencies) {
+    await prisma.currency.upsert({
+      where: { code: currency.code },
+      update: {
+        name: currency.name,
+        isBase: currency.isBase,
+        ...(currency.isBase ? { isActive: true } : {}),
+      },
+      create: currency,
     });
   }
 

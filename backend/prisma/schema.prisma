@@ -25,6 +25,11 @@ enum TaxRateKind {
   INCOME_TAX
 }
 
+enum RateSource {
+  NBRK_AUTO
+  MANUAL
+}
+
 enum ContractorType {
   CLIENT
   CARRIER
@@ -107,6 +112,7 @@ model User {
   transportationStatusEvents TransportationStatusEvent[] @relation("TransportationStatusSetBy")
   tableSettings              UserTableSettings[]
   createdLegalEntityTaxRates LegalEntityTaxRate[]        @relation("LegalEntityTaxRateCreatedBy")
+  createdExchangeRates       ExchangeRate[]              @relation("ExchangeRateCreatedBy")
 
   @@map("users")
 }
@@ -184,6 +190,31 @@ model LegalEntityTaxRate {
   @@unique([legalEntityId, kind, effectiveFrom])
   @@index([legalEntityId, kind, effectiveFrom])
   @@map("legal_entity_tax_rates")
+}
+
+model Currency {
+  code          String         @id @db.VarChar(3)
+  name          String
+  isBase        Boolean        @default(false) @map("is_base")
+  isActive      Boolean        @default(true) @map("is_active")
+  exchangeRates ExchangeRate[]
+
+  @@map("currencies")
+}
+
+model ExchangeRate {
+  currencyCode    String     @map("currency_code") @db.VarChar(3)
+  rateDate        DateTime   @map("rate_date") @db.Date
+  rate            Decimal    @db.Decimal(18, 6)
+  source          RateSource
+  createdByUserId String?    @map("created_by_user_id")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  currency        Currency   @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  createdBy       User?      @relation("ExchangeRateCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@id([currencyCode, rateDate])
+  @@index([currencyCode, rateDate])
+  @@map("exchange_rates")
 }
 
 model AuditLog {

@@ -27,7 +27,7 @@ export function AppLayout() {
       ...(isAdmin ? [{ path: '/users', label: t('nav.users') }] : []),
       ...(canManageLegalEntities
         ? [{
-          path: '/settings/legal-entities',
+          path: '/settings',
           label: t('nav.settings'),
         }]
         : []),

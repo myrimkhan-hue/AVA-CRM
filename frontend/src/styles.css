@@ -189,7 +189,8 @@ button, input { font: inherit; }
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 
-.legal-entities-page { width: min(100%, 1400px); margin: 0 auto; }
+.settings-page, .legal-entities-page, .currencies-page { width: min(100%, 1400px); margin: 0 auto; }
+.settings-tabs { margin-bottom: 8px; }
 .legal-entities-list-card { margin-bottom: 14px; }
 .legal-entities-list-card .ant-table-tbody > tr { cursor: pointer; }
 .legal-entities-list-card .ant-table-tbody > tr.selected-row > td { background: #fff1f0; }
@@ -197,6 +198,11 @@ button, input { font: inherit; }
 .legal-entity-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 18px; }
 .tax-history-card .ant-card-head { align-items: center; }
 .tax-payer-label { margin-left: 10px; }
+.currencies-list-card { margin-bottom: 14px; }
+.currencies-list-card .ant-table-tbody > tr { cursor: pointer; }
+.currencies-list-card .ant-table-tbody > tr.selected-row > td { background: #fff1f0; }
+.currency-code, .exchange-rate-value { font-variant-numeric: tabular-nums; }
+.currency-code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
 
 .deal-actions {
   margin-top: 20px;

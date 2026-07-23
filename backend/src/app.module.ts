@@ -12,6 +12,8 @@ import { DealsModule } from './deals/deals.module';
 import { TransportationsModule } from './transportations/transportations.module';
 import { TableSettingsModule } from './table-settings/table-settings.module';
 import { LegalEntitiesModule } from './legal-entities/legal-entities.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CurrenciesModule } from './currencies/currencies.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { LegalEntitiesModule } from './legal-entities/legal-entities.module';
     TransportationsModule,
     TableSettingsModule,
     LegalEntitiesModule,
+    ScheduleModule.forRoot(),
+    CurrenciesModule,
   ],
   controllers: [HealthController],
   providers: [

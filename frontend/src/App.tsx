@@ -11,6 +11,8 @@ import { TransportationDetailPage } from './pages/TransportationDetailPage';
 import { DealDetailPage } from './pages/DealDetailPage';
 import { useAuth } from './auth/AuthContext';
 import { LegalEntitiesPage } from './pages/LegalEntitiesPage';
+import { SettingsLayout } from './components/SettingsLayout';
+import { CurrenciesPage } from './pages/CurrenciesPage';
 
 function DealsRoute() {
   const { user } = useAuth();
@@ -38,7 +40,11 @@ export default function App() {
           <Route path="deals" element={<DealsRoute />} />
           <Route path="deals/:id" element={<DealDetailRoute />} />
           <Route path="users" element={<UsersPage />} />
-          <Route path="settings/legal-entities" element={<LegalEntitiesPage />} />
+          <Route path="settings" element={<SettingsLayout />}>
+            <Route index element={<Navigate to="legal-entities" replace />} />
+            <Route path="legal-entities" element={<LegalEntitiesPage />} />
+            <Route path="currencies" element={<CurrenciesPage />} />
+          </Route>
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/transportations" replace />} />
