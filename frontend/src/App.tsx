@@ -10,6 +10,7 @@ import { NewTransportationPage } from './pages/NewTransportationPage';
 import { TransportationDetailPage } from './pages/TransportationDetailPage';
 import { DealDetailPage } from './pages/DealDetailPage';
 import { useAuth } from './auth/AuthContext';
+import { LegalEntitiesPage } from './pages/LegalEntitiesPage';
 
 function DealsRoute() {
   const { user } = useAuth();
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="deals" element={<DealsRoute />} />
           <Route path="deals/:id" element={<DealDetailRoute />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="settings/legal-entities" element={<LegalEntitiesPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/transportations" replace />} />

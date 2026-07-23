@@ -14,6 +14,17 @@ enum AuditAction {
   RESTORE
 }
 
+enum TaxRegime {
+  GENERAL
+  SIMPLIFIED
+  OTHER
+}
+
+enum TaxRateKind {
+  VAT
+  INCOME_TAX
+}
+
 enum ContractorType {
   CLIENT
   CARRIER
@@ -79,22 +90,23 @@ enum LegStatus {
 }
 
 model User {
-  id                          String                      @id @default(cuid())
-  fullName                    String                      @map("full_name")
-  email                       String                      @unique
-  phone                       String?
-  passwordHash                String                      @map("password_hash")
-  departmentId                String?                     @map("department_id")
-  isActive                    Boolean                     @default(true) @map("is_active")
-  createdAt                   DateTime                    @default(now()) @map("created_at")
-  updatedAt                   DateTime                    @updatedAt @map("updated_at")
-  department                  Department?                 @relation(fields: [departmentId], references: [id])
-  roles                       UserRole[]
-  auditLogs                   AuditLog[]
-  responsibleDeals            Deal[]
-  logistTransportations       Transportation[]            @relation("TransportationLogist")
+  id                         String                      @id @default(cuid())
+  fullName                   String                      @map("full_name")
+  email                      String                      @unique
+  phone                      String?
+  passwordHash               String                      @map("password_hash")
+  departmentId               String?                     @map("department_id")
+  isActive                   Boolean                     @default(true) @map("is_active")
+  createdAt                  DateTime                    @default(now()) @map("created_at")
+  updatedAt                  DateTime                    @updatedAt @map("updated_at")
+  department                 Department?                 @relation(fields: [departmentId], references: [id])
+  roles                      UserRole[]
+  auditLogs                  AuditLog[]
+  responsibleDeals           Deal[]
+  logistTransportations      Transportation[]            @relation("TransportationLogist")
   transportationStatusEvents TransportationStatusEvent[] @relation("TransportationStatusSetBy")
-  tableSettings               UserTableSettings[]
+  tableSettings              UserTableSettings[]
+  createdLegalEntityTaxRates LegalEntityTaxRate[]        @relation("LegalEntityTaxRateCreatedBy")
 
   @@map("users")
 }
@@ -145,13 +157,33 @@ model LegalEntity {
   numberingPrefix     String               @unique @map("numbering_prefix")
   bin                 String?
   legalAddress        String?              @map("legal_address")
+  taxRegime           TaxRegime            @default(GENERAL) @map("tax_regime")
   isActive            Boolean              @default(true) @map("is_active")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
   deals               Deal[]
   dealNumberSequences DealNumberSequence[]
+  taxRates            LegalEntityTaxRate[]
 
   @@map("legal_entities")
+}
+
+model LegalEntityTaxRate {
+  id              String      @id @default(cuid())
+  legalEntityId   String      @map("legal_entity_id")
+  kind            TaxRateKind
+  ratePercent     Decimal     @map("rate_percent") @db.Decimal(5, 2)
+  isVatPayer      Boolean?    @map("is_vat_payer")
+  effectiveFrom   DateTime    @map("effective_from") @db.Date
+  note            String?
+  createdAt       DateTime    @default(now()) @map("created_at")
+  createdByUserId String?     @map("created_by_user_id")
+  legalEntity     LegalEntity @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
+  createdBy       User?       @relation("LegalEntityTaxRateCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([legalEntityId, kind, effectiveFrom])
+  @@index([legalEntityId, kind, effectiveFrom])
+  @@map("legal_entity_tax_rates")
 }
 
 model AuditLog {
@@ -168,26 +200,26 @@ model AuditLog {
 }
 
 model Contractor {
-  id                String                  @id @default(cuid())
-  name              String
-  types             ContractorType[]
-  bin               String?
-  country           String?
-  legalAddress      String?                 @map("legal_address")
-  paymentTerm       PaymentTerm?            @map("payment_term")
-  postpaymentDays   Int?                    @map("postpayment_days")
-  notes             String?
-  isProblem         Boolean                 @default(false) @map("is_problem")
-  problemComment    String?                 @map("problem_comment")
-  isBlacklisted     Boolean                 @default(false) @map("is_blacklisted")
-  blacklistReason   String?                 @map("blacklist_reason")
-  deletedAt         DateTime?               @map("deleted_at")
-  createdAt         DateTime                @default(now()) @map("created_at")
-  updatedAt         DateTime                @updatedAt @map("updated_at")
-  contacts          ContractorContact[]
-  bankAccounts      ContractorBankAccount[]
-  deals             Deal[]
-  transportationLegs TransportationLeg[]    @relation("TransportationLegSubcontractor")
+  id                 String                  @id @default(cuid())
+  name               String
+  types              ContractorType[]
+  bin                String?
+  country            String?
+  legalAddress       String?                 @map("legal_address")
+  paymentTerm        PaymentTerm?            @map("payment_term")
+  postpaymentDays    Int?                    @map("postpayment_days")
+  notes              String?
+  isProblem          Boolean                 @default(false) @map("is_problem")
+  problemComment     String?                 @map("problem_comment")
+  isBlacklisted      Boolean                 @default(false) @map("is_blacklisted")
+  blacklistReason    String?                 @map("blacklist_reason")
+  deletedAt          DateTime?               @map("deleted_at")
+  createdAt          DateTime                @default(now()) @map("created_at")
+  updatedAt          DateTime                @updatedAt @map("updated_at")
+  contacts           ContractorContact[]
+  bankAccounts       ContractorBankAccount[]
+  deals              Deal[]
+  transportationLegs TransportationLeg[]     @relation("TransportationLegSubcontractor")
 
   @@map("contractors")
 }
@@ -268,30 +300,30 @@ model Transportation {
 }
 
 model TransportationLeg {
-  id                     String           @id @default(cuid())
-  transportationId       String           @map("transportation_id")
-  orderIndex             Int              @map("order_index")
-  fromPoint              String           @map("from_point")
-  toPoint                String           @map("to_point")
-  mode                   LegTransportMode
-  subcontractorId        String?          @map("subcontractor_id")
-  subcontractorRate      Decimal?         @map("subcontractor_rate") @db.Decimal(18, 2)
-  subcontractorRateCurrency String?        @map("subcontractor_rate_currency") @db.VarChar(3)
-  plannedStartDate       DateTime?        @map("planned_start_date") @db.Date
-  plannedEndDate         DateTime?        @map("planned_end_date") @db.Date
-  actualStartDate        DateTime?        @map("actual_start_date") @db.Date
-  actualEndDate          DateTime?        @map("actual_end_date") @db.Date
-  vehicleNumber          String?          @map("vehicle_number")
-  trailerNumber          String?          @map("trailer_number")
-  status                 LegStatus        @default(WAITING)
-  driverFullName         String?          @map("driver_full_name")
-  driverPhone            String?          @map("driver_phone")
-  driverIin              String?          @map("driver_iin")
-  driverLicenseNumber    String?          @map("driver_license_number")
-  driverLicenseDate      DateTime?        @map("driver_license_date") @db.Date
-  driverLicenseIssuer    String?          @map("driver_license_issuer")
-  transportation         Transportation   @relation(fields: [transportationId], references: [id], onDelete: Cascade)
-  subcontractor          Contractor?      @relation("TransportationLegSubcontractor", fields: [subcontractorId], references: [id])
+  id                        String           @id @default(cuid())
+  transportationId          String           @map("transportation_id")
+  orderIndex                Int              @map("order_index")
+  fromPoint                 String           @map("from_point")
+  toPoint                   String           @map("to_point")
+  mode                      LegTransportMode
+  subcontractorId           String?          @map("subcontractor_id")
+  subcontractorRate         Decimal?         @map("subcontractor_rate") @db.Decimal(18, 2)
+  subcontractorRateCurrency String?          @map("subcontractor_rate_currency") @db.VarChar(3)
+  plannedStartDate          DateTime?        @map("planned_start_date") @db.Date
+  plannedEndDate            DateTime?        @map("planned_end_date") @db.Date
+  actualStartDate           DateTime?        @map("actual_start_date") @db.Date
+  actualEndDate             DateTime?        @map("actual_end_date") @db.Date
+  vehicleNumber             String?          @map("vehicle_number")
+  trailerNumber             String?          @map("trailer_number")
+  status                    LegStatus        @default(WAITING)
+  driverFullName            String?          @map("driver_full_name")
+  driverPhone               String?          @map("driver_phone")
+  driverIin                 String?          @map("driver_iin")
+  driverLicenseNumber       String?          @map("driver_license_number")
+  driverLicenseDate         DateTime?        @map("driver_license_date") @db.Date
+  driverLicenseIssuer       String?          @map("driver_license_issuer")
+  transportation            Transportation   @relation(fields: [transportationId], references: [id], onDelete: Cascade)
+  subcontractor             Contractor?      @relation("TransportationLegSubcontractor", fields: [subcontractorId], references: [id])
 
   @@unique([transportationId, orderIndex])
   @@index([subcontractorId])

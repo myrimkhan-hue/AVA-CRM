@@ -11,6 +11,7 @@ import { ContractorsModule } from './contractors/contractors.module';
 import { DealsModule } from './deals/deals.module';
 import { TransportationsModule } from './transportations/transportations.module';
 import { TableSettingsModule } from './table-settings/table-settings.module';
+import { LegalEntitiesModule } from './legal-entities/legal-entities.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TableSettingsModule } from './table-settings/table-settings.module';
     DealsModule,
     TransportationsModule,
     TableSettingsModule,
+    LegalEntitiesModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -14,6 +14,9 @@ export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
+  const canManageLegalEntities = Boolean(
+    user?.roles.some((role) => role === 'ADMIN' || role === 'FINANCIER'),
+  );
   const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
 
   const navigation = useMemo(
@@ -22,8 +25,14 @@ export function AppLayout() {
       { path: '/contractors', label: t('nav.contractors') },
       ...(!isLogistOnly ? [{ path: '/deals', label: t('nav.deals') }] : []),
       ...(isAdmin ? [{ path: '/users', label: t('nav.users') }] : []),
+      ...(canManageLegalEntities
+        ? [{
+          path: '/settings/legal-entities',
+          label: t('nav.settings'),
+        }]
+        : []),
     ],
-    [isAdmin, isLogistOnly, t],
+    [canManageLegalEntities, isAdmin, isLogistOnly, t],
   );
 
   const initials = useMemo(

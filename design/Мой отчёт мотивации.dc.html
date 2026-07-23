@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body{margin:0;background:#F6F7F9;color:#1B2430;font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  a{color:#E4140E;text-decoration:none}a:hover{color:#C10F0A}
+  input:focus,select:focus{outline:none;border-color:#E4140E;box-shadow:0 0 0 3px rgba(228,20,14,.12)}
+</style>
+</helmet>
+<header data-screen-label="Мой отчёт мотивации" style="display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#fff;border-bottom:1px solid #E3E8EF">
+  <div style="display:flex;align-items:center;gap:12px">
+    <img src="assets/ava-logo.svg" alt="AVA" style="width:38px;height:38px;display:block">
+    <div>
+      <h1 style="font-size:18px;margin:0;font-weight:700">Моя мотивация</h1>
+      <div style="font-size:12px;color:#66707D;margin-top:-2px">AVA Solution · Логист</div>
+    </div>
+  </div>
+  <nav style="display:flex;align-items:center;gap:4px">
+    <a href="Экран логиста.dc.html" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Перевозки</a>
+    <a href="Сделки.dc.html" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Сделки</a>
+    <a href="Контрагенты.dc.html" style="color:#66707D;font-size:14px;padding:7px 13px;border-radius:8px" style-hover="background:#F3F5F8;color:#1B2430">Контрагенты</a>
+    <a href="#" style="color:#1B2430;font-weight:600;font-size:14px;padding:7px 13px;border-radius:8px;background:#F3F5F8">Моя мотивация</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#66707D">
+    <span style="width:28px;height:28px;border-radius:50%;background:#E7E9FD;color:#4F46E5;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">ЕТ</span>
+    Ержан Т.
+  </div>
+</header>
+<main style="max-width:1200px;margin:0 auto;padding:20px 24px">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:8px">
+    <div>
+      <h2 style="font-size:22px;font-weight:700;margin:0">Мой отчёт мотивации</h2>
+      <div style="font-size:13px;color:#66707D;margin-top:2px">Ержан Т. · только мои перевозки. Сводный отчёт по команде доступен руководителю.</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <select value="{{ month }}" onChange="{{ setMonth }}" style="padding:9px 12px;font-size:14px;border:1.5px solid #E3E8EF;border-radius:8px;color:#1B2430;background:#fff">
+        <sc-for list="{{ months }}" as="m" hint-placeholder-count="3"><option>{{ m }}</option></sc-for>
+      </select>
+      <button style="border:1px solid #E3E8EF;background:#fff;border-radius:8px;padding:9px 16px;font-size:14px;font-weight:500;cursor:pointer;color:#1B2430" style-hover="background:#F3F5F8">Выгрузить в Excel</button>
+    </div>
+  </div>
+  <div style="background:#FFF7E6;border:1px solid #F5D98B;border-radius:10px;padding:10px 14px;font-size:12.5px;color:#7A5A00;margin-bottom:16px">
+    База периода — <b style="font-weight:600">дата выгрузки (факт)</b>. Перевозка попадает в месяц, в котором произошла выгрузка, независимо от даты сделки и оплаты. Бонус начисляется независимо от факта оплаты клиентом.
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+    <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+      <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);padding:15px 17px">
+        <div style="font-size:12px;color:#66707D">{{ k.label }}</div>
+        <div style="font-size:25px;font-weight:700;color:{{ k.color }};font-variant-numeric:tabular-nums;line-height:1.25">{{ k.value }}</div>
+        <div style="font-size:11.5px;color:#66707D">{{ k.hint }}</div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="background:#fff;border:1px solid #E3E8EF;border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.05);overflow:hidden">
+    <div style="padding:14px 18px;border-bottom:1px solid #E3E8EF;display:flex;justify-content:space-between;align-items:center">
+      <h3 style="font-size:15px;font-weight:600;margin:0">Мои перевозки, выгруженные в {{ monthShort }}</h3>
+      <span style="font-size:12.5px;color:#66707D">Ставка бонуса: {{ rate }}% от грязной маржи</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;padding:10px 14px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF;background:#FAFBFC">№ / клиент</th>
+          <th style="text-align:left;padding:10px 14px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF;background:#FAFBFC">Маршрут</th>
+          <th style="text-align:left;padding:10px 14px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF;background:#FAFBFC">Дата выгрузки</th>
+          <th style="text-align:right;padding:10px 14px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF;background:#FAFBFC">Грязная маржа</th>
+          <th style="text-align:left;padding:10px 14px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF;background:#FAFBFC">Оплата клиента</th>
+          <th style="text-align:right;padding:10px 14px;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:#66707D;font-weight:600;border-bottom:1px solid #E3E8EF;background:#FAFBFC">Бонус {{ rate }}%</th>
+        </tr></thead>
+        <tbody>
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5">
+            <tr onClick="{{ r.open }}" style="border-bottom:1px solid #EEF1F5;cursor:pointer" style-hover="background:#F6F8FB">
+              <td style="padding:11px 14px;white-space:nowrap"><b style="font-weight:600">{{ r.num }}</b><div style="font-size:12px;color:#66707D">{{ r.client }}</div></td>
+              <td style="padding:11px 14px;white-space:nowrap">{{ r.route }}</td>
+              <td style="padding:11px 14px;white-space:nowrap;font-variant-numeric:tabular-nums">{{ r.unload }}</td>
+              <td style="padding:11px 14px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600">{{ r.margin }}<sc-if value="{{ r.forecast }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px;color:#B45309;font-weight:600">прогноз по курсу НБ</div></sc-if></td>
+              <td style="padding:11px 14px;white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:{{ r.payBg }};color:{{ r.payFg }}">{{ r.payLabel }}</span></td>
+              <td style="padding:11px 14px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;color:#15803D">{{ r.bonus }}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+        <tfoot><tr style="background:#FAFBFC">
+          <td colSpan="{{ three }}" style="padding:12px 14px;font-weight:700">Итого за {{ monthShort }}</td>
+          <td style="padding:12px 14px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">{{ totalMargin }}</td>
+          <td style="padding:12px 14px"></td>
+          <td style="padding:12px 14px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:#15803D">{{ totalBonus }}</td>
+        </tr></tfoot>
+      </table>
+    </div>
+  </div>
+  <div style="margin-top:10px;font-size:12.5px;color:#66707D">Статус оплаты клиентом показан справочно и не влияет на начисление бонуса. Источник правды для выплаты — этот отчёт.</div>
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { month: 'Июль 2026' };
+  renderVals() {
+    const RATE = 10;
+    const PAY = { full: { l: 'Оплачено', bg: '#DCF5E4', fg: '#15803D' }, part: { l: 'Частично', bg: '#FDF0D5', fg: '#B45309' }, none: { l: 'Не оплачено', bg: '#EDF0F4', fg: '#66707D' } };
+    const DATA = {
+      'Июль 2026': [
+        { num: 'AVA-2026-0139/2', client: 'ТОО Ромашка', route: 'Алматы → Бишкек', unload: '16.07.2026', margin: 1450, cur: 'USD', pay: 'full', forecast: false },
+        { num: 'TT-2026-0154/1', client: 'ТОО КазТрейд', route: 'Алматы → Караганда', unload: '17.07.2026', margin: 980, cur: 'USD', pay: 'part', forecast: false },
+        { num: 'AVA-2026-0128/1', client: 'Alma Electronics', route: 'Урумчи → Алматы', unload: '07.07.2026', margin: 2120, cur: 'USD', pay: 'full', forecast: false },
+        { num: 'AVA-2026-0131/1', client: 'ТОО SilkWay', route: 'Хоргос → Астана', unload: '11.07.2026', margin: 1760, cur: 'USD', pay: 'none', forecast: true }
+      ],
+      'Июнь 2026': [
+        { num: 'AVA-2026-0118/1', client: 'Alma Electronics', route: 'Гуанчжоу → Алматы', unload: '24.06.2026', margin: 2450, cur: 'USD', pay: 'full', forecast: false },
+        { num: 'ALT-2026-0061/1', client: 'ТОО AgroExport', route: 'Костанай → Ташкент', unload: '18.06.2026', margin: 1310, cur: 'USD', pay: 'full', forecast: false }
+      ],
+      'Май 2026': [
+        { num: 'AVA-2026-0102/1', client: 'ТОО Ромашка', route: 'Сиань → Алматы', unload: '29.05.2026', margin: 1890, cur: 'USD', pay: 'full', forecast: false }
+      ]
+    };
+    const { month } = this.state;
+    const list = DATA[month] || [];
+    const fmtUsd = n => n.toLocaleString('ru-RU') + ' USD';
+    const rows = list.map(d => ({
+      num: d.num, client: d.client, route: d.route, unload: d.unload,
+      margin: fmtUsd(d.margin), forecast: d.forecast,
+      payLabel: PAY[d.pay].l, payBg: PAY[d.pay].bg, payFg: PAY[d.pay].fg,
+      bonus: fmtUsd(Math.round(d.margin * RATE / 100)),
+      open: () => { window.location.href = 'Карточка перевозки.dc.html'; }
+    }));
+    const totalMargin = list.reduce((s, d) => s + d.margin, 0);
+    const totalBonus = Math.round(totalMargin * RATE / 100);
+    const paidCount = list.filter(d => d.pay === 'full').length;
+    return {
+      months: Object.keys(DATA), month, monthShort: month, rate: RATE, three: 3,
+      rows, totalMargin: fmtUsd(totalMargin), totalBonus: fmtUsd(totalBonus),
+      kpis: [
+        { label: 'Перевозок выгружено', value: String(list.length), color: '#1B2430', hint: 'по дате выгрузки' },
+        { label: 'Грязная маржа', value: fmtUsd(totalMargin), color: '#1B2430', hint: 'сумма по моим перевозкам' },
+        { label: 'Расчётный бонус', value: fmtUsd(totalBonus), color: '#15803D', hint: RATE + '% от маржи' },
+        { label: 'Оплачено клиентом', value: paidCount + ' из ' + list.length, color: '#1B2430', hint: 'справочно, на бонус не влияет' }
+      ],
+      setMonth: e => this.setState({ month: e.target.value })
+    };
+  }
+}
+</script>
+</body>
+</html>
