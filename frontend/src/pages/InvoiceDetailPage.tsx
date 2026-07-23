@@ -28,6 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { ApiError, apiRequest } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { CreateInvoiceModal } from '../components/CreateInvoiceModal';
+import { MoneyInput } from '../components/MoneyInput';
 import {
   INVOICE_STATUS_COLORS,
   Invoice,
@@ -711,7 +712,7 @@ export function TransportationInvoiceCard({
                   message: t('invoices.validation.unitPrice'),
                 }]}
               >
-                <InputNumber min={0} precision={2} />
+                <MoneyInput min={0} precision={2} />
               </Form.Item>
             </Col>
           </Row>
@@ -773,7 +774,7 @@ export function TransportationInvoiceCard({
               message: t('invoices.validation.paymentAmount'),
             }]}
           >
-            <InputNumber min={0.01} precision={2} />
+            <MoneyInput min={0.01} precision={2} />
           </Form.Item>
           <Form.Item
             name="manualExchangeRate"

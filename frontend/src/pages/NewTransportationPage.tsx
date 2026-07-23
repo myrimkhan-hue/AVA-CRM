@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { MoneyInput } from '../components/MoneyInput';
 import { compact, CURRENCIES, errorText, MODES, TransportMode } from '../transportations/shared';
 
 interface Deal { id: string; number: string; client: { name: string }; legalEntity: { name: string }; responsible: { fullName: string } }
@@ -79,7 +80,7 @@ export function NewTransportationPage() {
     catch (error) { showError(error); } finally { setSaving(false); }
   };
 
-  const money = (name: keyof Values, currency: keyof Values, initial = 'KZT') => <Space.Compact block><Form.Item name={name} noStyle><InputNumber min={0} className="money-number" /></Form.Item><Form.Item name={currency} noStyle initialValue={initial}><Select className="currency-select" options={CURRENCIES.map((value) => ({ value }))} /></Form.Item></Space.Compact>;
+  const money = (name: keyof Values, currency: keyof Values, initial = 'KZT') => <Space.Compact block><Form.Item name={name} noStyle><MoneyInput min={0} className="money-number" /></Form.Item><Form.Item name={currency} noStyle initialValue={initial}><Select className="currency-select" options={CURRENCIES.map((value) => ({ value }))} /></Form.Item></Space.Compact>;
   const field = (name: keyof Values, label: string, node = <Input />) => <Form.Item name={name} label={label}>{node}</Form.Item>;
   const summary = useMemo(() => [
     [t('transportationWizard.fields.deal'), selectedDeal?.number], [t('transportationWizard.fields.client'), selectedDeal?.client.name],
