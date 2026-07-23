@@ -272,6 +272,12 @@ button, input { font: inherit; }
 .invoice-detail-page > .deal-detail-back { align-self: flex-start; margin-bottom: -7px; }
 .invoice-totals { width: min(100%, 390px); margin: 18px 0 0 auto; }
 .invoice-totals .ant-descriptions-item-label { width: 190px; }
+.payment-request-list-page { width: min(100%, 1400px); margin: 0 auto; }
+.payment-request-list-page .ant-table-tbody > tr { cursor: pointer; }
+.leg-payment-requests { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e3e8ef; }
+.leg-payment-requests-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.payment-request-amount { flex: 1; }
+.payment-request-currency { width: 120px; }
 
 @media (max-width: 900px) {
   .deals-filters { grid-template-columns: 1fr 1fr; }

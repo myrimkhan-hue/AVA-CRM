@@ -14,6 +14,7 @@ import { LegalEntitiesPage } from './pages/LegalEntitiesPage';
 import { SettingsLayout } from './components/SettingsLayout';
 import { CurrenciesPage } from './pages/CurrenciesPage';
 import { InvoicesPage } from './pages/InvoicesPage';
+import { PaymentRequestsPage } from './pages/PaymentRequestsPage';
 
 const INVOICE_ROLES = [
   'ADMIN',
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="deals" element={<DealsRoute />} />
           <Route path="deals/:id" element={<DealDetailRoute />} />
           <Route path="invoices" element={<InvoicesRoute />} />
+          <Route path="payment-requests" element={<PaymentRequestsPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="settings" element={<SettingsLayout />}>
             <Route index element={<Navigate to="legal-entities" replace />} />

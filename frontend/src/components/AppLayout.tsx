@@ -36,6 +36,10 @@ export function AppLayout() {
       ...(canAccessInvoices
         ? [{ path: '/invoices', label: t('nav.invoices') }]
         : []),
+      {
+        path: '/payment-requests',
+        label: t('nav.paymentRequests'),
+      },
       ...(isAdmin ? [{ path: '/users', label: t('nav.users') }] : []),
       ...(canManageLegalEntities
         ? [{

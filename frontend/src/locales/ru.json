@@ -23,6 +23,7 @@
     "contractors": "Контрагенты",
     "deals": "Сделки",
     "invoices": "Счета",
+    "paymentRequests": "Заявки на оплату",
     "users": "Пользователи",
     "settings": "Настройки"
   },
@@ -459,6 +460,66 @@
       "lineRemoved": "Позиция удалена",
       "paymentAdded": "Оплата зафиксирована",
       "deleted": "Счёт удалён"
+    }
+  },
+  "paymentRequests": {
+    "title": "Заявки на оплату",
+    "subtitle": "Расходы по перевозкам и участкам, согласование и фиксация оплаты",
+    "empty": "Заявки на оплату не найдены",
+    "manual": "Вся перевозка",
+    "legNumber": "Участок {{number}}",
+    "legOption": "Участок {{number}} · {{from}} → {{to}}",
+    "statuses": {
+      "REQUESTED": "Заявлен",
+      "APPROVED": "Согласован",
+      "PAID": "Оплачен"
+    },
+    "filters": {
+      "status": "Статус заявки"
+    },
+    "columns": {
+      "transportation": "Перевозка",
+      "leg": "Участок",
+      "payee": "Получатель",
+      "amount": "Сумма",
+      "dueDate": "Срок оплаты",
+      "purpose": "Назначение",
+      "status": "Статус"
+    },
+    "fields": {
+      "transportation": "Перевозка",
+      "leg": "Участок",
+      "payee": "Получатель",
+      "amount": "Сумма",
+      "currency": "Валюта",
+      "dueDate": "Срок оплаты",
+      "purpose": "Назначение платежа"
+    },
+    "actions": {
+      "create": "Создать заявку",
+      "createManual": "Создать вручную",
+      "approve": "Согласовать",
+      "markPaid": "Отметить оплаченной"
+    },
+    "create": {
+      "title": "Новая заявка на оплату",
+      "manualTitle": "Новая заявка на оплату"
+    },
+    "transportationBlock": {
+      "title": "Заявка на оплату"
+    },
+    "validation": {
+      "transportation": "Выберите перевозку",
+      "payee": "Выберите получателя",
+      "amount": "Укажите сумму",
+      "currency": "Выберите валюту",
+      "dueDate": "Укажите срок оплаты",
+      "purpose": "Укажите назначение платежа"
+    },
+    "messages": {
+      "created": "Заявка на оплату создана",
+      "approved": "Заявка согласована",
+      "paid": "Заявка отмечена оплаченной"
     }
   },
   "users": {

@@ -36,6 +36,12 @@ enum InvoiceStatus {
   PAID
 }
 
+enum PaymentRequestStatus {
+  REQUESTED
+  APPROVED
+  PAID
+}
+
 enum ContractorType {
   CLIENT
   CARRIER
@@ -120,6 +126,9 @@ model User {
   createdLegalEntityTaxRates LegalEntityTaxRate[]        @relation("LegalEntityTaxRateCreatedBy")
   createdExchangeRates       ExchangeRate[]              @relation("ExchangeRateCreatedBy")
   createdInvoicePayments     InvoicePayment[]            @relation("InvoicePaymentCreatedBy")
+  createdPaymentRequests     PaymentRequest[]            @relation("PaymentRequestCreatedBy")
+  approvedPaymentRequests    PaymentRequest[]            @relation("PaymentRequestApprovedBy")
+  paidPaymentRequests        PaymentRequest[]            @relation("PaymentRequestPaidBy")
 
   @@map("users")
 }
@@ -202,12 +211,13 @@ model LegalEntityTaxRate {
 }
 
 model Currency {
-  code          String         @id @db.VarChar(3)
-  name          String
-  isBase        Boolean        @default(false) @map("is_base")
-  isActive      Boolean        @default(true) @map("is_active")
-  exchangeRates ExchangeRate[]
-  invoices      Invoice[]
+  code            String           @id @db.VarChar(3)
+  name            String
+  isBase          Boolean          @default(false) @map("is_base")
+  isActive        Boolean          @default(true) @map("is_active")
+  exchangeRates   ExchangeRate[]
+  invoices        Invoice[]
+  paymentRequests PaymentRequest[]
 
   @@map("currencies")
 }
@@ -262,6 +272,7 @@ model Contractor {
   deals              Deal[]
   transportationLegs TransportationLeg[]     @relation("TransportationLegSubcontractor")
   clientInvoices     Invoice[]
+  paymentRequests    PaymentRequest[]        @relation("PaymentRequestPayee")
 
   @@map("contractors")
 }
@@ -336,6 +347,7 @@ model Transportation {
   legs                  TransportationLeg[]
   statusEvents          TransportationStatusEvent[]
   invoices              Invoice[]
+  paymentRequests       PaymentRequest[]
 
   @@unique([dealId, sequenceInDeal])
   @@index([logistId])
@@ -368,6 +380,7 @@ model TransportationLeg {
   driverLicenseIssuer       String?          @map("driver_license_issuer")
   transportation            Transportation   @relation(fields: [transportationId], references: [id], onDelete: Cascade)
   subcontractor             Contractor?      @relation("TransportationLegSubcontractor", fields: [subcontractorId], references: [id])
+  paymentRequests           PaymentRequest[]
 
   @@unique([transportationId, orderIndex])
   @@index([subcontractorId])
@@ -470,6 +483,40 @@ model InvoicePayment {
 
   @@index([invoiceId, paymentDate])
   @@map("invoice_payments")
+}
+
+model PaymentRequest {
+  id                String               @id @default(cuid())
+  transportationId  String               @map("transportation_id")
+  legId             String?              @map("leg_id")
+  payeeContractorId String               @map("payee_contractor_id")
+  amount            Decimal              @db.Decimal(18, 2)
+  currencyCode      String               @map("currency_code") @db.VarChar(3)
+  dueDate           DateTime             @map("due_date") @db.Date
+  purpose           String
+  status            PaymentRequestStatus @default(REQUESTED)
+  approvedByUserId  String?              @map("approved_by_user_id")
+  approvedAt        DateTime?            @map("approved_at")
+  paidByUserId      String?              @map("paid_by_user_id")
+  paidAt            DateTime?            @map("paid_at")
+  deletedAt         DateTime?            @map("deleted_at")
+  createdByUserId   String               @map("created_by_user_id")
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  transportation    Transportation       @relation(fields: [transportationId], references: [id], onDelete: Restrict)
+  leg               TransportationLeg?   @relation(fields: [legId], references: [id], onDelete: SetNull)
+  payeeContractor   Contractor           @relation("PaymentRequestPayee", fields: [payeeContractorId], references: [id], onDelete: Restrict)
+  currency          Currency             @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  createdBy         User                 @relation("PaymentRequestCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  approvedBy        User?                @relation("PaymentRequestApprovedBy", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+  paidBy            User?                @relation("PaymentRequestPaidBy", fields: [paidByUserId], references: [id], onDelete: SetNull)
+
+  @@index([transportationId])
+  @@index([legId])
+  @@index([payeeContractorId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("payment_requests")
 }
 
 model ContractorContact {
