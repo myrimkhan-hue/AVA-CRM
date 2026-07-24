@@ -638,6 +638,29 @@ export function ContractorsPage() {
     <Modal open={editorOpen} title={t(editing ? 'contractors.form.editTitle' : 'contractors.form.createTitle')} width={1040} okText={t('common.save')} cancelText={t('common.cancel')} confirmLoading={saving} onOk={() => form.submit()} onCancel={() => setEditorOpen(false)} destroyOnHidden styles={{ body: { maxHeight: '72vh', overflowY: 'auto', background: '#f6f7f9', padding: 16 } }}>
       <Form<ContractorFormValues> form={form} layout="vertical" requiredMark={false} onFinish={saveContractor} onValuesChange={(changed) => { if ('name' in changed || 'bin' in changed) resetDuplicateWarning(); }}>
         {duplicates.length > 0 && <Alert className="form-alert" type="warning" showIcon message={t('contractors.duplicates.title')} description={<ul>{duplicates.map((item) => <li key={item.id}>{t('contractors.duplicates.item', { name: item.name, bin: item.bin || t('common.notSpecified') })}</li>)}</ul>} />}
+        <PasteRequisitesBox
+          fields={REQUISITES_PASTE_FIELDS}
+          onApply={(parsed) => {
+            form.setFieldsValue(mapParsedToFields(parsed, REQUISITES_PASTE_MAPPING));
+            if (parsed.bank || parsed.account || parsed.bik) {
+              const accounts: ContractorBankAccount[] = form.getFieldValue('bankAccounts') ?? [];
+              const primaryIndex = accounts.findIndex((item) => item.isPrimary);
+              const targetIndex = primaryIndex >= 0 ? primaryIndex : 0;
+              const target = accounts[targetIndex];
+              const updated: ContractorBankAccount = {
+                bankName: parsed.bank || target?.bankName || '',
+                accountNumber: parsed.account || target?.accountNumber || '',
+                currency: target?.currency || 'KZT',
+                bik: parsed.bik || target?.bik,
+                notes: target?.notes,
+                isPrimary: true,
+              };
+              const next = [...accounts];
+              next[targetIndex] = updated;
+              form.setFieldValue('bankAccounts', next);
+            }
+          }}
+        />
         <Card className="contractor-form-section" title={t('contractors.form.sections.requisites')}>
           <Row gutter={16}>
             <Col xs={24} md={12}><Form.Item name="name" label={t('contractors.form.name')} rules={[{ required: true, whitespace: true, message: t('contractors.validation.name') }]}><Input /></Form.Item></Col>
@@ -673,29 +696,6 @@ export function ContractorsPage() {
             label: t('contractors.form.documentFieldsTitle'),
             children: (
               <div className="legal-entity-form-grid">
-                <PasteRequisitesBox
-                  fields={REQUISITES_PASTE_FIELDS}
-                  onApply={(parsed) => {
-                    form.setFieldsValue(mapParsedToFields(parsed, REQUISITES_PASTE_MAPPING));
-                    if (parsed.bank || parsed.account || parsed.bik) {
-                      const accounts: ContractorBankAccount[] = form.getFieldValue('bankAccounts') ?? [];
-                      const primaryIndex = accounts.findIndex((item) => item.isPrimary);
-                      const targetIndex = primaryIndex >= 0 ? primaryIndex : 0;
-                      const target = accounts[targetIndex];
-                      const updated: ContractorBankAccount = {
-                        bankName: parsed.bank || target?.bankName || '',
-                        accountNumber: parsed.account || target?.accountNumber || '',
-                        currency: target?.currency || 'KZT',
-                        bik: parsed.bik || target?.bik,
-                        notes: target?.notes,
-                        isPrimary: true,
-                      };
-                      const next = [...accounts];
-                      next[targetIndex] = updated;
-                      form.setFieldValue('bankAccounts', next);
-                    }
-                  }}
-                />
                 <Form.Item name="legalForm" label={t('contractors.form.legalForm')}>
                   <Input placeholder="ТОО / ИП" />
                 </Form.Item>
