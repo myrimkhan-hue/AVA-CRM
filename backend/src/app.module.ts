@@ -16,6 +16,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { CurrenciesModule } from './currencies/currencies.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { PaymentRequestsModule } from './payment-requests/payment-requests.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { PaymentRequestsModule } from './payment-requests/payment-requests.modul
     CurrenciesModule,
     InvoicesModule,
     PaymentRequestsModule,
+    ReportsModule,
   ],
   controllers: [HealthController],
   providers: [

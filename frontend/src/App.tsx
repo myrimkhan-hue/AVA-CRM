@@ -15,6 +15,10 @@ import { SettingsLayout } from './components/SettingsLayout';
 import { CurrenciesPage } from './pages/CurrenciesPage';
 import { InvoicesPage } from './pages/InvoicesPage';
 import { PaymentRequestsPage } from './pages/PaymentRequestsPage';
+import { ReportsLayout } from './components/ReportsLayout';
+import { CashCalendarPage } from './pages/CashCalendarPage';
+import { ReceivablesPage } from './pages/ReceivablesPage';
+import { PayablesPage } from './pages/PayablesPage';
 
 const INVOICE_ROLES = [
   'ADMIN',
@@ -65,6 +69,12 @@ export default function App() {
             <Route index element={<Navigate to="legal-entities" replace />} />
             <Route path="legal-entities" element={<LegalEntitiesPage />} />
             <Route path="currencies" element={<CurrenciesPage />} />
+          </Route>
+          <Route path="reports" element={<ReportsLayout />}>
+            <Route index element={<Navigate to="cash-calendar" replace />} />
+            <Route path="cash-calendar" element={<CashCalendarPage />} />
+            <Route path="receivables" element={<ReceivablesPage />} />
+            <Route path="payables" element={<PayablesPage />} />
           </Route>
         </Route>
       </Route>

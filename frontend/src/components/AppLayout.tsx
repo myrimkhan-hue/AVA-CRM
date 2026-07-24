@@ -17,6 +17,9 @@ export function AppLayout() {
   const canManageLegalEntities = Boolean(
     user?.roles.some((role) => role === 'ADMIN' || role === 'FINANCIER'),
   );
+  const canViewReports = Boolean(
+    user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'FINANCIER'].includes(role)),
+  );
   const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
   const canAccessInvoices = Boolean(
     user?.roles.some((role) => [
@@ -40,6 +43,7 @@ export function AppLayout() {
         path: '/payment-requests',
         label: t('nav.paymentRequests'),
       },
+      ...(canViewReports ? [{ path: '/reports', label: t('nav.reports') }] : []),
       ...(isAdmin ? [{ path: '/users', label: t('nav.users') }] : []),
       ...(canManageLegalEntities
         ? [{
@@ -48,7 +52,7 @@ export function AppLayout() {
         }]
         : []),
     ],
-    [canAccessInvoices, canManageLegalEntities, isAdmin, isLogistOnly, t],
+    [canAccessInvoices, canManageLegalEntities, canViewReports, isAdmin, isLogistOnly, t],
   );
 
   const initials = useMemo(

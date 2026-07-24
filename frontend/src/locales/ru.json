@@ -24,6 +24,7 @@
     "deals": "Сделки",
     "invoices": "Счета",
     "paymentRequests": "Заявки на оплату",
+    "reports": "Отчёты",
     "users": "Пользователи",
     "settings": "Настройки"
   },
@@ -460,6 +461,53 @@
       "lineRemoved": "Позиция удалена",
       "paymentAdded": "Оплата зафиксирована",
       "deleted": "Счёт удалён"
+    }
+  },
+  "reports": {
+    "tabs": {
+      "cashCalendar": "Кассовый календарь",
+      "receivables": "Дебиторка",
+      "payables": "Кредиторка"
+    },
+    "overdueDays": "просрочено {{count}} дн.",
+    "receivables": {
+      "total": "Итого дебиторская задолженность",
+      "empty": "Задолженностей клиентов нет",
+      "columns": {
+        "invoice": "Счёт",
+        "transportation": "Перевозка",
+        "client": "Клиент",
+        "legalEntity": "Юрлицо",
+        "balance": "Долг",
+        "dueDate": "Срок оплаты"
+      }
+    },
+    "payables": {
+      "total": "Итого кредиторская задолженность",
+      "empty": "Задолженностей перед подрядчиками нет",
+      "columns": {
+        "transportation": "Перевозка",
+        "payee": "Получатель",
+        "purpose": "Назначение",
+        "status": "Статус",
+        "amount": "Сумма",
+        "dueDate": "Срок оплаты"
+      }
+    },
+    "cashCalendar": {
+      "overdueIncome": "Просроченные поступления",
+      "overdueExpense": "Просроченные платежи",
+      "openingBalance": "Остаток по просрочке",
+      "byDay": "По дням",
+      "byWeek": "По неделям",
+      "empty": "Нет данных за период",
+      "columns": {
+        "period": "Период",
+        "income": "Ожидаемые поступления",
+        "expense": "Обязательные платежи",
+        "net": "Разница",
+        "balance": "Нарастающим итогом"
+      }
     }
   },
   "margin": {
