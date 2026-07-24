@@ -295,6 +295,7 @@ button, input { font: inherit; }
 .motivation-forecast { font-size: 11px; }
 .motivation-summary-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 12px; width: 100%; align-items: center; }
 .motivation-footnote { display: block; margin-top: 10px; font-size: 12.5px; }
+.generate-contract-hint { color: #66707d; font-size: 13px; margin-bottom: 12px; }
 
 @media (max-width: 900px) {
   .deals-filters { grid-template-columns: 1fr 1fr; }

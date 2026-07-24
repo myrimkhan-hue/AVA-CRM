@@ -7,5 +7,6 @@ import { MarginModule } from './margin.module';
   imports: [MarginModule],
   controllers: [DealsController],
   providers: [DealsService],
+  exports: [DealsService],
 })
 export class DealsModule {}

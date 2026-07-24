@@ -2,6 +2,7 @@ import {
   CheckOutlined,
   DeleteOutlined,
   EditOutlined,
+  FileTextOutlined,
   StopOutlined,
 } from '@ant-design/icons';
 import {
@@ -24,8 +25,12 @@ import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ApiError, apiRequest } from '../api/client';
+import { apiDownload, ApiError, apiRequest, saveBlob } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import {
+  ContractRequisitesFormValues,
+  GenerateContractModal,
+} from '../components/GenerateContractModal';
 import { MarginCard } from '../components/MarginCard';
 import {
   DEAL_PIPELINE_STAGES,
@@ -78,6 +83,7 @@ export function DealDetailPage() {
   const [saving, setSaving] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
+  const [contractOpen, setContractOpen] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const selectedReason = Form.useWatch('rejectReason', rejectForm);
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
@@ -144,6 +150,16 @@ export function DealDetailPage() {
   const openNotes = () => {
     notesForm.setFieldsValue({ notes: deal?.notes ?? undefined });
     setNotesOpen(true);
+  };
+
+  const generateContract = async (overrides: ContractRequisitesFormValues) => {
+    if (!deal) return;
+    const { blob, filename } = await apiDownload(`/documents/contracts/deal/${deal.id}`, {
+      method: 'POST',
+      body: JSON.stringify({ overrides }),
+    });
+    saveBlob(blob, filename);
+    void message.success(t('documents.contract.generated'));
   };
 
   const saveNotes = async (values: NotesValues) => {
@@ -229,6 +245,7 @@ export function DealDetailPage() {
         {deal.deletedAt && <Tag>{t('deals.status.deleted')}</Tag>}
       </Space>
       <Space wrap>
+        {mayEditDeals && activeDeal && <Button icon={<FileTextOutlined />} onClick={() => setContractOpen(true)}>{t('documents.contract.action')}</Button>}
         {mayEditDeals && activeDeal && <Button danger icon={<StopOutlined />} onClick={openReject}>{t('deals.detail.actions.reject')}</Button>}
         {mayEditDeals && activeDeal && <Button icon={<EditOutlined />} onClick={openNotes}>{t('deals.detail.actions.edit')}</Button>}
         {isAdmin && activeDeal && <Button danger type="text" icon={<DeleteOutlined />} onClick={removeDeal}>{t('deals.actions.delete')}</Button>}
@@ -335,5 +352,12 @@ export function DealDetailPage() {
         <Form.Item name="notes" label={t('deals.form.notes')}><Input.TextArea rows={6} /></Form.Item>
       </Form>
     </Modal>
+
+    <GenerateContractModal
+      open={contractOpen}
+      contractorId={deal.client.id}
+      onClose={() => setContractOpen(false)}
+      onGenerate={generateContract}
+    />
   </section>;
 }
