@@ -7,11 +7,13 @@ import {
 import {
   AuditAction,
   LegTransportMode,
+  NotificationType,
   Prisma,
   TransportationStatus,
 } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
 import { MarginService } from '../deals/margin.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransportationDto } from './dto/create-transportation.dto';
 import {
@@ -78,6 +80,7 @@ export class TransportationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly marginService: MarginService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(query: TransportationQueryDto, user: AuthUser) {
@@ -179,6 +182,16 @@ export class TransportationsService {
           await this.writeAudit(tx, user.id, row.id, AuditAction.CREATE, this.creationChanges(row));
           return row;
         });
+        if (created.logistId !== user.id) {
+          await this.notificationsService.notify(
+            created.logistId,
+            NotificationType.RESPONSIBLE_ASSIGNED,
+            'Вам назначена перевозка',
+            `Вы назначены ответственным по перевозке ${created.number}`,
+            'Transportation',
+            created.id,
+          );
+        }
         return this.present(created, user);
       } catch (error: unknown) {
         if (this.isUniqueConflict(error) && attempt < 3) {
@@ -216,6 +229,16 @@ export class TransportationsService {
       await this.writeAudit(tx, user.id, id, AuditAction.UPDATE, this.diff(current, row));
       return row;
     });
+    if (dto.logistId && dto.logistId !== current.logistId && dto.logistId !== user.id) {
+      await this.notificationsService.notify(
+        updated.logistId,
+        NotificationType.RESPONSIBLE_ASSIGNED,
+        'Вам назначена перевозка',
+        `Вы назначены ответственным по перевозке ${updated.number}`,
+        'Transportation',
+        updated.id,
+      );
+    }
     return this.present(updated, user);
   }
 

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/ava-logo.svg';
 import { useAuth } from '../auth/AuthContext';
+import { NotificationBell } from './NotificationBell';
 
 const { Header, Content } = Layout;
 
@@ -93,6 +94,7 @@ export function AppLayout() {
           </nav>
 
           <div className="user-menu">
+            <NotificationBell />
             <span className="user-initials" aria-hidden="true">{initials}</span>
             <span className="user-name">{user?.fullName}</span>
             <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>

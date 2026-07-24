@@ -4,8 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AuditAction, DealRejectReason, DealStage, Prisma } from '@prisma/client';
+import { AuditAction, DealRejectReason, DealStage, NotificationType, Prisma } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { canSeeTransportationClientRate } from '../transportations/transportation-policy';
 import { CreateDealDto } from './dto/create-deal.dto';
@@ -30,6 +31,7 @@ export class DealsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly marginService: MarginService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(query: DealQueryDto, user: AuthUser): Promise<DealWithRelations[]> {
@@ -100,7 +102,7 @@ export class DealsService {
 
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       try {
-        return await this.prisma.$transaction(async (tx) => {
+        const created = await this.prisma.$transaction(async (tx) => {
           const year = new Date().getFullYear();
           const sequence = await tx.dealNumberSequence.upsert({
             where: { legalEntityId_year: { legalEntityId: legalEntity.id, year } },
@@ -122,6 +124,17 @@ export class DealsService {
           await this.writeAudit(tx, user.id, created.id, AuditAction.CREATE, this.creationChanges(created));
           return created;
         });
+        if (created.responsibleId !== user.id) {
+          await this.notificationsService.notify(
+            created.responsibleId,
+            NotificationType.RESPONSIBLE_ASSIGNED,
+            'Вам назначена сделка',
+            `Вы назначены ответственным по сделке ${created.number}`,
+            'Deal',
+            created.id,
+          );
+        }
+        return created;
       } catch (error: unknown) {
         if (this.isUniqueConflict(error) && attempt < 3) continue;
         if (this.isUniqueConflict(error)) {
@@ -145,11 +158,26 @@ export class DealsService {
     if (dto.responsibleId !== undefined) data.responsibleId = dto.responsibleId;
     if (dto.departmentId !== undefined) data.departmentId = dto.departmentId;
 
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       const updated = await tx.deal.update({ where: { id }, data, include: dealInclude });
       await this.writeAudit(tx, user.id, id, AuditAction.UPDATE, this.diff(current, updated));
       return updated;
     });
+    if (
+      dto.responsibleId !== undefined &&
+      dto.responsibleId !== current.responsibleId &&
+      dto.responsibleId !== user.id
+    ) {
+      await this.notificationsService.notify(
+        updated.responsibleId,
+        NotificationType.RESPONSIBLE_ASSIGNED,
+        'Вам назначена сделка',
+        `Вы назначены ответственным по сделке ${updated.number}`,
+        'Deal',
+        updated.id,
+      );
+    }
+    return updated;
   }
 
   async updateStage(id: string, dto: UpdateDealStageDto, user: AuthUser): Promise<DealWithRelations> {

@@ -19,6 +19,7 @@ import { PaymentRequestsModule } from './payment-requests/payment-requests.modul
 import { ReportsModule } from './reports/reports.module';
 import { MotivationModule } from './motivation/motivation.module';
 import { DocumentsModule } from './documents/documents.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { DocumentsModule } from './documents/documents.module';
     ReportsModule,
     MotivationModule,
     DocumentsModule,
+    NotificationsModule,
   ],
   controllers: [HealthController],
   providers: [

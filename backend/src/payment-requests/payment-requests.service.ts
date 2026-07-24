@@ -7,11 +7,13 @@ import {
 } from '@nestjs/common';
 import {
   AuditAction,
+  NotificationType,
   PaymentRequestStatus,
   Prisma,
 } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
 import { InvoicesService } from '../invoices/invoices.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { transportationVisibilityWhere } from '../transportations/transportation-policy';
 import { CreatePaymentRequestDto } from './dto/create-payment-request.dto';
@@ -68,6 +70,7 @@ export class PaymentRequestsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly invoicesService: InvoicesService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async findAll(query: PaymentRequestQueryDto, user: AuthUser) {
@@ -193,6 +196,7 @@ export class PaymentRequestsService {
       );
       return row;
     });
+    await this.notifyApprovers(created, user);
     return this.toResponse(created);
   }
 
@@ -623,6 +627,29 @@ export class PaymentRequestsService {
         changes: changes as Prisma.InputJsonValue,
       },
     });
+  }
+
+  private async notifyApprovers(
+    request: PaymentRequestWithRelations,
+    actor: AuthUser,
+  ): Promise<void> {
+    const approvers = await this.prisma.user.findMany({
+      where: {
+        isActive: true,
+        id: { not: actor.id },
+        roles: { some: { role: { code: { in: ['ADMIN', 'DIRECTOR', 'FINANCIER'] } } } },
+      },
+      select: { id: true },
+    });
+    if (!approvers.length) return;
+    await this.notificationsService.notifyMany(
+      approvers.map((approver) => approver.id),
+      NotificationType.PAYMENT_REQUEST_PENDING,
+      'Заявка на оплату ждёт согласования',
+      `Заявка на оплату по перевозке ${request.transportation.number} ждёт согласования`,
+      'PaymentRequest',
+      request.id,
+    );
   }
 
   private toResponse(row: PaymentRequestWithRelations) {

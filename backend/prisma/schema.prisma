@@ -42,6 +42,14 @@ enum PaymentRequestStatus {
   PAID
 }
 
+enum NotificationType {
+  RESPONSIBLE_ASSIGNED
+  DEAL_STALLED
+  INVOICE_OVERDUE
+  PAYMENT_REQUEST_PENDING
+  TRANSPORTATION_OVERDUE
+}
+
 enum ContractorType {
   CLIENT
   CARRIER
@@ -132,6 +140,8 @@ model User {
   approvedPaymentRequests    PaymentRequest[]            @relation("PaymentRequestApprovedBy")
   paidPaymentRequests        PaymentRequest[]            @relation("PaymentRequestPaidBy")
   generatedDocuments         GeneratedDocument[]          @relation("GeneratedDocumentGeneratedBy")
+  notifications              Notification[]
+  notificationPreferences    NotificationPreference[]
 
   @@map("users")
 }
@@ -591,6 +601,42 @@ model MotivationSettings {
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   @@map("motivation_settings")
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  userId     String           @map("user_id")
+  type       NotificationType
+  title      String
+  message    String
+  entityType String           @map("entity_type")
+  entityId   String           @map("entity_id")
+  isRead     Boolean          @default(false) @map("is_read")
+  createdAt  DateTime         @default(now()) @map("created_at")
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([type, entityId])
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id      String           @id @default(cuid())
+  userId  String           @map("user_id")
+  type    NotificationType
+  enabled Boolean          @default(true)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@map("notification_preferences")
+}
+
+model NotificationSettings {
+  id              String   @id @default(cuid())
+  dealStalledDays Int      @default(3) @map("deal_stalled_days")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("notification_settings")
 }
 
 enum GeneratedDocumentType {

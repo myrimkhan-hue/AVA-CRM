@@ -37,6 +37,16 @@ button, input { font: inherit; }
 .user-menu { display: flex; align-items: center; gap: 10px; margin-left: auto; }
 .user-initials { display: grid; width: 34px; height: 34px; place-items: center; color: #fff; background: #1b2430; border-radius: 50%; font-size: 12px; font-weight: 700; }
 .user-name { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notification-panel { width: 360px; }
+.notification-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.notification-panel-actions { display: flex; align-items: center; gap: 4px; }
+.notification-list { max-height: 420px; overflow-y: auto; }
+.notification-item { cursor: pointer; padding: 10px 8px !important; border-radius: 6px; }
+.notification-item:hover { background: #f6f7f9; }
+.notification-item.unread { background: #fff4f3; }
+.notification-item .notification-date { display: block; margin-top: 2px; font-size: 12px; }
+.notification-preference-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+.notification-preference-row:last-child { border-bottom: 0; }
 .app-sider { padding-top: 16px; background: #fff !important; border-right: 1px solid #e3e8ef; }
 .app-sider .ant-menu { border-inline-end: 0 !important; }
 .app-content { min-width: 0; padding: 24px; background: #f6f7f9; }

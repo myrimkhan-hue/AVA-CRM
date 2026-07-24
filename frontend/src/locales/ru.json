@@ -785,5 +785,19 @@
       "deactivated": "Пользователь деактивирован",
       "activated": "Пользователь активирован"
     }
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "empty": "Уведомлений нет",
+    "markAllRead": "Прочитать все",
+    "settingsTitle": "Какие уведомления присылать",
+    "settingsHint": "Отключённые типы не будут появляться в колокольчике",
+    "types": {
+      "RESPONSIBLE_ASSIGNED": "Назначили ответственным",
+      "DEAL_STALLED": "Сделка без движения",
+      "INVOICE_OVERDUE": "Счёт просрочен",
+      "PAYMENT_REQUEST_PENDING": "Заявка на оплату ждёт согласования",
+      "TRANSPORTATION_OVERDUE": "Перевозка просрочила плановую дату"
+    }
   }
 }
