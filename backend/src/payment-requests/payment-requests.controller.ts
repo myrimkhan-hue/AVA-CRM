@@ -15,6 +15,7 @@ import { CreatePaymentRequestDto } from './dto/create-payment-request.dto';
 import { PayPaymentRequestDto } from './dto/pay-payment-request.dto';
 import { PaymentRequestContextQueryDto } from './dto/payment-request-context-query.dto';
 import { PaymentRequestQueryDto } from './dto/payment-request-query.dto';
+import { ReissuePaymentRequestDto } from './dto/reissue-payment-request.dto';
 import { UpdatePaymentRequestDto } from './dto/update-payment-request.dto';
 import { PaymentRequestsService } from './payment-requests.service';
 
@@ -62,6 +63,16 @@ export class PaymentRequestsController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.paymentRequestsService.pay(id, dto, user);
+  }
+
+  @Patch(':id/reissue')
+  @Roles('ADMIN', 'DIRECTOR', 'FINANCIER')
+  reissue(
+    @Param('id') id: string,
+    @Body() dto: ReissuePaymentRequestDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.paymentRequestsService.reissue(id, dto, user);
   }
 
   @Patch(':id')

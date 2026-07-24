@@ -4,6 +4,7 @@ import {
   Card,
   Select,
   Space,
+  Switch,
   Table,
   Tag,
   Typography,
@@ -13,6 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import {
   INVOICE_STATUSES,
   INVOICE_STATUS_COLORS,
@@ -23,10 +25,15 @@ import {
 export function InvoicesPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { message } = App.useApp();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [status, setStatus] = useState<InvoiceStatus>();
+  const [onlyIntragroup, setOnlyIntragroup] = useState(false);
   const [loading, setLoading] = useState(true);
+  const canSeeIntragroup = Boolean(
+    user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'FINANCIER'].includes(role)),
+  );
 
   const showError = useCallback((error: unknown) => {
     void message.error(
@@ -41,6 +48,7 @@ export function InvoicesPage() {
     try {
       const params = new URLSearchParams();
       if (status) params.set('status', status);
+      if (onlyIntragroup) params.set('onlyIntragroup', 'true');
       const query = params.toString();
       setInvoices(await apiRequest<Invoice[]>(
         `/invoices${query ? `?${query}` : ''}`,
@@ -50,7 +58,7 @@ export function InvoicesPage() {
     } finally {
       setLoading(false);
     }
-  }, [showError, status]);
+  }, [onlyIntragroup, showError, status]);
 
   useEffect(() => {
     void loadInvoices();
@@ -75,7 +83,12 @@ export function InvoicesPage() {
       dataIndex: 'number',
       width: 170,
       sorter: (left, right) => left.number.localeCompare(right.number),
-      render: (value: string) => <Typography.Text strong>{value}</Typography.Text>,
+      render: (value: string, invoice) => (
+        <Space size={4}>
+          <Typography.Text strong>{value}</Typography.Text>
+          {invoice.isIntragroup && <Tag color="purple">{t('invoices.intragroup')}</Tag>}
+        </Space>
+      ),
     },
     {
       title: t('invoices.columns.transportation'),
@@ -165,6 +178,12 @@ export function InvoicesPage() {
               label: t(`invoices.statuses.${value}`),
             }))}
           />
+          {canSeeIntragroup && (
+            <Space>
+              <Switch checked={onlyIntragroup} onChange={setOnlyIntragroup} />
+              <Typography.Text>{t('invoices.filters.onlyIntragroup')}</Typography.Text>
+            </Space>
+          )}
         </div>
         <Alert
           type="info"

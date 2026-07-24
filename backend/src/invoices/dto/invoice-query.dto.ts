@@ -28,4 +28,9 @@ export class InvoiceQueryDto {
   @Transform(({ value }) => value === true || value === 'true')
   @IsBoolean({ message: 'includeDeleted должен быть логическим значением' })
   includeDeleted?: boolean;
+
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean({ message: 'onlyIntragroup должен быть логическим значением' })
+  onlyIntragroup?: boolean;
 }

@@ -54,7 +54,7 @@ const transportationInclude = {
     orderBy: { orderIndex: 'asc' as const },
   },
   invoices: {
-    where: { deletedAt: null },
+    where: { deletedAt: null, isIntragroup: false },
     take: 1,
     select: {
       id: true,

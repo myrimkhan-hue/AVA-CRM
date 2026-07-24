@@ -72,6 +72,12 @@ export class InvoicesService {
         'Просмотр удалённых счетов доступен только администратору',
       );
     }
+    const canSeeIntragroup = this.canSeeIntragroup(user);
+    if (query.onlyIntragroup && !canSeeIntragroup) {
+      throw new ForbiddenException(
+        'Внутригрупповые операции доступны только администратору, руководителю и финансисту',
+      );
+    }
 
     const invoices = await this.prisma.invoice.findMany({
       where: {
@@ -83,6 +89,9 @@ export class InvoicesService {
             clientId: query.clientId,
             status: query.status,
             legalEntityId: query.legalEntityId,
+            isIntragroup: canSeeIntragroup
+              ? (query.onlyIntragroup ? true : undefined)
+              : false,
           },
         ],
       },
@@ -244,6 +253,7 @@ export class InvoicesService {
       where: {
         transportationId: transportation.id,
         deletedAt: null,
+        isIntragroup: false,
       },
       select: { id: true },
     });
@@ -270,23 +280,12 @@ export class InvoicesService {
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       try {
         const created = await this.prisma.$transaction(async (tx) => {
-          const sequence = await tx.invoiceNumberSequence.upsert({
-            where: {
-              legalEntityId_year: {
-                legalEntityId: deal.legalEntityId,
-                year,
-              },
-            },
-            create: {
-              legalEntityId: deal.legalEntityId,
-              year,
-              lastNumber: 1,
-            },
-            update: { lastNumber: { increment: 1 } },
-          });
-          const number = `${deal.legalEntity.numberingPrefix}-${year}-${String(
-            sequence.lastNumber,
-          ).padStart(4, '0')}`;
+          const number = await this.nextInvoiceNumber(
+            tx,
+            deal.legalEntityId,
+            deal.legalEntity.numberingPrefix,
+            year,
+          );
           const invoice = await tx.invoice.create({
             data: {
               number,
@@ -332,6 +331,82 @@ export class InvoicesService {
       }
     }
     throw new BadRequestException('Не удалось создать счёт');
+  }
+
+  /**
+   * Внутренний счёт-перевыставление (раздел 4.4.6 ТЗ), вызывается только
+   * из PaymentRequestsService.reissue — не имеет собственного HTTP-эндпоинта.
+   * Привязан к той же перевозке, что и исходный расход (см. решение
+   * "счёт = перевозка, не сделка" из подзадачи 3) — партиционный уникальный
+   * индекс на invoices.transportation_id учитывает isIntragroup и допускает
+   * внутренний счёт наряду с обычным клиентским.
+   */
+  async createIntragroupInvoice(
+    tx: Prisma.TransactionClient,
+    params: {
+      transportationId: string;
+      payerLegalEntityId: string;
+      payerLegalEntityNumberingPrefix: string;
+      clientContractorId: string;
+      currencyCode: string;
+      amount: Prisma.Decimal;
+      description: string;
+      actorUserId: string;
+    },
+  ) {
+    const issueDate = this.today();
+    const year = issueDate.getUTCFullYear();
+    const number = await this.nextInvoiceNumber(
+      tx,
+      params.payerLegalEntityId,
+      params.payerLegalEntityNumberingPrefix,
+      year,
+    );
+    const invoice = await tx.invoice.create({
+      data: {
+        number,
+        transportationId: params.transportationId,
+        legalEntityId: params.payerLegalEntityId,
+        clientId: params.clientContractorId,
+        currencyCode: params.currencyCode,
+        issueDate,
+        dueDate: issueDate,
+        isIntragroup: true,
+        notes: params.description,
+        lines: {
+          create: [{
+            sortOrder: 1,
+            serviceName: params.description,
+            quantity: new Prisma.Decimal(1),
+            unitPrice: params.amount,
+            hasVat: false,
+          }],
+        },
+      },
+      include: invoiceInclude,
+    });
+    await this.writeAudit(
+      tx,
+      params.actorUserId,
+      invoice.id,
+      AuditAction.CREATE,
+      this.creationChanges(invoice),
+    );
+    return invoice;
+  }
+
+  private async nextInvoiceNumber(
+    tx: Prisma.TransactionClient,
+    legalEntityId: string,
+    numberingPrefix: string,
+    year: number,
+  ): Promise<string> {
+    const sequence = await tx.invoiceNumberSequence.upsert({
+      where: { legalEntityId_year: { legalEntityId, year } },
+      create: { legalEntityId, year, lastNumber: 1 },
+      update: { lastNumber: { increment: 1 } },
+    });
+    return `${numberingPrefix}-${year}-${String(sequence.lastNumber).padStart(4, '0')}`;
   }
 
   async update(id: string, dto: UpdateInvoiceDto, user: AuthUser) {
@@ -774,6 +849,12 @@ export class InvoicesService {
         'Срок оплаты не может быть раньше даты счёта',
       );
     }
+  }
+
+  private canSeeIntragroup(user: AuthUser): boolean {
+    return user.roles.some((role) =>
+      ['ADMIN', 'DIRECTOR', 'FINANCIER'].includes(role),
+    );
   }
 
   private isManagerOnly(user: AuthUser): boolean {

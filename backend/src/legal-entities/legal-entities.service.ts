@@ -37,7 +37,14 @@ export class LegalEntitiesService {
 
     try {
       return await this.prisma.$transaction(async (tx) => {
-        const legalEntity = await tx.legalEntity.create({ data });
+        const created = await tx.legalEntity.create({ data });
+        const contractor = await tx.contractor.create({
+          data: { name: data.name, types: ['GROUP_ENTITY'] },
+        });
+        const legalEntity = await tx.legalEntity.update({
+          where: { id: created.id },
+          data: { contractorId: contractor.id },
+        });
         await this.writeAudit(
           tx,
           actorUserId,
@@ -101,6 +108,12 @@ export class LegalEntitiesService {
         where: { id },
         data,
       });
+      if (dto.name !== undefined && current.contractorId) {
+        await tx.contractor.update({
+          where: { id: current.contractorId },
+          data: { name: legalEntity.name },
+        });
+      }
       await this.writeAudit(
         tx,
         actorUserId,

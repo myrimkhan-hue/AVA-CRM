@@ -38,7 +38,7 @@ export class MarginService {
           select: { id: true, subcontractorRate: true, subcontractorRateCurrency: true },
         },
         invoices: {
-          where: { deletedAt: null },
+          where: { deletedAt: null, isIntragroup: false },
           select: {
             id: true,
             currencyCode: true,

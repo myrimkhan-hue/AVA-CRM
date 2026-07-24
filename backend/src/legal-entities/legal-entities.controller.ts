@@ -13,6 +13,7 @@ export class LegalEntitiesController {
   constructor(private readonly legalEntitiesService: LegalEntitiesService) {}
 
   @Get('admin')
+  @Roles('ADMIN', 'DIRECTOR', 'FINANCIER')
   findAll() {
     return this.legalEntitiesService.findAll();
   }

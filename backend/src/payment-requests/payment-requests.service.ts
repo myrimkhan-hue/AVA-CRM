@@ -11,12 +11,14 @@ import {
   Prisma,
 } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
+import { InvoicesService } from '../invoices/invoices.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { transportationVisibilityWhere } from '../transportations/transportation-policy';
 import { CreatePaymentRequestDto } from './dto/create-payment-request.dto';
 import { PayPaymentRequestDto } from './dto/pay-payment-request.dto';
 import { PaymentRequestContextQueryDto } from './dto/payment-request-context-query.dto';
 import { PaymentRequestQueryDto } from './dto/payment-request-query.dto';
+import { ReissuePaymentRequestDto } from './dto/reissue-payment-request.dto';
 import { UpdatePaymentRequestDto } from './dto/update-payment-request.dto';
 
 const paymentRequestInclude = {
@@ -32,6 +34,8 @@ const paymentRequestInclude = {
           number: true,
           responsibleId: true,
           departmentId: true,
+          legalEntityId: true,
+          legalEntity: { select: { id: true, name: true } },
         },
       },
       logist: { select: { id: true, fullName: true } },
@@ -50,6 +54,8 @@ const paymentRequestInclude = {
   createdBy: { select: { id: true, fullName: true } },
   approvedBy: { select: { id: true, fullName: true } },
   paidBy: { select: { id: true, fullName: true } },
+  payerLegalEntity: { select: { id: true, name: true } },
+  reimbursementInvoice: { select: { id: true, number: true } },
 } satisfies Prisma.PaymentRequestInclude;
 
 type PaymentRequestWithRelations = Prisma.PaymentRequestGetPayload<{
@@ -59,7 +65,10 @@ type Changes = Record<string, { old: unknown; new: unknown }>;
 
 @Injectable()
 export class PaymentRequestsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly invoicesService: InvoicesService,
+  ) {}
 
   async findAll(query: PaymentRequestQueryDto, user: AuthUser) {
     if (query.includeDeleted && !user.roles.includes('ADMIN')) {
@@ -110,7 +119,7 @@ export class PaymentRequestsService {
     }
     const [contractors, currencies] = await Promise.all([
       this.prisma.contractor.findMany({
-        where: { deletedAt: null },
+        where: { deletedAt: null, NOT: { types: { has: 'GROUP_ENTITY' } } },
         select: { id: true, name: true, types: true },
         orderBy: { name: 'asc' },
       }),
@@ -285,6 +294,82 @@ export class PaymentRequestsService {
             : new Prisma.Decimal(dto.actualExchangeRate),
       },
     );
+  }
+
+  /**
+   * Перевыставление расхода на другое юрлицо (раздел 4.4.6 ТЗ): расход
+   * оплачен юрлицом, отличным от юрлица сделки — создаётся внутренний
+   * счёт от фактически оплатившего юрлица к юрлицу сделки.
+   */
+  async reissue(id: string, dto: ReissuePaymentRequestDto, user: AuthUser) {
+    const current = await this.getActiveVisible(id, user);
+    if (current.status !== PaymentRequestStatus.PAID) {
+      throw new BadRequestException(
+        'Перевыставить можно только оплаченную заявку',
+      );
+    }
+    if (current.reimbursementInvoiceId) {
+      throw new BadRequestException('Эта заявка уже перевыставлена');
+    }
+    const dealLegalEntityId = current.transportation.deal.legalEntityId;
+    if (dto.payerLegalEntityId === dealLegalEntityId) {
+      throw new BadRequestException(
+        'Совпадает с юрлицом сделки — перевыставление не требуется',
+      );
+    }
+    const [payerLegalEntity, dealLegalEntity] = await Promise.all([
+      this.prisma.legalEntity.findFirst({
+        where: { id: dto.payerLegalEntityId, isActive: true },
+        select: { id: true, numberingPrefix: true, contractorId: true },
+      }),
+      this.prisma.legalEntity.findUnique({
+        where: { id: dealLegalEntityId },
+        select: { contractorId: true },
+      }),
+    ]);
+    if (!payerLegalEntity) {
+      throw new BadRequestException('Активное юрлицо-плательщик не найдено');
+    }
+    if (!payerLegalEntity.contractorId || !dealLegalEntity?.contractorId) {
+      throw new BadRequestException(
+        'У одного из юрлиц нет связанного контрагента — обратитесь к администратору',
+      );
+    }
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      const invoice = await this.invoicesService.createIntragroupInvoice(tx, {
+        transportationId: current.transportationId,
+        payerLegalEntityId: payerLegalEntity.id,
+        payerLegalEntityNumberingPrefix: payerLegalEntity.numberingPrefix,
+        clientContractorId: dealLegalEntity.contractorId!,
+        currencyCode: current.currencyCode,
+        amount: current.amount,
+        description: `Возмещение расхода по перевозке ${current.transportation.number}: ${current.purpose}`,
+        actorUserId: user.id,
+      });
+      const result = await tx.paymentRequest.updateMany({
+        where: { id, deletedAt: null, reimbursementInvoiceId: null },
+        data: {
+          payerLegalEntityId: payerLegalEntity.id,
+          reimbursementInvoiceId: invoice.id,
+        },
+      });
+      if (result.count !== 1) {
+        throw new ConflictException(
+          'Заявка уже изменена другим пользователем',
+        );
+      }
+      const row = await tx.paymentRequest.findUniqueOrThrow({
+        where: { id },
+        include: paymentRequestInclude,
+      });
+      await this.writeAudit(tx, user.id, id, AuditAction.UPDATE, {
+        payerLegalEntityId: { old: null, new: payerLegalEntity.id },
+        reimbursementInvoiceId: { old: null, new: invoice.id },
+      });
+      return row;
+    });
+    return this.toResponse(updated);
   }
 
   async remove(id: string, user: AuthUser) {

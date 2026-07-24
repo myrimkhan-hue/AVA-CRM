@@ -38,6 +38,9 @@ export class ContractorsService {
       where: {
         deletedAt: query.includeDeleted ? undefined : null,
         types: query.type ? { has: query.type } : undefined,
+        // Контрагенты-двойники юрлиц группы (для внутригрупповых счетов,
+        // раздел 4.4.6 ТЗ) не должны попадать в обычные списки/поиск.
+        NOT: query.type === 'GROUP_ENTITY' ? undefined : { types: { has: 'GROUP_ENTITY' } },
         OR: search
           ? [
               { name: { contains: search, mode: 'insensitive' } },

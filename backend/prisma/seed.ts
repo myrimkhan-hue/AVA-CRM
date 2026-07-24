@@ -4,6 +4,7 @@ import {
   TaxRegime,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { MOTIVATION_SETTINGS_ID } from '../src/motivation/motivation.constants';
 
 const prisma = new PrismaClient();
 
@@ -189,7 +190,25 @@ async function main(): Promise<void> {
         },
       });
     }
+
+    // Каждое юрлицо группы должно существовать в системе и как контрагент
+    // (раздел 4.4.6 ТЗ), чтобы юрлица могли выставлять счета друг другу.
+    if (!savedLegalEntity.contractorId) {
+      const contractor = await prisma.contractor.create({
+        data: { name: savedLegalEntity.name, types: ['GROUP_ENTITY'] },
+      });
+      await prisma.legalEntity.update({
+        where: { id: savedLegalEntity.id },
+        data: { contractorId: contractor.id },
+      });
+    }
   }
+
+  await prisma.motivationSettings.upsert({
+    where: { id: MOTIVATION_SETTINGS_ID },
+    update: {},
+    create: { id: MOTIVATION_SETTINGS_ID, bonusRatePercent: 10 },
+  });
 }
 
 main()

@@ -12,6 +12,8 @@ export interface PaymentRequest {
   approvedAt: string | null;
   paidAt: string | null;
   actualExchangeRate: string | null;
+  payerLegalEntity: { id: string; name: string } | null;
+  reimbursementInvoice: { id: string; number: string } | null;
   deletedAt: string | null;
   createdAt: string;
   transportation: {
@@ -24,6 +26,8 @@ export interface PaymentRequest {
       number: string;
       responsibleId: string;
       departmentId: string | null;
+      legalEntityId: string;
+      legalEntity: { id: string; name: string };
     };
     logist: { id: string; fullName: string };
   };

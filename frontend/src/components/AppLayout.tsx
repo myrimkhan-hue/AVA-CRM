@@ -44,6 +44,7 @@ export function AppLayout() {
         label: t('nav.paymentRequests'),
       },
       ...(canViewReports ? [{ path: '/reports', label: t('nav.reports') }] : []),
+      { path: '/motivation', label: t('nav.motivation') },
       ...(isAdmin ? [{ path: '/users', label: t('nav.users') }] : []),
       ...(canManageLegalEntities
         ? [{

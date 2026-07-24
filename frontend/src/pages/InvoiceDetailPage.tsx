@@ -95,7 +95,10 @@ export function TransportationInvoiceCard({
       const invoices = await apiRequest<Invoice[]>(
         `/invoices?transportationId=${encodeURIComponent(transportationId)}`,
       );
-      setInvoice(invoices[0]);
+      // ADMIN/DIRECTOR/FINANCIER могут видеть и внутригрупповой счёт-
+      // перевыставление по этой же перевозке (раздел 4.4.6 ТЗ) — здесь
+      // всегда нужен обычный клиентский счёт, а не он.
+      setInvoice(invoices.find((invoice) => !invoice.isIntragroup) ?? invoices[0]);
     } catch (error) {
       setLoadFailed(true);
       showError(error);

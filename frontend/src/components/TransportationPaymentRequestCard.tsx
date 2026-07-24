@@ -45,6 +45,15 @@ interface PayValues {
   actualExchangeRate?: number;
 }
 
+interface ReissueValues {
+  payerLegalEntityId: string;
+}
+
+interface LegalEntityOption {
+  id: string;
+  name: string;
+}
+
 interface Props {
   transportationId: string;
   leg: Leg;
@@ -59,12 +68,15 @@ export function TransportationPaymentRequestCard({
   const { message } = App.useApp();
   const [form] = Form.useForm<FormValues>();
   const [payForm] = Form.useForm<PayValues>();
+  const [reissueForm] = Form.useForm<ReissueValues>();
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
   const [context, setContext] = useState<Context>();
+  const [legalEntities, setLegalEntities] = useState<LegalEntityOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState(false);
   const [payTarget, setPayTarget] = useState<PaymentRequest>();
+  const [reissueTarget, setReissueTarget] = useState<PaymentRequest>();
   const canApprove = Boolean(user?.roles.some((role) =>
     ['ADMIN', 'DIRECTOR', 'FINANCIER'].includes(role),
   ));
@@ -176,6 +188,39 @@ export function TransportationPaymentRequestCard({
     setPayTarget(request);
   };
 
+  const openReissue = async (request: PaymentRequest) => {
+    setSaving(true);
+    try {
+      if (legalEntities.length === 0) {
+        setLegalEntities(await apiRequest<LegalEntityOption[]>('/legal-entities/admin'));
+      }
+      reissueForm.resetFields();
+      setReissueTarget(request);
+    } catch (error) {
+      showError(error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const reissue = async (values: ReissueValues) => {
+    if (!reissueTarget) return;
+    setSaving(true);
+    try {
+      await apiRequest(`/payment-requests/${reissueTarget.id}/reissue`, {
+        method: 'PATCH',
+        body: JSON.stringify(values),
+      });
+      void message.success(t('paymentRequests.messages.reissued'));
+      setReissueTarget(undefined);
+      await load();
+    } catch (error) {
+      showError(error);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const formatMoney = (request: PaymentRequest) =>
     new Intl.NumberFormat(i18n.language, {
       style: 'currency',
@@ -229,6 +274,23 @@ export function TransportationPaymentRequestCard({
                   >
                     {t('paymentRequests.actions.markPaid')}
                   </Button>
+                )}
+                {canApprove && request.status === 'PAID' && (
+                  request.reimbursementInvoice ? (
+                    <Tag color="purple">
+                      {t('paymentRequests.intragroup.reissuedTag', {
+                        number: request.reimbursementInvoice.number,
+                      })}
+                    </Tag>
+                  ) : (
+                    <Button
+                      size="small"
+                      loading={saving}
+                      onClick={() => void openReissue(request)}
+                    >
+                      {t('paymentRequests.actions.reissue')}
+                    </Button>
+                  )
                 )}
               </Space>
             </Card>
@@ -341,6 +403,41 @@ export function TransportationPaymentRequestCard({
             extra={t('paymentRequests.payModal.hint')}
           >
             <InputNumber min={0.000001} precision={6} className="full-width" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        open={Boolean(reissueTarget)}
+        title={t('paymentRequests.intragroup.title')}
+        okText={t('paymentRequests.actions.reissue')}
+        cancelText={t('common.cancel')}
+        confirmLoading={saving}
+        onCancel={() => setReissueTarget(undefined)}
+        onOk={() => reissueForm.submit()}
+        destroyOnHidden
+      >
+        <Typography.Paragraph type="secondary">
+          {t('paymentRequests.intragroup.hint')}
+        </Typography.Paragraph>
+        <Form<ReissueValues>
+          form={reissueForm}
+          layout="vertical"
+          onFinish={(values) => void reissue(values)}
+        >
+          <Form.Item
+            name="payerLegalEntityId"
+            label={t('paymentRequests.intragroup.payerLegalEntity')}
+            rules={[{
+              required: true,
+              message: t('paymentRequests.intragroup.validation.payerLegalEntity'),
+            }]}
+          >
+            <Select
+              options={legalEntities
+                .filter((entity) => entity.id !== reissueTarget?.transportation.deal.legalEntityId)
+                .map((entity) => ({ value: entity.id, label: entity.name }))}
+            />
           </Form.Item>
         </Form>
       </Modal>

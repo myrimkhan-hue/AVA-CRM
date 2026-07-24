@@ -32,6 +32,7 @@ export interface Invoice {
   notes: string | null;
   deletedAt: string | null;
   isOverdue: boolean;
+  isIntragroup: boolean;
   transportation: {
     id: string;
     number: string;

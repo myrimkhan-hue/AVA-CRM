@@ -65,6 +65,7 @@ export class ReportsService {
       where: {
         deletedAt: null,
         status: { not: InvoiceStatus.PAID },
+        isIntragroup: false,
         transportation: { deletedAt: null, deal: { deletedAt: null } },
       },
       select: {

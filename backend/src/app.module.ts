@@ -17,6 +17,7 @@ import { CurrenciesModule } from './currencies/currencies.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { PaymentRequestsModule } from './payment-requests/payment-requests.module';
 import { ReportsModule } from './reports/reports.module';
+import { MotivationModule } from './motivation/motivation.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ReportsModule } from './reports/reports.module';
     InvoicesModule,
     PaymentRequestsModule,
     ReportsModule,
+    MotivationModule,
   ],
   controllers: [HealthController],
   providers: [

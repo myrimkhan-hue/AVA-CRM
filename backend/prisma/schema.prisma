@@ -49,6 +49,7 @@ enum ContractorType {
   WAREHOUSE
   SUPPLIER
   OTHER
+  GROUP_ENTITY
 }
 
 enum PaymentTerm {
@@ -116,6 +117,7 @@ model User {
   isActive                   Boolean                     @default(true) @map("is_active")
   createdAt                  DateTime                    @default(now()) @map("created_at")
   updatedAt                  DateTime                    @updatedAt @map("updated_at")
+  motivationRatePercent      Decimal?                    @map("motivation_rate_percent") @db.Decimal(5, 2)
   department                 Department?                 @relation(fields: [departmentId], references: [id])
   roles                      UserRole[]
   auditLogs                  AuditLog[]
@@ -181,13 +183,16 @@ model LegalEntity {
   legalAddress        String?                 @map("legal_address")
   taxRegime           TaxRegime               @default(GENERAL) @map("tax_regime")
   isActive            Boolean                 @default(true) @map("is_active")
+  contractorId        String?                 @unique @map("contractor_id")
   createdAt           DateTime                @default(now()) @map("created_at")
   updatedAt           DateTime                @updatedAt @map("updated_at")
+  contractor          Contractor?             @relation(fields: [contractorId], references: [id], onDelete: SetNull)
   deals               Deal[]
   dealNumberSequences DealNumberSequence[]
   taxRates            LegalEntityTaxRate[]
   invoices            Invoice[]
   invoiceSequences    InvoiceNumberSequence[]
+  paymentRequestsAsPayer PaymentRequest[]      @relation("PaymentRequestPayerLegalEntity")
 
   @@map("legal_entities")
 }
@@ -273,6 +278,7 @@ model Contractor {
   transportationLegs TransportationLeg[]     @relation("TransportationLegSubcontractor")
   clientInvoices     Invoice[]
   paymentRequests    PaymentRequest[]        @relation("PaymentRequestPayee")
+  legalEntity        LegalEntity?
 
   @@map("contractors")
 }
@@ -436,6 +442,7 @@ model Invoice {
   issueDate        DateTime         @map("issue_date") @db.Date
   dueDate          DateTime         @map("due_date") @db.Date
   status           InvoiceStatus    @default(ISSUED)
+  isIntragroup     Boolean          @default(false) @map("is_intragroup")
   notes            String?
   deletedAt        DateTime?        @map("deleted_at")
   createdAt        DateTime         @default(now()) @map("created_at")
@@ -446,10 +453,12 @@ model Invoice {
   currency         Currency         @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
   lines            InvoiceLine[]
   payments         InvoicePayment[]
+  reimbursementFor PaymentRequest?
 
   @@index([clientId])
   @@index([legalEntityId])
   @@index([status])
+  @@index([isIntragroup])
   @@map("invoices")
 }
 
@@ -500,6 +509,8 @@ model PaymentRequest {
   paidByUserId      String?              @map("paid_by_user_id")
   paidAt            DateTime?            @map("paid_at")
   actualExchangeRate Decimal?            @map("actual_exchange_rate") @db.Decimal(18, 6)
+  payerLegalEntityId String?             @map("payer_legal_entity_id")
+  reimbursementInvoiceId String?         @unique @map("reimbursement_invoice_id")
   deletedAt         DateTime?            @map("deleted_at")
   createdByUserId   String               @map("created_by_user_id")
   createdAt         DateTime             @default(now()) @map("created_at")
@@ -511,11 +522,14 @@ model PaymentRequest {
   createdBy         User                 @relation("PaymentRequestCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
   approvedBy        User?                @relation("PaymentRequestApprovedBy", fields: [approvedByUserId], references: [id], onDelete: SetNull)
   paidBy            User?                @relation("PaymentRequestPaidBy", fields: [paidByUserId], references: [id], onDelete: SetNull)
+  payerLegalEntity  LegalEntity?         @relation("PaymentRequestPayerLegalEntity", fields: [payerLegalEntityId], references: [id], onDelete: SetNull)
+  reimbursementInvoice Invoice?          @relation(fields: [reimbursementInvoiceId], references: [id], onDelete: SetNull)
 
   @@index([transportationId])
   @@index([legId])
   @@index([payeeContractorId])
   @@index([status])
+  @@index([payerLegalEntityId])
   @@index([dueDate])
   @@map("payment_requests")
 }
@@ -543,4 +557,12 @@ model ContractorBankAccount {
   contractor    Contractor @relation(fields: [contractorId], references: [id], onDelete: Cascade)
 
   @@map("contractor_bank_accounts")
+}
+
+model MotivationSettings {
+  id                String   @id @default(cuid())
+  bonusRatePercent  Decimal  @default(10) @map("bonus_rate_percent") @db.Decimal(5, 2)
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("motivation_settings")
 }
