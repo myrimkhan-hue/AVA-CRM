@@ -1,7 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import { GeneratedDocumentType } from '@prisma/client';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { GeneratedDocumentType, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { DocxValues, fillDocx } from './lib/fill-docx';
+
+const DASH = '—';
+
+export interface PartyInfo {
+  id: string;
+  name: string;
+  bin: string;
+  address: string;
+  account: string;
+  bank: string;
+  bik: string;
+  position: string;
+  signerFull: string;
+  signerShort: string;
+  basis: string;
+  talon: string;
+  phone: string;
+  email: string;
+}
+
+export interface PartyRequisitesOverride {
+  legalForm?: string;
+  bin?: string;
+  legalAddress?: string;
+  bankName?: string;
+  bankAccount?: string;
+  bankBik?: string;
+  signerPosition?: string;
+  signerFullName?: string;
+  signerShortName?: string;
+  signBasis?: string;
+  talonNumber?: string;
+  phone?: string;
+  email?: string;
+}
 
 @Injectable()
 export class DocumentsService {
@@ -30,6 +65,8 @@ export class DocumentsService {
     number: string;
     dealId?: string;
     transportationId?: string;
+    contractorId?: string;
+    legalEntityId?: string;
     userId: string;
   }) {
     return this.prisma.generatedDocument.create({
@@ -38,6 +75,8 @@ export class DocumentsService {
         number: params.number,
         dealId: params.dealId,
         transportationId: params.transportationId,
+        contractorId: params.contractorId,
+        legalEntityId: params.legalEntityId,
         generatedByUserId: params.userId,
       },
     });
@@ -52,5 +91,73 @@ export class DocumentsService {
       include: { generatedBy: { select: { id: true, fullName: true } } },
       orderBy: { generatedAt: 'desc' },
     });
+  }
+
+  /** Последний сгенерированный договор с этим контрагентом от этого юрлица (для заголовка заявки — "Приложение к договору"). */
+  async findLatestContract(contractorId: string, legalEntityId: string) {
+    return this.prisma.generatedDocument.findFirst({
+      where: {
+        type: GeneratedDocumentType.CONTRACT,
+        contractorId,
+        legalEntityId,
+      },
+      orderBy: { generatedAt: 'desc' },
+    });
+  }
+
+  async getLegalEntityParty(id: string): Promise<PartyInfo & { numberingPrefix: string }> {
+    const legalEntity = await this.prisma.legalEntity.findUnique({ where: { id } });
+    if (!legalEntity) throw new NotFoundException('Юрлицо не найдено');
+    return {
+      id: legalEntity.id,
+      numberingPrefix: legalEntity.numberingPrefix,
+      name: legalEntity.name,
+      bin: legalEntity.bin ?? DASH,
+      address: legalEntity.legalAddress ?? DASH,
+      account: legalEntity.bankAccount ?? DASH,
+      bank: legalEntity.bankName ?? DASH,
+      bik: legalEntity.bankBik ?? DASH,
+      position: legalEntity.signerPosition ?? DASH,
+      signerFull: legalEntity.signerFullName ?? DASH,
+      signerShort: legalEntity.signerShortName ?? DASH,
+      basis: legalEntity.signBasis ?? DASH,
+      talon: legalEntity.talonNumber ?? DASH,
+      phone: legalEntity.phone ?? DASH,
+      email: legalEntity.email ?? DASH,
+    };
+  }
+
+  async getContractorParty(id: string): Promise<PartyInfo> {
+    const contractor = await this.prisma.contractor.findFirst({ where: { id, deletedAt: null } });
+    if (!contractor) throw new BadRequestException('Контрагент не найден');
+    return {
+      id: contractor.id,
+      name: contractor.name,
+      bin: contractor.bin ?? DASH,
+      address: contractor.legalAddress ?? DASH,
+      account: contractor.bankAccount ?? DASH,
+      bank: contractor.bankName ?? DASH,
+      bik: contractor.bankBik ?? DASH,
+      position: contractor.signerPosition ?? DASH,
+      signerFull: contractor.signerFullName ?? DASH,
+      signerShort: contractor.signerShortName ?? DASH,
+      basis: contractor.signBasis ?? DASH,
+      talon: contractor.talonNumber ?? DASH,
+      phone: contractor.phone ?? DASH,
+      email: contractor.email ?? DASH,
+    };
+  }
+
+  async applyContractorOverrides(
+    contractorId: string,
+    overrides: PartyRequisitesOverride,
+  ): Promise<void> {
+    const data: Prisma.ContractorUpdateInput = {};
+    for (const [key, value] of Object.entries(overrides)) {
+      if (value === undefined) continue;
+      (data as Record<string, unknown>)[key] = value.trim() || null;
+    }
+    if (Object.keys(data).length === 0) return;
+    await this.prisma.contractor.update({ where: { id: contractorId }, data });
   }
 }

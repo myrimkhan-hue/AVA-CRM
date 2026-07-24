@@ -205,6 +205,7 @@ model LegalEntity {
   invoices            Invoice[]
   invoiceSequences    InvoiceNumberSequence[]
   paymentRequestsAsPayer PaymentRequest[]      @relation("PaymentRequestPayerLegalEntity")
+  generatedDocuments  GeneratedDocument[]
 
   @@map("legal_entities")
 }
@@ -302,6 +303,7 @@ model Contractor {
   clientInvoices     Invoice[]
   paymentRequests    PaymentRequest[]        @relation("PaymentRequestPayee")
   legalEntity        LegalEntity?
+  generatedDocuments GeneratedDocument[]
 
   @@map("contractors")
 }
@@ -619,13 +621,18 @@ model GeneratedDocument {
   number            String
   dealId            String?               @map("deal_id")
   transportationId  String?               @map("transportation_id")
+  contractorId      String?               @map("contractor_id")
+  legalEntityId     String?               @map("legal_entity_id")
   generatedByUserId String                @map("generated_by_user_id")
   generatedAt       DateTime              @default(now()) @map("generated_at")
   deal              Deal?                 @relation(fields: [dealId], references: [id], onDelete: SetNull)
   transportation    Transportation?       @relation(fields: [transportationId], references: [id], onDelete: SetNull)
+  contractor        Contractor?           @relation(fields: [contractorId], references: [id], onDelete: SetNull)
+  legalEntity       LegalEntity?          @relation(fields: [legalEntityId], references: [id], onDelete: SetNull)
   generatedBy       User                  @relation("GeneratedDocumentGeneratedBy", fields: [generatedByUserId], references: [id], onDelete: Restrict)
 
   @@index([dealId])
   @@index([transportationId])
+  @@index([contractorId])
   @@map("generated_documents")
 }
