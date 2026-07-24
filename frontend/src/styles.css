@@ -265,6 +265,7 @@ button, input { font: inherit; }
 .invoice-lines-form { display: flex; width: 100%; margin-bottom: 18px; }
 .invoice-line-form { padding: 12px 12px 0; background: #fafbfc; border: 1px solid #e3e8ef; border-radius: 10px; }
 .invoice-line-form .ant-input-number, .invoice-detail-page .ant-input-number { width: 100%; }
+.invoice-line-remove-col { display: flex; justify-content: flex-end; padding-top: 30px; }
 .invoice-detail-page { display: flex; flex-direction: column; gap: 14px; }
 .transportation-invoice-section { display: flex; flex-direction: column; gap: 14px; }
 .transportation-invoice-section .deal-detail-heading { margin-bottom: 0; }

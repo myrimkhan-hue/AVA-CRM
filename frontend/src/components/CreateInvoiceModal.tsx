@@ -334,16 +334,15 @@ export function CreateInvoiceModal({
                           )}
                         </Form.Item>
                       </Col>
-                      <Col xs={24} md={3}>
+                      <Col xs={24} md={3} className="invoice-line-remove-col">
                         <Button
                           danger
                           type="text"
                           icon={<DeleteOutlined />}
+                          aria-label={t('invoices.actions.removeLine')}
                           disabled={fields.length === 1}
                           onClick={() => remove(field.name)}
-                        >
-                          {t('invoices.actions.removeLine')}
-                        </Button>
+                        />
                       </Col>
                     </Row>
                   </div>
