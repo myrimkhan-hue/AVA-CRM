@@ -12,6 +12,7 @@ interface MarginResult {
   paidToSubcontractorsKzt: number;
   currencyDifferenceKzt: number;
   isForecast: boolean;
+  hasPlannedItems: boolean;
 }
 
 interface Props {
@@ -56,9 +57,12 @@ export function MarginCard({ endpoint }: Props) {
       className="transport-card margin-card"
       title={t('margin.title')}
       extra={result && (
-        <Tag color={result.isForecast ? 'gold' : 'green'}>
-          {t(result.isForecast ? 'margin.forecast' : 'margin.final')}
-        </Tag>
+        <Space size={4}>
+          {result.hasPlannedItems && <Tag color="blue">{t('margin.planned')}</Tag>}
+          <Tag color={result.isForecast ? 'gold' : 'green'}>
+            {t(result.isForecast ? 'margin.forecast' : 'margin.final')}
+          </Tag>
+        </Space>
       )}
     >
       {loading || !result ? (
@@ -94,7 +98,12 @@ export function MarginCard({ endpoint }: Props) {
               <div>{formatMoney(result.currencyDifferenceKzt)}</div>
             </div>
           </div>
-          {result.isForecast && (
+          {result.hasPlannedItems && (
+            <Typography.Text type="secondary" className="margin-hint">
+              {t('margin.plannedHint')}
+            </Typography.Text>
+          )}
+          {result.isForecast && !result.hasPlannedItems && (
             <Typography.Text type="secondary" className="margin-hint">
               {t('margin.hint')}
             </Typography.Text>

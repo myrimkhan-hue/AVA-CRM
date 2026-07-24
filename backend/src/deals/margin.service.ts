@@ -21,9 +21,9 @@ export class MarginService {
    */
   async calculateForTransportations(
     transportationIds: string[],
-  ): Promise<DealMarginResult> {
+  ): Promise<DealMarginResult & { hasPlannedItems: boolean }> {
     if (transportationIds.length === 0) {
-      return calculateDealMargin({ items: [] });
+      return { ...calculateDealMargin({ items: [] }), hasPlannedItems: false };
     }
 
     const transportations = await this.prisma.transportation.findMany({
@@ -31,6 +31,12 @@ export class MarginService {
       select: {
         id: true,
         createdAt: true,
+        clientRate: true,
+        clientRateCurrency: true,
+        legs: {
+          where: { subcontractorRate: { not: null } },
+          select: { id: true, subcontractorRate: true, subcontractorRateCurrency: true },
+        },
         invoices: {
           where: { deletedAt: null },
           select: {
@@ -89,9 +95,51 @@ export class MarginService {
     };
 
     const items: MarginLineItem[] = [];
+    let hasPlannedItems = false;
 
     for (const transportation of transportations) {
       const recordedDate = transportation.createdAt;
+
+      if (transportation.invoices.length === 0) {
+        if (transportation.clientRate && transportation.clientRateCurrency) {
+          const rate = await requireRate(
+            transportation.clientRateCurrency,
+            today,
+            `план по ставке клиента перевозки ${transportation.id}`,
+          );
+          items.push({
+            id: `${transportation.id}-planned-income`,
+            kind: 'INCOME',
+            amount: transportation.clientRate.toNumber(),
+            currencyCode: transportation.clientRateCurrency,
+            isSettled: false,
+            recordedRateToKzt: rate,
+            settlementRateToKzt: rate,
+          });
+          hasPlannedItems = true;
+        }
+      }
+
+      if (transportation.paymentRequests.length === 0) {
+        for (const leg of transportation.legs) {
+          if (!leg.subcontractorRate || !leg.subcontractorRateCurrency) continue;
+          const rate = await requireRate(
+            leg.subcontractorRateCurrency,
+            today,
+            `план по ставке перевозчика участка ${leg.id}`,
+          );
+          items.push({
+            id: `${leg.id}-planned-expense`,
+            kind: 'EXPENSE',
+            amount: leg.subcontractorRate.toNumber(),
+            currencyCode: leg.subcontractorRateCurrency,
+            isSettled: false,
+            recordedRateToKzt: rate,
+            settlementRateToKzt: rate,
+          });
+          hasPlannedItems = true;
+        }
+      }
 
       for (const invoice of transportation.invoices) {
         const totals = this.calculateInvoiceTotals(invoice.lines);
@@ -179,7 +227,7 @@ export class MarginService {
       }
     }
 
-    return calculateDealMargin({ items });
+    return { ...calculateDealMargin({ items }), hasPlannedItems };
   }
 
   private calculateInvoiceTotals(
