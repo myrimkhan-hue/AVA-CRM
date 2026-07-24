@@ -21,6 +21,7 @@
     "main": "Основная навигация",
     "transportations": "Перевозки",
     "contractors": "Контрагенты",
+    "leads": "Лиды",
     "deals": "Сделки",
     "invoices": "Счета",
     "paymentRequests": "Заявки на оплату",
@@ -49,7 +50,8 @@
     "notSpecified": "Не указано",
     "dash": "—",
     "yes": "Да",
-    "no": "Нет"
+    "no": "Нет",
+    "or": "или"
   },
   "validation": {
     "emailRequired": "Введите email",
@@ -798,6 +800,170 @@
       "INVOICE_OVERDUE": "Счёт просрочен",
       "PAYMENT_REQUEST_PENDING": "Заявка на оплату ждёт согласования",
       "TRANSPORTATION_OVERDUE": "Перевозка просрочила плановую дату"
+    }
+  },
+  "leads": {
+    "title": "Лиды",
+    "empty": "Лидов не найдено",
+    "existingClientTag": "Уже клиент",
+    "tabs": {
+      "all": "Все лиды",
+      "my": "Мой обзвон"
+    },
+    "actions": {
+      "import": "Импортировать",
+      "importHistory": "История импортов"
+    },
+    "filters": {
+      "search": "Поиск по названию, телефону, БИН",
+      "allStatuses": "Все статусы",
+      "allResponsibles": "Все ответственные",
+      "allDepartments": "Все отделы",
+      "unassignedOnly": "Только без ответственного"
+    },
+    "bulk": {
+      "selected": "Выбрано лидов: {{count}}",
+      "assign": "Назначить",
+      "distribute": "Распределить"
+    },
+    "columns": {
+      "name": "Название",
+      "contact": "Контакт",
+      "status": "Статус",
+      "responsible": "Ответственный",
+      "department": "Отдел",
+      "createdAt": "Создан",
+      "actions": "Действия"
+    },
+    "status": {
+      "NEW": "Новый",
+      "IN_PROGRESS": "В работе",
+      "CALL_BACK": "Перезвонить",
+      "NOT_REACHED": "Не дозвонились",
+      "NOT_INTERESTED": "Не интересно",
+      "CONVERTED": "Конвертирован"
+    },
+    "notInterestedReasons": {
+      "NOT_NEEDED": "Не нужны наши услуги",
+      "HAS_PROVIDER": "Уже есть перевозчик/экспедитор",
+      "EXPENSIVE": "Дорого",
+      "WRONG_CONTACT": "Неверный контакт",
+      "OTHER": "Другое"
+    },
+    "source": {
+      "COLD_CALL_IMPORT": "Холодный обзвон",
+      "WEBSITE": "С сайта"
+    },
+    "fields": {
+      "name": "Название",
+      "phone": "Телефон",
+      "bin": "БИН/ИИН",
+      "city": "Город",
+      "contactName": "Контактное лицо",
+      "email": "Email",
+      "notes": "Примечание"
+    },
+    "myCalls": {
+      "empty": "На сегодня звонков нет",
+      "quickTouch": "Зафиксировать",
+      "columns": {
+        "callBack": "Перезвонить",
+        "attempts": "Попыток"
+      }
+    },
+    "detail": {
+      "unassigned": "Не назначен",
+      "source": "Источник",
+      "importSource": "Источник импорта",
+      "edit": "Изменить данные",
+      "touch": "Зафиксировать звонок",
+      "convert": "Конвертировать",
+      "convertNeedsResponsible": "Сначала назначьте ответственного",
+      "convertedInfo": "Конвертирован в сделку {{number}}",
+      "goToDeal": "Перейти к сделке",
+      "history": {
+        "title": "История звонков",
+        "empty": "Пока нет ни одного касания"
+      }
+    },
+    "editForm": {
+      "title": "Данные лида"
+    },
+    "touchForm": {
+      "title": "Зафиксировать звонок",
+      "status": "Новый статус",
+      "comment": "Комментарий",
+      "commentPlaceholder": "Кратко: что обсудили, о чём договорились",
+      "callBackAt": "Дата и время перезвона",
+      "notInterestedReason": "Причина отказа",
+      "notInterestedComment": "Комментарий к причине"
+    },
+    "convertForm": {
+      "title": "Конвертировать в клиента",
+      "legalEntity": "Юрлицо для сделки"
+    },
+    "assignForm": {
+      "title": "Назначить ответственного",
+      "responsible": "Ответственный",
+      "noUsersAccess": "У вашей роли нет доступа к списку сотрудников — обратитесь к администратору"
+    },
+    "distributeForm": {
+      "title": "Распределить между менеджерами",
+      "managers": "Менеджеры (лиды распределятся поровну)"
+    },
+    "import": {
+      "title": "Импорт базы лидов",
+      "uploadHint": "Загрузите файл CSV (сохранённый из Excel как «CSV UTF-8»).",
+      "uploadButton": "Выбрать файл",
+      "pasteLabel": "Или вставьте данные из буфера обмена (скопированные из Excel строки):",
+      "pastePlaceholder": "Название\tТелефон\tГород\n...",
+      "pasteApply": "Разобрать вставленные данные",
+      "pastedFileName": "Вставлено вручную {{date}}",
+      "mappingHint": "Сопоставьте колонки файла с полями лида. Поле «Название» обязательно.",
+      "department": "Отдел (необязательно)",
+      "column": "Колонка {{number}}",
+      "skipColumn": "Не импортировать",
+      "needName": "Сопоставьте хотя бы одну колонку с полем «Название»",
+      "rowsFound": "Найдено строк для импорта: {{count}}",
+      "emptyFile": "Не удалось найти данные для импорта — проверьте файл",
+      "submit": "Импортировать",
+      "done": "Готово",
+      "result": {
+        "title": "Импорт завершён",
+        "total": "Всего строк",
+        "created": "Создано лидов",
+        "existingClient": "Уже наши клиенты",
+        "duplicate": "Дубли (пропущены)"
+      }
+    },
+    "history": {
+      "title": "История импортов",
+      "empty": "Импортов пока не было",
+      "columns": {
+        "file": "Файл",
+        "date": "Дата",
+        "importedBy": "Кто загрузил",
+        "total": "Всего",
+        "created": "Создано",
+        "existingClient": "Уже клиенты",
+        "duplicate": "Дубли"
+      }
+    },
+    "messages": {
+      "updated": "Данные лида обновлены",
+      "touched": "Звонок зафиксирован",
+      "converted": "Лид конвертирован в клиента и сделку",
+      "assigned": "Обновлено лидов: {{count}}"
+    },
+    "validation": {
+      "name": "Укажите название",
+      "comment": "Укажите комментарий",
+      "callBackAt": "Укажите дату и время перезвона",
+      "notInterestedReason": "Укажите причину",
+      "notInterestedComment": "Укажите комментарий к причине «Другое»",
+      "legalEntity": "Выберите юрлицо",
+      "responsible": "Выберите ответственного",
+      "managers": "Выберите хотя бы одного менеджера"
     }
   }
 }

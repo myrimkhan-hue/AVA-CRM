@@ -22,6 +22,9 @@ export function AppLayout() {
     user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'FINANCIER'].includes(role)),
   );
   const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
+  const canAccessLeads = Boolean(
+    user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'].includes(role)),
+  );
   const canAccessInvoices = Boolean(
     user?.roles.some((role) => [
       'ADMIN',
@@ -36,6 +39,7 @@ export function AppLayout() {
     () => [
       { path: '/transportations', label: t('nav.transportations') },
       { path: '/contractors', label: t('nav.contractors') },
+      ...(canAccessLeads ? [{ path: '/leads', label: t('nav.leads') }] : []),
       ...(!isLogistOnly ? [{ path: '/deals', label: t('nav.deals') }] : []),
       ...(canAccessInvoices
         ? [{ path: '/invoices', label: t('nav.invoices') }]
@@ -54,7 +58,7 @@ export function AppLayout() {
         }]
         : []),
     ],
-    [canAccessInvoices, canManageLegalEntities, canViewReports, isAdmin, isLogistOnly, t],
+    [canAccessInvoices, canAccessLeads, canManageLegalEntities, canViewReports, isAdmin, isLogistOnly, t],
   );
 
   const initials = useMemo(

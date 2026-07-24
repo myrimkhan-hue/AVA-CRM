@@ -50,6 +50,28 @@ enum NotificationType {
   TRANSPORTATION_OVERDUE
 }
 
+enum LeadStatus {
+  NEW
+  IN_PROGRESS
+  CALL_BACK
+  NOT_REACHED
+  NOT_INTERESTED
+  CONVERTED
+}
+
+enum LeadNotInterestedReason {
+  NOT_NEEDED
+  HAS_PROVIDER
+  EXPENSIVE
+  WRONG_CONTACT
+  OTHER
+}
+
+enum LeadSource {
+  COLD_CALL_IMPORT
+  WEBSITE
+}
+
 enum ContractorType {
   CLIENT
   CARRIER
@@ -139,9 +161,12 @@ model User {
   createdPaymentRequests     PaymentRequest[]            @relation("PaymentRequestCreatedBy")
   approvedPaymentRequests    PaymentRequest[]            @relation("PaymentRequestApprovedBy")
   paidPaymentRequests        PaymentRequest[]            @relation("PaymentRequestPaidBy")
-  generatedDocuments         GeneratedDocument[]          @relation("GeneratedDocumentGeneratedBy")
+  generatedDocuments         GeneratedDocument[]         @relation("GeneratedDocumentGeneratedBy")
   notifications              Notification[]
   notificationPreferences    NotificationPreference[]
+  leads                      Lead[]
+  leadActivities             LeadActivity[]
+  leadImportBatches          LeadImportBatch[]
 
   @@map("users")
 }
@@ -182,40 +207,41 @@ model Department {
   name  String @unique
   users User[]
   deals Deal[]
+  leads Lead[]
 
   @@map("departments")
 }
 
 model LegalEntity {
-  id                  String                  @id @default(cuid())
-  name                String
-  numberingPrefix     String                  @unique @map("numbering_prefix")
-  bin                 String?
-  legalAddress        String?                 @map("legal_address")
-  taxRegime           TaxRegime               @default(GENERAL) @map("tax_regime")
-  isActive            Boolean                 @default(true) @map("is_active")
-  contractorId        String?                 @unique @map("contractor_id")
-  legalForm           String?                 @map("legal_form")
-  bankName            String?                 @map("bank_name")
-  bankAccount         String?                 @map("bank_account")
-  bankBik             String?                 @map("bank_bik")
-  signerPosition      String?                 @map("signer_position")
-  signerFullName      String?                 @map("signer_full_name")
-  signerShortName     String?                 @map("signer_short_name")
-  signBasis           String?                 @map("sign_basis")
-  talonNumber         String?                 @map("talon_number")
-  phone               String?
-  email               String?
-  createdAt           DateTime                @default(now()) @map("created_at")
-  updatedAt           DateTime                @updatedAt @map("updated_at")
-  contractor          Contractor?             @relation(fields: [contractorId], references: [id], onDelete: SetNull)
-  deals               Deal[]
-  dealNumberSequences DealNumberSequence[]
-  taxRates            LegalEntityTaxRate[]
-  invoices            Invoice[]
-  invoiceSequences    InvoiceNumberSequence[]
-  paymentRequestsAsPayer PaymentRequest[]      @relation("PaymentRequestPayerLegalEntity")
-  generatedDocuments  GeneratedDocument[]
+  id                     String                  @id @default(cuid())
+  name                   String
+  numberingPrefix        String                  @unique @map("numbering_prefix")
+  bin                    String?
+  legalAddress           String?                 @map("legal_address")
+  taxRegime              TaxRegime               @default(GENERAL) @map("tax_regime")
+  isActive               Boolean                 @default(true) @map("is_active")
+  contractorId           String?                 @unique @map("contractor_id")
+  legalForm              String?                 @map("legal_form")
+  bankName               String?                 @map("bank_name")
+  bankAccount            String?                 @map("bank_account")
+  bankBik                String?                 @map("bank_bik")
+  signerPosition         String?                 @map("signer_position")
+  signerFullName         String?                 @map("signer_full_name")
+  signerShortName        String?                 @map("signer_short_name")
+  signBasis              String?                 @map("sign_basis")
+  talonNumber            String?                 @map("talon_number")
+  phone                  String?
+  email                  String?
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+  contractor             Contractor?             @relation(fields: [contractorId], references: [id], onDelete: SetNull)
+  deals                  Deal[]
+  dealNumberSequences    DealNumberSequence[]
+  taxRates               LegalEntityTaxRate[]
+  invoices               Invoice[]
+  invoiceSequences       InvoiceNumberSequence[]
+  paymentRequestsAsPayer PaymentRequest[]        @relation("PaymentRequestPayerLegalEntity")
+  generatedDocuments     GeneratedDocument[]
 
   @@map("legal_entities")
 }
@@ -311,30 +337,33 @@ model Contractor {
   paymentRequests    PaymentRequest[]        @relation("PaymentRequestPayee")
   legalEntity        LegalEntity?
   generatedDocuments GeneratedDocument[]
+  matchedByLeads     Lead[]                  @relation("LeadMatchedContractor")
+  convertedFromLeads Lead[]                  @relation("LeadConvertedContractor")
 
   @@map("contractors")
 }
 
 model Deal {
-  id              String            @id @default(cuid())
-  number          String            @unique
-  legalEntityId   String            @map("legal_entity_id")
-  clientId        String            @map("client_id")
-  responsibleId   String            @map("responsible_id")
-  departmentId    String?           @map("department_id")
-  stage           DealStage         @default(NEW)
-  rejectReason    DealRejectReason? @map("reject_reason")
-  rejectComment   String?           @map("reject_comment")
-  notes           String?
-  deletedAt       DateTime?         @map("deleted_at")
-  createdAt       DateTime          @default(now()) @map("created_at")
-  updatedAt       DateTime          @updatedAt @map("updated_at")
-  legalEntity     LegalEntity       @relation(fields: [legalEntityId], references: [id])
-  client          Contractor        @relation(fields: [clientId], references: [id])
-  responsible     User              @relation(fields: [responsibleId], references: [id])
-  department      Department?       @relation(fields: [departmentId], references: [id])
-  transportations Transportation[]
+  id                 String              @id @default(cuid())
+  number             String              @unique
+  legalEntityId      String              @map("legal_entity_id")
+  clientId           String              @map("client_id")
+  responsibleId      String              @map("responsible_id")
+  departmentId       String?             @map("department_id")
+  stage              DealStage           @default(NEW)
+  rejectReason       DealRejectReason?   @map("reject_reason")
+  rejectComment      String?             @map("reject_comment")
+  notes              String?
+  deletedAt          DateTime?           @map("deleted_at")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  legalEntity        LegalEntity         @relation(fields: [legalEntityId], references: [id])
+  client             Contractor          @relation(fields: [clientId], references: [id])
+  responsible        User                @relation(fields: [responsibleId], references: [id])
+  department         Department?         @relation(fields: [departmentId], references: [id])
+  transportations    Transportation[]
   generatedDocuments GeneratedDocument[]
+  convertedFromLead  Lead?
 
   @@map("deals")
 }
@@ -529,35 +558,35 @@ model InvoicePayment {
 }
 
 model PaymentRequest {
-  id                String               @id @default(cuid())
-  transportationId  String               @map("transportation_id")
-  legId             String?              @map("leg_id")
-  payeeContractorId String               @map("payee_contractor_id")
-  amount            Decimal              @db.Decimal(18, 2)
-  currencyCode      String               @map("currency_code") @db.VarChar(3)
-  dueDate           DateTime             @map("due_date") @db.Date
-  purpose           String
-  status            PaymentRequestStatus @default(REQUESTED)
-  approvedByUserId  String?              @map("approved_by_user_id")
-  approvedAt        DateTime?            @map("approved_at")
-  paidByUserId      String?              @map("paid_by_user_id")
-  paidAt            DateTime?            @map("paid_at")
-  actualExchangeRate Decimal?            @map("actual_exchange_rate") @db.Decimal(18, 6)
-  payerLegalEntityId String?             @map("payer_legal_entity_id")
-  reimbursementInvoiceId String?         @unique @map("reimbursement_invoice_id")
-  deletedAt         DateTime?            @map("deleted_at")
-  createdByUserId   String               @map("created_by_user_id")
-  createdAt         DateTime             @default(now()) @map("created_at")
-  updatedAt         DateTime             @updatedAt @map("updated_at")
-  transportation    Transportation       @relation(fields: [transportationId], references: [id], onDelete: Restrict)
-  leg               TransportationLeg?   @relation(fields: [legId], references: [id], onDelete: SetNull)
-  payeeContractor   Contractor           @relation("PaymentRequestPayee", fields: [payeeContractorId], references: [id], onDelete: Restrict)
-  currency          Currency             @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
-  createdBy         User                 @relation("PaymentRequestCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
-  approvedBy        User?                @relation("PaymentRequestApprovedBy", fields: [approvedByUserId], references: [id], onDelete: SetNull)
-  paidBy            User?                @relation("PaymentRequestPaidBy", fields: [paidByUserId], references: [id], onDelete: SetNull)
-  payerLegalEntity  LegalEntity?         @relation("PaymentRequestPayerLegalEntity", fields: [payerLegalEntityId], references: [id], onDelete: SetNull)
-  reimbursementInvoice Invoice?          @relation(fields: [reimbursementInvoiceId], references: [id], onDelete: SetNull)
+  id                     String               @id @default(cuid())
+  transportationId       String               @map("transportation_id")
+  legId                  String?              @map("leg_id")
+  payeeContractorId      String               @map("payee_contractor_id")
+  amount                 Decimal              @db.Decimal(18, 2)
+  currencyCode           String               @map("currency_code") @db.VarChar(3)
+  dueDate                DateTime             @map("due_date") @db.Date
+  purpose                String
+  status                 PaymentRequestStatus @default(REQUESTED)
+  approvedByUserId       String?              @map("approved_by_user_id")
+  approvedAt             DateTime?            @map("approved_at")
+  paidByUserId           String?              @map("paid_by_user_id")
+  paidAt                 DateTime?            @map("paid_at")
+  actualExchangeRate     Decimal?             @map("actual_exchange_rate") @db.Decimal(18, 6)
+  payerLegalEntityId     String?              @map("payer_legal_entity_id")
+  reimbursementInvoiceId String?              @unique @map("reimbursement_invoice_id")
+  deletedAt              DateTime?            @map("deleted_at")
+  createdByUserId        String               @map("created_by_user_id")
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+  transportation         Transportation       @relation(fields: [transportationId], references: [id], onDelete: Restrict)
+  leg                    TransportationLeg?   @relation(fields: [legId], references: [id], onDelete: SetNull)
+  payeeContractor        Contractor           @relation("PaymentRequestPayee", fields: [payeeContractorId], references: [id], onDelete: Restrict)
+  currency               Currency             @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  createdBy              User                 @relation("PaymentRequestCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  approvedBy             User?                @relation("PaymentRequestApprovedBy", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+  paidBy                 User?                @relation("PaymentRequestPaidBy", fields: [paidByUserId], references: [id], onDelete: SetNull)
+  payerLegalEntity       LegalEntity?         @relation("PaymentRequestPayerLegalEntity", fields: [payerLegalEntityId], references: [id], onDelete: SetNull)
+  reimbursementInvoice   Invoice?             @relation(fields: [reimbursementInvoiceId], references: [id], onDelete: SetNull)
 
   @@index([transportationId])
   @@index([legId])
@@ -596,9 +625,9 @@ model ContractorBankAccount {
 }
 
 model MotivationSettings {
-  id                String   @id @default(cuid())
-  bonusRatePercent  Decimal  @default(10) @map("bonus_rate_percent") @db.Decimal(5, 2)
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(cuid())
+  bonusRatePercent Decimal  @default(10) @map("bonus_rate_percent") @db.Decimal(5, 2)
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@map("motivation_settings")
 }
@@ -680,4 +709,76 @@ model GeneratedDocument {
   @@index([transportationId])
   @@index([contractorId])
   @@map("generated_documents")
+}
+
+// Лиды холодного обзвона хранятся отдельно от справочника контрагентов (ТЗ 4.9) —
+// в контрагенты попадают только конвертированные, чтобы справочник не засорялся.
+model LeadImportBatch {
+  id                 String   @id @default(cuid())
+  fileName           String   @map("file_name")
+  importedByUserId   String   @map("imported_by_user_id")
+  rowsTotal          Int      @map("rows_total")
+  rowsCreated        Int      @map("rows_created")
+  rowsExistingClient Int      @map("rows_existing_client")
+  rowsDuplicateLead  Int      @map("rows_duplicate_lead")
+  createdAt          DateTime @default(now()) @map("created_at")
+  importedBy         User     @relation(fields: [importedByUserId], references: [id], onDelete: Restrict)
+  leads              Lead[]
+
+  @@map("lead_import_batches")
+}
+
+model Lead {
+  id                    String                   @id @default(cuid())
+  name                  String
+  phone                 String?
+  bin                   String?
+  city                  String?
+  contactName           String?                  @map("contact_name")
+  email                 String?
+  notes                 String?
+  source                LeadSource               @default(COLD_CALL_IMPORT)
+  status                LeadStatus               @default(NEW)
+  notInterestedReason   LeadNotInterestedReason? @map("not_interested_reason")
+  notInterestedComment  String?                  @map("not_interested_comment")
+  callBackAt            DateTime?                @map("call_back_at")
+  notReachedAttempts    Int                      @default(0) @map("not_reached_attempts")
+  isExistingClient      Boolean                  @default(false) @map("is_existing_client")
+  matchedContractorId   String?                  @map("matched_contractor_id")
+  responsibleId         String?                  @map("responsible_id")
+  departmentId          String?                  @map("department_id")
+  importBatchId         String?                  @map("import_batch_id")
+  convertedDealId       String?                  @unique @map("converted_deal_id")
+  convertedContractorId String?                  @map("converted_contractor_id")
+  deletedAt             DateTime?                @map("deleted_at")
+  createdAt             DateTime                 @default(now()) @map("created_at")
+  updatedAt             DateTime                 @updatedAt @map("updated_at")
+  responsible           User?                    @relation(fields: [responsibleId], references: [id], onDelete: SetNull)
+  department            Department?              @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  importBatch           LeadImportBatch?         @relation(fields: [importBatchId], references: [id], onDelete: SetNull)
+  matchedContractor     Contractor?              @relation("LeadMatchedContractor", fields: [matchedContractorId], references: [id], onDelete: SetNull)
+  convertedContractor   Contractor?              @relation("LeadConvertedContractor", fields: [convertedContractorId], references: [id], onDelete: SetNull)
+  convertedDeal         Deal?                    @relation(fields: [convertedDealId], references: [id], onDelete: SetNull)
+  activities            LeadActivity[]
+
+  @@index([responsibleId])
+  @@index([departmentId])
+  @@index([status])
+  @@map("leads")
+}
+
+model LeadActivity {
+  id         String     @id @default(cuid())
+  leadId     String     @map("lead_id")
+  userId     String     @map("user_id")
+  fromStatus LeadStatus @map("from_status")
+  toStatus   LeadStatus @map("to_status")
+  comment    String
+  callBackAt DateTime?  @map("call_back_at")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  lead       Lead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([leadId, createdAt])
+  @@map("lead_activities")
 }

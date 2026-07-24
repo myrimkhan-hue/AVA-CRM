@@ -20,6 +20,7 @@ import { ReportsModule } from './reports/reports.module';
 import { MotivationModule } from './motivation/motivation.module';
 import { DocumentsModule } from './documents/documents.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { LeadsModule } from './leads/leads.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     MotivationModule,
     DocumentsModule,
     NotificationsModule,
+    LeadsModule,
   ],
   controllers: [HealthController],
   providers: [

@@ -4,6 +4,7 @@ import { AppLayout } from './components/AppLayout';
 import { LoginPage } from './pages/LoginPage';
 import { UsersPage } from './pages/UsersPage';
 import { ContractorsPage } from './pages/ContractorsPage';
+import { LeadsPage } from './pages/LeadsPage';
 import { DealsPage } from './pages/DealsPage';
 import { TransportationsPage } from './pages/TransportationsPage';
 import { NewTransportationPage } from './pages/NewTransportationPage';
@@ -32,6 +33,8 @@ const INVOICE_ROLES = [
   'FINANCIER',
 ];
 
+const LEAD_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'];
+
 function DealsRoute() {
   const { user } = useAuth();
   const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
@@ -42,6 +45,13 @@ function DealDetailRoute() {
   const { user } = useAuth();
   const isLogistOnly = user?.roles.length === 1 && user.roles[0] === 'LOGIST';
   return isLogistOnly ? <Navigate to="/transportations" replace /> : <DealDetailPage />;
+}
+
+function LeadsRoute() {
+  const { user } = useAuth();
+  const canAccess = Boolean(user?.roles.some((role) => LEAD_ROLES.includes(role)));
+  if (!canAccess) return <Navigate to="/transportations" replace />;
+  return <LeadsPage />;
 }
 
 function InvoicesRoute() {
@@ -64,6 +74,7 @@ export default function App() {
           <Route path="transportations/new" element={<NewTransportationPage />} />
           <Route path="transportations/:id" element={<TransportationDetailPage />} />
           <Route path="contractors" element={<ContractorsPage />} />
+          <Route path="leads" element={<LeadsRoute />} />
           <Route path="deals" element={<DealsRoute />} />
           <Route path="deals/:id" element={<DealDetailRoute />} />
           <Route path="invoices" element={<InvoicesRoute />} />

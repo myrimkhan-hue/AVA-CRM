@@ -308,6 +308,39 @@ button, input { font: inherit; }
 .motivation-footnote { display: block; margin-top: 10px; font-size: 12.5px; }
 .generate-contract-hint { color: #66707d; font-size: 13px; margin-bottom: 12px; }
 
+.leads-page { width: min(100%, 1400px); margin: 0 auto; }
+.leads-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 16px; flex-wrap: wrap; }
+.leads-title-row { display: flex; align-items: center; gap: 18px; }
+.leads-title-row .ant-segmented { flex: none; background: #edf0f4; }
+.leads-heading h2.ant-typography { margin: 0; font-size: 24px; }
+.leads-heading-actions { display: flex; gap: 10px; }
+.leads-heading .ant-btn-primary { background: #e4140e; box-shadow: none; }
+.leads-heading .ant-btn-primary:hover { background: #c10f0a !important; }
+.leads-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
+.leads-filters > .ant-input-search { width: min(100%, 320px); }
+.leads-filters > .ant-select { min-width: 190px; }
+.leads-unassigned-filter { display: inline-flex; align-items: center; gap: 7px; color: #66707d; font-size: 12.5px; cursor: pointer; }
+.leads-bulk-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin-bottom: 12px; background: #fff7f6; border: 1px solid #f3c9c6; border-radius: 10px; }
+.leads-bulk-bar span { margin-right: auto; color: #b91c1c; font-size: 12.5px; font-weight: 600; }
+.leads-table .ant-table-container { overflow: hidden; border: 1px solid #e3e8ef; border-radius: 12px; box-shadow: 0 1px 2px rgba(16, 24, 40, .05); }
+.leads-table .ant-table-thead > tr > th { color: #66707d; background: #fafbfc; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; }
+.leads-table .ant-table-tbody > tr { cursor: pointer; }
+.leads-detail-tags { display: flex; gap: 8px; margin-bottom: 14px; }
+.leads-detail-grid { margin-bottom: 14px; }
+.leads-detail-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 14px; margin-top: 4px; border-top: 1px solid #e3e8ef; }
+.leads-detail-hint { color: #b91c1c; font-size: 12px; }
+.leads-import-source { display: flex; flex-direction: column; }
+.leads-import-paste-apply { margin-top: 10px; }
+.leads-import-department { margin-bottom: 14px; }
+.leads-import-mapping-grid { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; margin-bottom: 10px; }
+.leads-import-mapping-row { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 12px; align-items: center; }
+.leads-import-mapping-row > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.leads-import-rows-count { margin-top: 10px !important; color: #66707d; }
+.leads-import-result-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+.leads-import-result-grid > div { padding: 12px 14px; background: #fafbfc; border: 1px solid #e3e8ef; border-radius: 10px; }
+.leads-import-result-grid span { display: block; color: #66707d; font-size: 12px; }
+.leads-import-result-grid strong { display: block; margin-top: 4px; font-size: 18px; }
+
 @media (max-width: 900px) {
   .deals-filters { grid-template-columns: 1fr 1fr; }
   .deals-filters > .ant-input-search { grid-column: 1 / -1; }
@@ -321,4 +354,9 @@ button, input { font: inherit; }
   .deals-title-row .ant-segmented { align-self: flex-start; }
   .deals-filters { grid-template-columns: 1fr; }
   .deals-filters > .ant-input-search { grid-column: auto; }
+  .leads-heading, .leads-title-row, .leads-heading-actions { align-items: stretch; flex-direction: column; }
+  .leads-title-row .ant-segmented { align-self: flex-start; }
+  .leads-filters { flex-direction: column; align-items: stretch; }
+  .leads-filters > .ant-input-search, .leads-filters > .ant-select { width: 100%; }
+  .leads-import-mapping-row { grid-template-columns: 1fr; }
 }
