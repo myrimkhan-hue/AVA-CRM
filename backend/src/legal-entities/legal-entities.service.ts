@@ -33,6 +33,17 @@ export class LegalEntitiesService {
       bin: dto.bin?.trim() || null,
       legalAddress: dto.legalAddress?.trim() || null,
       taxRegime: dto.taxRegime,
+      legalForm: dto.legalForm?.trim() || null,
+      bankName: dto.bankName?.trim() || null,
+      bankAccount: dto.bankAccount?.trim() || null,
+      bankBik: dto.bankBik?.trim() || null,
+      signerPosition: dto.signerPosition?.trim() || null,
+      signerFullName: dto.signerFullName?.trim() || null,
+      signerShortName: dto.signerShortName?.trim() || null,
+      signBasis: dto.signBasis?.trim() || null,
+      talonNumber: dto.talonNumber?.trim() || null,
+      phone: dto.phone?.trim() || null,
+      email: dto.email?.trim() || null,
     };
 
     try {
@@ -98,6 +109,17 @@ export class LegalEntitiesService {
     if (dto.isActive !== undefined) {
       data.isActive = dto.isActive;
       changes.isActive = { old: current.isActive, new: dto.isActive };
+    }
+    const documentFields = [
+      'legalForm', 'bankName', 'bankAccount', 'bankBik',
+      'signerPosition', 'signerFullName', 'signerShortName',
+      'signBasis', 'talonNumber', 'phone', 'email',
+    ] as const;
+    for (const field of documentFields) {
+      if (dto[field] === undefined) continue;
+      const value = dto[field]?.trim() || null;
+      data[field] = value;
+      changes[field] = { old: current[field], new: value };
     }
     if (!Object.keys(changes).length) {
       throw new BadRequestException('Не указаны поля для изменения');

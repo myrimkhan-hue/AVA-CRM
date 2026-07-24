@@ -184,6 +184,17 @@ model LegalEntity {
   taxRegime           TaxRegime               @default(GENERAL) @map("tax_regime")
   isActive            Boolean                 @default(true) @map("is_active")
   contractorId        String?                 @unique @map("contractor_id")
+  legalForm           String?                 @map("legal_form")
+  bankName            String?                 @map("bank_name")
+  bankAccount         String?                 @map("bank_account")
+  bankBik             String?                 @map("bank_bik")
+  signerPosition      String?                 @map("signer_position")
+  signerFullName      String?                 @map("signer_full_name")
+  signerShortName     String?                 @map("signer_short_name")
+  signBasis           String?                 @map("sign_basis")
+  talonNumber         String?                 @map("talon_number")
+  phone               String?
+  email               String?
   createdAt           DateTime                @default(now()) @map("created_at")
   updatedAt           DateTime                @updatedAt @map("updated_at")
   contractor          Contractor?             @relation(fields: [contractorId], references: [id], onDelete: SetNull)

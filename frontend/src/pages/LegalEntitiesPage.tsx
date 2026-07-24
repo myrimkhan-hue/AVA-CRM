@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   Checkbox,
+  Collapse,
   DatePicker,
   Form,
   Input,
@@ -37,6 +38,17 @@ interface LegalEntityFormValues {
   legalAddress?: string;
   taxRegime: TaxRegime;
   isActive?: boolean;
+  legalForm?: string;
+  bankName?: string;
+  bankAccount?: string;
+  bankBik?: string;
+  signerPosition?: string;
+  signerFullName?: string;
+  signerShortName?: string;
+  signBasis?: string;
+  talonNumber?: string;
+  phone?: string;
+  email?: string;
 }
 
 interface TaxRateFormValues {
@@ -132,6 +144,17 @@ export function LegalEntitiesPage() {
       legalAddress: selected.legalAddress ?? undefined,
       taxRegime: selected.taxRegime,
       isActive: selected.isActive,
+      legalForm: selected.legalForm ?? undefined,
+      bankName: selected.bankName ?? undefined,
+      bankAccount: selected.bankAccount ?? undefined,
+      bankBik: selected.bankBik ?? undefined,
+      signerPosition: selected.signerPosition ?? undefined,
+      signerFullName: selected.signerFullName ?? undefined,
+      signerShortName: selected.signerShortName ?? undefined,
+      signBasis: selected.signBasis ?? undefined,
+      talonNumber: selected.talonNumber ?? undefined,
+      phone: selected.phone ?? undefined,
+      email: selected.email ?? undefined,
     });
   }, [editForm, selected]);
 
@@ -147,13 +170,7 @@ export function LegalEntitiesPage() {
     try {
       const created = await apiRequest<LegalEntityRecord>('/legal-entities', {
         method: 'POST',
-        body: JSON.stringify({
-          name: values.name,
-          numberingPrefix: values.numberingPrefix,
-          bin: values.bin,
-          legalAddress: values.legalAddress,
-          taxRegime: values.taxRegime,
-        }),
+        body: JSON.stringify(values),
       });
       void message.success(t('legalEntities.messages.created'));
       setCreateOpen(false);
@@ -171,15 +188,10 @@ export function LegalEntitiesPage() {
     if (!selected) return;
     setSaving(true);
     try {
+      const { numberingPrefix: _numberingPrefix, ...payload } = values;
       await apiRequest(`/legal-entities/${selected.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({
-          name: values.name,
-          bin: values.bin ?? null,
-          legalAddress: values.legalAddress ?? null,
-          taxRegime: values.taxRegime,
-          isActive: values.isActive,
-        }),
+        body: JSON.stringify(payload),
       });
       void message.success(t('legalEntities.messages.updated'));
       await loadEntities();
@@ -349,6 +361,50 @@ export function LegalEntitiesPage() {
           <Checkbox>{t('legalEntities.form.active')}</Checkbox>
         </Form.Item>
       )}
+      <Collapse
+        className="legal-entity-document-fields"
+        items={[{
+          key: 'documents',
+          label: t('legalEntities.form.documentFieldsTitle'),
+          children: (
+            <div className="legal-entity-form-grid">
+              <Form.Item name="legalForm" label={t('legalEntities.form.legalForm')}>
+                <Input placeholder="ТОО / ИП" />
+              </Form.Item>
+              <Form.Item name="signerPosition" label={t('legalEntities.form.signerPosition')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="signerFullName" label={t('legalEntities.form.signerFullName')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="signerShortName" label={t('legalEntities.form.signerShortName')}>
+                <Input placeholder="Фамилия И." />
+              </Form.Item>
+              <Form.Item name="signBasis" label={t('legalEntities.form.signBasis')}>
+                <Input placeholder="Устава / Талона / Доверенности" />
+              </Form.Item>
+              <Form.Item name="talonNumber" label={t('legalEntities.form.talonNumber')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="bankName" label={t('legalEntities.form.bankName')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="bankAccount" label={t('legalEntities.form.bankAccount')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="bankBik" label={t('legalEntities.form.bankBik')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="phone" label={t('legalEntities.form.phone')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="email" label={t('legalEntities.form.email')}>
+                <Input />
+              </Form.Item>
+            </div>
+          ),
+        }]}
+      />
     </>
   );
 

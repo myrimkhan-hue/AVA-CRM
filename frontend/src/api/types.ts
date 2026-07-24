@@ -46,6 +46,17 @@ export interface LegalEntityRecord {
   legalAddress: string | null;
   taxRegime: TaxRegime;
   isActive: boolean;
+  legalForm: string | null;
+  bankName: string | null;
+  bankAccount: string | null;
+  bankBik: string | null;
+  signerPosition: string | null;
+  signerFullName: string | null;
+  signerShortName: string | null;
+  signBasis: string | null;
+  talonNumber: string | null;
+  phone: string | null;
+  email: string | null;
   createdAt: string;
   updatedAt: string;
 }

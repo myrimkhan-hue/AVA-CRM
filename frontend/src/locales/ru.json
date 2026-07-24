@@ -307,7 +307,19 @@
       "bin": "БИН/ИИН",
       "address": "Юридический адрес",
       "regime": "Налоговый режим",
-      "active": "Юрлицо активно"
+      "active": "Юрлицо активно",
+      "documentFieldsTitle": "Реквизиты для документов (договоры, заявки, счета)",
+      "legalForm": "Организационная форма",
+      "signerPosition": "Должность подписанта",
+      "signerFullName": "ФИО подписанта полностью",
+      "signerShortName": "ФИО подписанта кратко",
+      "signBasis": "Действует на основании",
+      "talonNumber": "Номер талона (для ИП-перевозчика)",
+      "bankName": "Банк",
+      "bankAccount": "Расчётный счёт (IBAN)",
+      "bankBik": "БИК",
+      "phone": "Телефон",
+      "email": "Email"
     },
     "taxRates": {
       "titles": {
