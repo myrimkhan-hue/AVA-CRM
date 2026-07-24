@@ -66,3 +66,10 @@ export function formatAmount(value: number): string {
   const sign = n < 0 ? '-' : '';
   return sign + Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
+
+/** "Шестьсот тридцать тысяч тенге 00 тиын" — сумма прописью с тиынами (только для KZT). */
+export function amountToWordsWithTiyin(value: number): string {
+  const whole = Math.trunc(value);
+  const tiyin = Math.round((Math.abs(value) - Math.abs(whole)) * 100);
+  return `${amountToWords(whole)} тенге ${String(tiyin).padStart(2, '0')} тиын`;
+}

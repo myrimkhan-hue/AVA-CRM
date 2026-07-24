@@ -1,4 +1,4 @@
-import { amountToWords, formatAmount } from './amount-to-words';
+import { amountToWords, amountToWordsWithTiyin, formatAmount } from './amount-to-words';
 
 describe('amountToWords', () => {
   it.each([
@@ -16,6 +16,13 @@ describe('amountToWords', () => {
     [1234567, 'один миллион двести тридцать четыре тысячи пятьсот шестьдесят семь'],
   ])('%i -> %s', (value, expected) => {
     expect(amountToWords(value)).toBe(expected);
+  });
+});
+
+describe('amountToWordsWithTiyin', () => {
+  it('appends "тенге NN тиын"', () => {
+    expect(amountToWordsWithTiyin(630000)).toBe('шестьсот тридцать тысяч тенге 00 тиын');
+    expect(amountToWordsWithTiyin(1234.5)).toBe('одна тысяча двести тридцать четыре тенге 50 тиын');
   });
 });
 

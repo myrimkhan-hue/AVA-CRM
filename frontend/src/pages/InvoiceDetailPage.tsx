@@ -1,5 +1,6 @@
 import {
   DeleteOutlined,
+  DownloadOutlined,
   EditOutlined,
   PlusOutlined,
 } from '@ant-design/icons';
@@ -25,7 +26,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ApiError, apiRequest } from '../api/client';
+import { apiDownload, ApiError, apiRequest, saveBlob } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { CreateInvoiceModal } from '../components/CreateInvoiceModal';
 import { MoneyInput } from '../components/MoneyInput';
@@ -79,6 +80,8 @@ export function TransportationInvoiceCard({
   const [editingLine, setEditingLine] = useState<InvoiceLine>();
   const selectedHasVat = Form.useWatch('hasVat', lineForm);
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
+  const mayDownloadPdf = Boolean(user?.roles.some((role) =>
+    ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'FINANCIER'].includes(role)));
 
   const showError = useCallback((error: unknown) => {
     void message.error(
@@ -289,6 +292,20 @@ export function TransportationInvoiceCard({
     }
   };
 
+  const downloadPdf = async () => {
+    if (!invoice) return;
+    try {
+      const { blob, filename } = await apiDownload(
+        `/documents/invoices/${invoice.id}`,
+        { method: 'POST' },
+      );
+      saveBlob(blob, filename);
+      void message.success(t('documents.invoice.generated'));
+    } catch (error) {
+      showError(error);
+    }
+  };
+
   const removeInvoice = () => {
     if (!invoice) return;
     modal.confirm({
@@ -480,6 +497,11 @@ export function TransportationInvoiceCard({
           )}
         </Space>
         <Space wrap>
+          {mayDownloadPdf && (
+            <Button icon={<DownloadOutlined />} onClick={() => void downloadPdf()}>
+              {t('documents.invoice.action')}
+            </Button>
+          )}
           {!invoice.deletedAt && (
             <Button icon={<EditOutlined />} onClick={openHeader}>
               {t('invoices.actions.edit')}
