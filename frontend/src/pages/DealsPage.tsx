@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { PasteRequisitesBox } from '../components/PasteRequisitesBox';
 import {
   DEAL_STAGE_COLORS,
   DEAL_STAGES,
@@ -34,6 +35,7 @@ import {
   DealLegalEntity,
   DealStage,
 } from '../deals/shared';
+import { mapParsedToFields, ParsedRequisites } from '../documents/parse-requisites';
 
 interface UserReference { id: string; fullName: string; isActive?: boolean }
 interface ContractorReference { id: string; name: string }
@@ -41,6 +43,14 @@ interface CreateValues { clientId: string; legalEntityId: string; responsibleId?
 interface QuickClientValues { name: string; bin?: string; country?: string; legalAddress?: string }
 interface ColumnSetting { key: ColumnKey; visible: boolean }
 interface SettingsResponse { columns: unknown }
+
+const QUICK_CLIENT_PASTE_FIELDS: readonly (keyof ParsedRequisites)[] = ['name', 'bin', 'address'];
+
+const QUICK_CLIENT_PASTE_MAPPING: Partial<Record<keyof ParsedRequisites, keyof QuickClientValues>> = {
+  name: 'name',
+  bin: 'bin',
+  address: 'legalAddress',
+};
 
 const COLUMN_KEYS = ['number', 'client', 'responsible', 'department', 'legalEntity', 'stage', 'createdAt', 'transportations', 'actions'] as const;
 type ColumnKey = (typeof COLUMN_KEYS)[number];
@@ -449,6 +459,10 @@ export function DealsPage() {
       destroyOnHidden
     >
       <Form<QuickClientValues> form={quickClientForm} layout="vertical" requiredMark={false} onFinish={createQuickClient}>
+        <PasteRequisitesBox
+          fields={QUICK_CLIENT_PASTE_FIELDS}
+          onApply={(parsed) => quickClientForm.setFieldsValue(mapParsedToFields(parsed, QUICK_CLIENT_PASTE_MAPPING))}
+        />
         <Form.Item name="name" label={t('contractors.form.name')} rules={[{ required: true, whitespace: true, message: t('contractors.validation.name') }]}>
           <Input autoFocus />
         </Form.Item>
