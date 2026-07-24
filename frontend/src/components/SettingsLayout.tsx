@@ -13,7 +13,9 @@ export function SettingsLayout() {
   );
   const activeKey = location.pathname.includes('/settings/currencies')
     ? 'currencies'
-    : 'legal-entities';
+    : location.pathname.includes('/settings/motivation')
+      ? 'motivation'
+      : 'legal-entities';
 
   if (!canManage) return <Navigate to="/" replace />;
 
@@ -31,6 +33,10 @@ export function SettingsLayout() {
           {
             key: 'currencies',
             label: t('settings.tabs.currencies'),
+          },
+          {
+            key: 'motivation',
+            label: t('settings.tabs.motivation'),
           },
         ]}
       />

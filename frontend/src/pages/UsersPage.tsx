@@ -11,6 +11,7 @@ import {
   Card,
   Form,
   Input,
+  InputNumber,
   Modal,
   Select,
   Space,
@@ -33,6 +34,7 @@ interface UserFormValues {
   departmentId?: string;
   roles: string[];
   password?: string;
+  motivationRatePercent?: number | null;
 }
 
 interface PasswordFormValues {
@@ -118,6 +120,9 @@ export function UsersPage() {
       phone: user.phone ?? undefined,
       departmentId: user.departmentId ?? undefined,
       roles: user.roles,
+      motivationRatePercent: user.motivationRatePercent
+        ? Number(user.motivationRatePercent)
+        : undefined,
     });
     setEditorOpen(true);
   };
@@ -274,6 +279,15 @@ export function UsersPage() {
           <Form.Item name="phone" label={t('users.form.phone')}><Input /></Form.Item>
           <Form.Item name="departmentId" label={t('users.form.department')}><Select allowClear placeholder={t('users.form.departmentPlaceholder')} options={departments.map((item) => ({ value: item.id, label: item.name }))} /></Form.Item>
           <Form.Item name="roles" label={t('users.form.roles')} rules={[{ required: true, type: 'array', min: 1, message: t('validation.rolesRequired') }]}><Select mode="multiple" placeholder={t('users.form.rolesPlaceholder')} options={roles.map((role) => ({ value: role.code, label: role.name }))} /></Form.Item>
+          {editingUser && (
+            <Form.Item
+              name="motivationRatePercent"
+              label={t('users.form.motivationRate')}
+              extra={t('users.form.motivationRateHint')}
+            >
+              <InputNumber min={0} max={100} className="full-width" />
+            </Form.Item>
+          )}
           {!editingUser && <Form.Item name="password" label={t('users.form.password')} rules={[{ required: true, message: t('validation.passwordRequired') }, { min: 8, message: t('validation.passwordMin') }]}><Input.Password /></Form.Item>}
         </Form>
       </Modal>

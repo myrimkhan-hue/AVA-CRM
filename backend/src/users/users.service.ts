@@ -26,6 +26,7 @@ export interface UserResponse {
   department: { id: string; name: string } | null;
   roles: string[];
   isActive: boolean;
+  motivationRatePercent: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -95,6 +96,12 @@ export class UsersService {
     if (dto.fullName !== undefined) data.fullName = dto.fullName.trim();
     if (dto.email !== undefined) data.email = dto.email.trim().toLowerCase();
     if (dto.phone !== undefined) data.phone = dto.phone?.trim() || null;
+    if (dto.motivationRatePercent !== undefined) {
+      data.motivationRatePercent =
+        dto.motivationRatePercent === null
+          ? null
+          : new Prisma.Decimal(dto.motivationRatePercent);
+    }
     if (dto.departmentId !== undefined) {
       data.department = dto.departmentId
         ? { connect: { id: dto.departmentId } }
@@ -213,6 +220,11 @@ export class UsersService {
       changes.phone = { old: current.phone, new: dto.phone?.trim() || null };
     if (dto.departmentId !== undefined)
       changes.departmentId = { old: current.departmentId, new: dto.departmentId || null };
+    if (dto.motivationRatePercent !== undefined)
+      changes.motivationRatePercent = {
+        old: current.motivationRatePercent?.toString() ?? null,
+        new: dto.motivationRatePercent === null ? null : String(dto.motivationRatePercent),
+      };
     if (roleCodes)
       changes.roles = {
         old: current.roles.map(({ role }) => role.code),
@@ -253,6 +265,7 @@ export class UsersService {
       department: user.department,
       roles: user.roles.map(({ role }) => role.code),
       isActive: user.isActive,
+      motivationRatePercent: user.motivationRatePercent?.toString() ?? null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

@@ -30,6 +30,7 @@ export interface UserRecord {
   department: Department | null;
   roles: string[];
   isActive: boolean;
+  motivationRatePercent: string | null;
   createdAt: string;
   updatedAt: string;
 }
