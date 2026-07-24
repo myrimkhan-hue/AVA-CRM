@@ -9,6 +9,7 @@ import {
   App,
   Button,
   Checkbox,
+  Divider,
   Form,
   Input,
   Modal,
@@ -37,6 +38,7 @@ import {
 interface UserReference { id: string; fullName: string; isActive?: boolean }
 interface ContractorReference { id: string; name: string }
 interface CreateValues { clientId: string; legalEntityId: string; responsibleId?: string; notes?: string }
+interface QuickClientValues { name: string; bin?: string; country?: string; legalAddress?: string }
 interface ColumnSetting { key: ColumnKey; visible: boolean }
 interface SettingsResponse { columns: unknown }
 
@@ -70,6 +72,9 @@ export function DealsPage() {
   const navigate = useNavigate();
   const { message } = App.useApp();
   const [createForm] = Form.useForm<CreateValues>();
+  const [quickClientForm] = Form.useForm<QuickClientValues>();
+  const [quickClientOpen, setQuickClientOpen] = useState(false);
+  const [quickClientSaving, setQuickClientSaving] = useState(false);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [legalEntities, setLegalEntities] = useState<DealLegalEntity[]>([]);
   const [clients, setClients] = useState<ContractorReference[]>([]);
@@ -215,6 +220,29 @@ export function DealsPage() {
       showError(error);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openQuickClient = () => {
+    quickClientForm.resetFields();
+    setQuickClientOpen(true);
+  };
+
+  const createQuickClient = async (values: QuickClientValues) => {
+    setQuickClientSaving(true);
+    try {
+      const created = await apiRequest<ContractorReference>('/contractors', {
+        method: 'POST',
+        body: JSON.stringify({ ...values, types: ['CLIENT'] }),
+      });
+      setClients((current) => [created, ...current]);
+      createForm.setFieldValue('clientId', created.id);
+      setQuickClientOpen(false);
+      void message.success(t('deals.quickClient.created', { name: created.name }));
+    } catch (error) {
+      showError(error);
+    } finally {
+      setQuickClientSaving(false);
     }
   };
 
@@ -381,10 +409,58 @@ export function DealsPage() {
 
     <Modal open={createOpen} title={t('deals.form.createTitle')} okText={t('common.save')} cancelText={t('common.cancel')} confirmLoading={saving} onOk={() => createForm.submit()} onCancel={() => setCreateOpen(false)} destroyOnHidden>
       <Form<CreateValues> form={createForm} layout="vertical" requiredMark={false} onFinish={createDeal}>
-        <Form.Item name="clientId" label={t('deals.form.client')} rules={[{ required: true, message: t('deals.validation.client') }]}><Select showSearch filterOption={false} onSearch={clientSearch} options={clients.map((item) => ({ value: item.id, label: item.name }))} /></Form.Item>
+        <Form.Item name="clientId" label={t('deals.form.client')} rules={[{ required: true, message: t('deals.validation.client') }]}>
+          <Select
+            showSearch
+            filterOption={false}
+            onSearch={clientSearch}
+            options={clients.map((item) => ({ value: item.id, label: item.name }))}
+            popupRender={(menu) => (
+              <>
+                {menu}
+                <Divider style={{ margin: '4px 0' }} />
+                <Button
+                  type="text"
+                  block
+                  icon={<PlusOutlined />}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={openQuickClient}
+                >
+                  {t('deals.form.addClient')}
+                </Button>
+              </>
+            )}
+          />
+        </Form.Item>
         <Form.Item name="legalEntityId" label={t('deals.form.legalEntity')} rules={[{ required: true, message: t('deals.validation.legalEntity') }]}><Select options={legalEntities.map((item) => ({ value: item.id, label: `${item.name} (${item.numberingPrefix})` }))} /></Form.Item>
         {canSelectResponsible && <Form.Item name="responsibleId" label={t('deals.form.responsible')}><Select allowClear options={users.map((item) => ({ value: item.id, label: item.fullName }))} /></Form.Item>}
         <Form.Item name="notes" label={t('deals.form.notes')}><Input.TextArea rows={4} /></Form.Item>
+      </Form>
+    </Modal>
+
+    <Modal
+      open={quickClientOpen}
+      title={t('deals.quickClient.title')}
+      okText={t('common.save')}
+      cancelText={t('common.cancel')}
+      confirmLoading={quickClientSaving}
+      onOk={() => quickClientForm.submit()}
+      onCancel={() => setQuickClientOpen(false)}
+      destroyOnHidden
+    >
+      <Form<QuickClientValues> form={quickClientForm} layout="vertical" requiredMark={false} onFinish={createQuickClient}>
+        <Form.Item name="name" label={t('contractors.form.name')} rules={[{ required: true, whitespace: true, message: t('contractors.validation.name') }]}>
+          <Input autoFocus />
+        </Form.Item>
+        <Form.Item name="bin" label={t('contractors.form.bin')}>
+          <Input />
+        </Form.Item>
+        <Form.Item name="country" label={t('contractors.form.country')}>
+          <Input />
+        </Form.Item>
+        <Form.Item name="legalAddress" label={t('contractors.form.legalAddress')}>
+          <Input />
+        </Form.Item>
       </Form>
     </Modal>
   </>;
