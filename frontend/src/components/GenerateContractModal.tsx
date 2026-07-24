@@ -2,6 +2,8 @@ import { App, Form, Input, Modal, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, apiRequest } from '../api/client';
+import { mapParsedToFields, ParsedRequisites } from '../documents/parse-requisites';
+import { PasteRequisitesBox } from './PasteRequisitesBox';
 
 export interface ContractRequisitesFormValues {
   legalForm?: string;
@@ -17,6 +19,27 @@ export interface ContractRequisitesFormValues {
   phone?: string;
   email?: string;
 }
+
+/** Поля, которые распознаёт «умная вставка реквизитов» в этой форме. */
+export const REQUISITES_PASTE_FIELDS: readonly (keyof ParsedRequisites)[] = [
+  'type', 'bin', 'position', 'signerFull', 'basis', 'address', 'account', 'bank', 'bik', 'phone', 'email',
+];
+
+/** Соответствие полей парсера полям формы реквизитов контрагента/юрлица. */
+export const REQUISITES_PASTE_MAPPING: Partial<Record<keyof ParsedRequisites, keyof ContractRequisitesFormValues>> = {
+  type: 'legalForm',
+  bin: 'bin',
+  address: 'legalAddress',
+  bank: 'bankName',
+  account: 'bankAccount',
+  bik: 'bankBik',
+  position: 'signerPosition',
+  signerFull: 'signerFullName',
+  signerShort: 'signerShortName',
+  basis: 'signBasis',
+  phone: 'phone',
+  email: 'email',
+};
 
 interface ContractorRequisites extends ContractRequisitesFormValues {
   id: string;
@@ -96,6 +119,10 @@ export function GenerateContractModal({ open, contractorId, onClose, onGenerate 
       ) : (
         <>
           <p className="generate-contract-hint">{t('documents.contract.hint')}</p>
+          <PasteRequisitesBox
+            fields={REQUISITES_PASTE_FIELDS}
+            onApply={(parsed) => form.setFieldsValue(mapParsedToFields(parsed, REQUISITES_PASTE_MAPPING))}
+          />
           <Form<ContractRequisitesFormValues>
             form={form}
             layout="vertical"

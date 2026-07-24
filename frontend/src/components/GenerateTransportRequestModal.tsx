@@ -2,7 +2,13 @@ import { App, Form, Input, Modal, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, apiRequest } from '../api/client';
-import { ContractRequisitesFormValues } from './GenerateContractModal';
+import { mapParsedToFields } from '../documents/parse-requisites';
+import {
+  ContractRequisitesFormValues,
+  REQUISITES_PASTE_FIELDS,
+  REQUISITES_PASTE_MAPPING,
+} from './GenerateContractModal';
+import { PasteRequisitesBox } from './PasteRequisitesBox';
 
 export interface TransportRequestFormValues extends ContractRequisitesFormValues {
   paymentMethod?: string;
@@ -111,6 +117,10 @@ export function GenerateTransportRequestModal({ open, carrierContractorId, onClo
               </Form.Item>
             </div>
             <p className="generate-contract-hint">{t('documents.request.carrierHint')}</p>
+            <PasteRequisitesBox
+              fields={REQUISITES_PASTE_FIELDS}
+              onApply={(parsed) => form.setFieldsValue(mapParsedToFields(parsed, REQUISITES_PASTE_MAPPING))}
+            />
             <div className="form-grid two">
               <Form.Item name="legalForm" label={t('documents.contract.fields.legalForm')}>
                 <Input placeholder="ТОО / ИП" />

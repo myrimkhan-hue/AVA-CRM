@@ -240,7 +240,12 @@ export class ContractorsService {
 
   private scalarData(dto: CreateContractorDto | UpdateContractorDto): Prisma.ContractorUncheckedCreateInput {
     const data: Record<string, unknown> = {};
-    const textFields = ['name', 'bin', 'country', 'legalAddress', 'notes', 'problemComment', 'blacklistReason'] as const;
+    const textFields = [
+      'name', 'bin', 'country', 'legalAddress', 'notes', 'problemComment', 'blacklistReason',
+      'legalForm', 'bankName', 'bankAccount', 'bankBik',
+      'signerPosition', 'signerFullName', 'signerShortName',
+      'signBasis', 'talonNumber', 'phone', 'email',
+    ] as const;
     for (const field of textFields) {
       if (dto[field] !== undefined) data[field] = dto[field]?.trim() || null;
     }
@@ -317,6 +322,17 @@ export class ContractorsService {
       problemComment: contractor.problemComment,
       isBlacklisted: contractor.isBlacklisted,
       blacklistReason: contractor.blacklistReason,
+      legalForm: contractor.legalForm,
+      bankName: contractor.bankName,
+      bankAccount: contractor.bankAccount,
+      bankBik: contractor.bankBik,
+      signerPosition: contractor.signerPosition,
+      signerFullName: contractor.signerFullName,
+      signerShortName: contractor.signerShortName,
+      signBasis: contractor.signBasis,
+      talonNumber: contractor.talonNumber,
+      phone: contractor.phone,
+      email: contractor.email,
       contacts: contractor.contacts.map(({ id: _id, contractorId: _contractorId, ...item }) => item),
       bankAccounts: contractor.bankAccounts.map(({ id: _id, contractorId: _contractorId, ...item }) => item),
     };

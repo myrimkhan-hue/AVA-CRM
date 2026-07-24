@@ -83,7 +83,8 @@
     "flags": { "addProblem": "Отметить проблемным", "removeProblem": "Снять метку «Проблемный»", "addBlacklist": "Добавить в чёрный список", "removeBlacklist": "Убрать из чёрного списка", "problemTitle": "Причина проблемной метки", "blacklistTitle": "Причина добавления в чёрный список", "problemHelp": "Опишите проблему — комментарий будет виден всем сотрудникам в карточке контрагента.", "blacklistHelp": "Укажите, почему с контрагентом нельзя работать.", "reasonPlaceholder": "Введите причину" },
     "related": { "title": "Связанные перевозки", "number": "№", "routeRole": "Маршрут / роль", "status": "Статус", "clientRole": "Клиент", "legRole": "Перевозчик участка {{number}}", "empty": "Связанных перевозок нет" },
     "form": {
-      "createTitle": "Новый контрагент", "editTitle": "Редактирование контрагента", "sections": { "requisites": "Реквизиты и условия", "status": "Метки и ограничения" }, "name": "Название", "types": "Типы", "bin": "БИН/ИИН", "country": "Страна", "legalAddress": "Юридический адрес", "paymentTerm": "Условия оплаты", "postpaymentDays": "Количество дней постоплаты", "notes": "Заметки", "problem": "Проблемный контрагент", "problemComment": "Комментарий о проблеме", "blacklisted": "Не работаем (чёрный список)", "blacklistReason": "Причина добавления в чёрный список", "contacts": "Контактные лица", "contactFullName": "ФИО", "position": "Должность", "phone": "Телефон", "email": "Email", "whatsapp": "WhatsApp", "addContact": "Добавить контакт", "removeContact": "Удалить контакт", "bankAccounts": "Банковские счета", "bankName": "Банк", "accountNumber": "Номер счёта", "currency": "Валюта", "accountNotes": "Примечание", "addAccount": "Добавить счёт", "removeAccount": "Удалить банковский счёт"
+      "createTitle": "Новый контрагент", "editTitle": "Редактирование контрагента", "sections": { "requisites": "Реквизиты и условия", "status": "Метки и ограничения" }, "name": "Название", "types": "Типы", "bin": "БИН/ИИН", "country": "Страна", "legalAddress": "Юридический адрес", "paymentTerm": "Условия оплаты", "postpaymentDays": "Количество дней постоплаты", "notes": "Заметки", "problem": "Проблемный контрагент", "problemComment": "Комментарий о проблеме", "blacklisted": "Не работаем (чёрный список)", "blacklistReason": "Причина добавления в чёрный список", "contacts": "Контактные лица", "contactFullName": "ФИО", "position": "Должность", "phone": "Телефон", "email": "Email", "whatsapp": "WhatsApp", "addContact": "Добавить контакт", "removeContact": "Удалить контакт", "bankAccounts": "Банковские счета", "bankName": "Банк", "accountNumber": "Номер счёта", "currency": "Валюта", "accountNotes": "Примечание", "addAccount": "Добавить счёт", "removeAccount": "Удалить банковский счёт",
+      "documentFieldsTitle": "Реквизиты для документов", "legalForm": "Организационная форма", "signerPosition": "Должность подписанта", "signerFullName": "ФИО подписанта полностью", "signerShortName": "ФИО подписанта кратко", "signBasis": "Действует на основании", "talonNumber": "Номер талона", "documentBankName": "Банк", "documentBankAccount": "Расчётный счёт", "documentBankBik": "БИК", "documentPhone": "Телефон", "documentEmail": "Email"
     },
     "validation": { "name": "Укажите название контрагента", "types": "Выберите хотя бы один тип", "postpaymentDays": "Укажите количество дней постоплаты", "problemComment": "Укажите причину проблемной метки", "blacklistReason": "Укажите причину добавления в чёрный список", "contactName": "Укажите ФИО контактного лица", "email": "Введите корректный email", "bankName": "Укажите банк", "accountNumber": "Укажите номер счёта", "currency": "Выберите валюту" },
     "details": { "select": "Выберите контрагента слева", "blacklisted": "Контрагент в чёрном списке — не работаем", "problem": "Проблемный контрагент", "requisites": "Реквизиты и условия", "contacts": "Контактные лица", "accounts": "Банковские счета", "noContacts": "Контактные лица не добавлены", "noAccounts": "Банковские счета не добавлены", "whatsappValue": "WhatsApp: {{value}}", "accountTitle": "{{bank}} · {{currency}}" }
@@ -565,6 +566,30 @@
     "invoice": {
       "action": "Скачать счёт (PDF)",
       "generated": "Счёт сформирован"
+    },
+    "paste": {
+      "toggle": "📋 Вставить реквизиты текстом",
+      "hide": "Скрыть",
+      "apply": "✨ Заполнить поля",
+      "placeholder": "Вставьте реквизиты одним текстом — например:\nТОО «Компания», БИН 123456789012, адрес: г. Алматы, ул. Абая 1\nИИК KZ123456789012345678, БИК HSBKKZKX, АО «Народный Банк Казахстана»\nДиректор Иванов Иван Иванович, на основании Устава, +7 701 234 56 78",
+      "emptyWarning": "Вставьте текст с реквизитами.",
+      "notRecognized": "Не удалось распознать реквизиты — заполните поля вручную.",
+      "recognized": "✓ Распознано: {{fields}}.",
+      "missing": " Не найдено: {{fields}} — проверьте/заполните вручную.",
+      "fields": {
+        "type": "организационная форма",
+        "name": "название",
+        "bin": "БИН/ИИН",
+        "position": "должность",
+        "signerFull": "подписант",
+        "basis": "основание",
+        "address": "адрес",
+        "account": "счёт",
+        "bank": "банк",
+        "bik": "БИК",
+        "phone": "телефон",
+        "email": "email"
+      }
     }
   },
   "motivation": {

@@ -30,6 +30,32 @@ import {
   TaxRegime,
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { PasteRequisitesBox } from '../components/PasteRequisitesBox';
+import { mapParsedToFields, ParsedRequisites } from '../documents/parse-requisites';
+
+const REQUISITES_PASTE_FIELDS: readonly (keyof ParsedRequisites)[] = [
+  'type', 'name', 'bin', 'position', 'signerFull', 'basis', 'address', 'account', 'bank', 'bik', 'phone', 'email',
+];
+
+type LegalEntityRequisitesTextField = 'name' | 'bin' | 'legalAddress' | 'legalForm' | 'bankName'
+  | 'bankAccount' | 'bankBik' | 'signerPosition' | 'signerFullName' | 'signerShortName'
+  | 'signBasis' | 'phone' | 'email';
+
+const REQUISITES_PASTE_MAPPING: Partial<Record<keyof ParsedRequisites, LegalEntityRequisitesTextField>> = {
+  type: 'legalForm',
+  name: 'name',
+  bin: 'bin',
+  address: 'legalAddress',
+  bank: 'bankName',
+  account: 'bankAccount',
+  bik: 'bankBik',
+  position: 'signerPosition',
+  signerFull: 'signerFullName',
+  signerShort: 'signerShortName',
+  basis: 'signBasis',
+  phone: 'phone',
+  email: 'email',
+};
 
 interface LegalEntityFormValues {
   name: string;
@@ -326,7 +352,7 @@ export function LegalEntitiesPage() {
     },
   ];
 
-  const legalEntityFields = (editing: boolean) => (
+  const legalEntityFields = (editing: boolean, form: typeof createForm) => (
     <>
       <Form.Item
         name="name"
@@ -368,6 +394,10 @@ export function LegalEntitiesPage() {
           label: t('legalEntities.form.documentFieldsTitle'),
           children: (
             <div className="legal-entity-form-grid">
+              <PasteRequisitesBox
+                fields={REQUISITES_PASTE_FIELDS}
+                onApply={(parsed) => form.setFieldsValue(mapParsedToFields(parsed, REQUISITES_PASTE_MAPPING))}
+              />
               <Form.Item name="legalForm" label={t('legalEntities.form.legalForm')}>
                 <Input placeholder="ТОО / ИП" />
               </Form.Item>
@@ -487,7 +517,7 @@ export function LegalEntitiesPage() {
               requiredMark={false}
             >
               <div className="legal-entity-form-grid">
-                {legalEntityFields(true)}
+                {legalEntityFields(true, editForm)}
               </div>
               <Button type="primary" htmlType="submit" loading={saving}>
                 {t('common.save')}
@@ -515,7 +545,7 @@ export function LegalEntitiesPage() {
           onFinish={createLegalEntity}
           requiredMark={false}
         >
-          {legalEntityFields(false)}
+          {legalEntityFields(false, createForm)}
         </Form>
       </Modal>
 

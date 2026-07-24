@@ -15,6 +15,7 @@ import {
   Card,
   Checkbox,
   Col,
+  Collapse,
   Empty,
   Form,
   Input,
@@ -35,7 +36,13 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { PasteRequisitesBox } from '../components/PasteRequisitesBox';
+import { mapParsedToFields, ParsedRequisites } from '../documents/parse-requisites';
 import { CURRENCIES, STATUS_COLORS, type TransportationStatus } from '../transportations/shared';
+
+const REQUISITES_PASTE_FIELDS: readonly (keyof ParsedRequisites)[] = [
+  'type', 'name', 'bin', 'position', 'signerFull', 'basis', 'address', 'account', 'bank', 'bik', 'phone', 'email',
+];
 
 type ContractorType = 'CLIENT' | 'CARRIER' | 'CUSTOMS_BROKER' | 'WAREHOUSE' | 'SUPPLIER' | 'OTHER';
 type PaymentTerm = 'PREPAYMENT' | 'POSTPAYMENT';
@@ -76,6 +83,17 @@ interface Contractor {
   deletedAt: string | null;
   contacts: ContractorContact[];
   bankAccounts: ContractorBankAccount[];
+  legalForm: string | null;
+  bankName: string | null;
+  bankAccount: string | null;
+  bankBik: string | null;
+  signerPosition: string | null;
+  signerFullName: string | null;
+  signerShortName: string | null;
+  signBasis: string | null;
+  talonNumber: string | null;
+  phone: string | null;
+  email: string | null;
 }
 
 interface ContractorTransportation {
@@ -102,9 +120,40 @@ interface ContractorFormValues {
   blacklistReason?: string;
   contacts?: ContractorContact[];
   bankAccounts?: ContractorBankAccount[];
+  legalForm?: string;
+  bankName?: string;
+  bankAccount?: string;
+  bankBik?: string;
+  signerPosition?: string;
+  signerFullName?: string;
+  signerShortName?: string;
+  signBasis?: string;
+  talonNumber?: string;
+  phone?: string;
+  email?: string;
 }
 
 interface DuplicateMatch { id: string; name: string; bin: string | null }
+
+type ContractorRequisitesTextField = 'name' | 'bin' | 'legalAddress' | 'legalForm' | 'bankName'
+  | 'bankAccount' | 'bankBik' | 'signerPosition' | 'signerFullName' | 'signerShortName'
+  | 'signBasis' | 'phone' | 'email';
+
+const REQUISITES_PASTE_MAPPING: Partial<Record<keyof ParsedRequisites, ContractorRequisitesTextField>> = {
+  type: 'legalForm',
+  name: 'name',
+  bin: 'bin',
+  address: 'legalAddress',
+  bank: 'bankName',
+  account: 'bankAccount',
+  bik: 'bankBik',
+  position: 'signerPosition',
+  signerFull: 'signerFullName',
+  signerShort: 'signerShortName',
+  basis: 'signBasis',
+  phone: 'phone',
+  email: 'email',
+};
 
 const CONTRACTOR_TYPES: ContractorType[] = ['CLIENT', 'CARRIER', 'CUSTOMS_BROKER', 'WAREHOUSE', 'SUPPLIER', 'OTHER'];
 const COLUMN_KEYS = ['name', 'types', 'bin', 'country', 'payment', 'contact', 'status', 'actions'] as const;
@@ -305,6 +354,17 @@ export function ContractorsPage() {
       blacklistReason: contractor.blacklistReason ?? undefined,
       contacts: contractor.contacts.map(({ id: _id, ...item }) => item),
       bankAccounts: contractor.bankAccounts.map(({ id: _id, ...item }) => item),
+      legalForm: contractor.legalForm ?? undefined,
+      bankName: contractor.bankName ?? undefined,
+      bankAccount: contractor.bankAccount ?? undefined,
+      bankBik: contractor.bankBik ?? undefined,
+      signerPosition: contractor.signerPosition ?? undefined,
+      signerFullName: contractor.signerFullName ?? undefined,
+      signerShortName: contractor.signerShortName ?? undefined,
+      signBasis: contractor.signBasis ?? undefined,
+      talonNumber: contractor.talonNumber ?? undefined,
+      phone: contractor.phone ?? undefined,
+      email: contractor.email ?? undefined,
     });
     setEditorOpen(true);
   };
@@ -616,6 +676,55 @@ export function ContractorsPage() {
         <Card className="contractor-form-section" title={t('contractors.form.bankAccounts')}>
           <Form.List name="bankAccounts">{(fields, { add, remove }) => <>{fields.map((field) => <Card size="small" className="nested-form-card" key={field.key} extra={<Button type="text" danger icon={<MinusCircleOutlined />} aria-label={t('contractors.form.removeAccount')} onClick={() => remove(field.name)} />}><Row gutter={12}><Col xs={24} md={8}><Form.Item {...field} name={[field.name, 'bankName']} label={t('contractors.form.bankName')} rules={[{ required: true, whitespace: true, message: t('contractors.validation.bankName') }]}><Input /></Form.Item></Col><Col xs={24} md={8}><Form.Item {...field} name={[field.name, 'accountNumber']} label={t('contractors.form.accountNumber')} rules={[{ required: true, whitespace: true, message: t('contractors.validation.accountNumber') }]}><Input /></Form.Item></Col><Col xs={24} md={8}><Form.Item {...field} name={[field.name, 'currency']} label={t('contractors.form.currency')} rules={[{ required: true, message: t('contractors.validation.currency') }]}><Select options={CURRENCIES.map((value) => ({ value, label: value }))} /></Form.Item></Col><Col span={24}><Form.Item {...field} name={[field.name, 'notes']} label={t('contractors.form.accountNotes')}><Input /></Form.Item></Col></Row></Card>)}<Button type="dashed" block icon={<PlusOutlined />} onClick={() => add()}>{t('contractors.form.addAccount')}</Button></>}</Form.List>
         </Card>
+
+        <Collapse
+          className="legal-entity-document-fields"
+          items={[{
+            key: 'documents',
+            label: t('contractors.form.documentFieldsTitle'),
+            children: (
+              <div className="legal-entity-form-grid">
+                <PasteRequisitesBox
+                  fields={REQUISITES_PASTE_FIELDS}
+                  onApply={(parsed) => form.setFieldsValue(mapParsedToFields(parsed, REQUISITES_PASTE_MAPPING))}
+                />
+                <Form.Item name="legalForm" label={t('contractors.form.legalForm')}>
+                  <Input placeholder="ТОО / ИП" />
+                </Form.Item>
+                <Form.Item name="signerPosition" label={t('contractors.form.signerPosition')}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="signerFullName" label={t('contractors.form.signerFullName')}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="signerShortName" label={t('contractors.form.signerShortName')}>
+                  <Input placeholder="Фамилия И." />
+                </Form.Item>
+                <Form.Item name="signBasis" label={t('contractors.form.signBasis')}>
+                  <Input placeholder="Устава / Талона / Доверенности" />
+                </Form.Item>
+                <Form.Item name="talonNumber" label={t('contractors.form.talonNumber')}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="bankName" label={t('contractors.form.documentBankName')}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="bankAccount" label={t('contractors.form.documentBankAccount')}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="bankBik" label={t('contractors.form.documentBankBik')}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="phone" label={t('contractors.form.documentPhone')}>
+                  <Input />
+                </Form.Item>
+                <Form.Item name="email" label={t('contractors.form.documentEmail')}>
+                  <Input />
+                </Form.Item>
+              </div>
+            ),
+          }]}
+        />
       </Form>
     </Modal>
   </>;
