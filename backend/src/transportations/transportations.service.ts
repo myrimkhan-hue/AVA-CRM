@@ -11,6 +11,7 @@ import {
   TransportationStatus,
 } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
+import { MarginService } from '../deals/margin.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransportationDto } from './dto/create-transportation.dto';
 import {
@@ -74,7 +75,10 @@ type Changes = Record<string, { old: unknown; new: unknown }>;
 
 @Injectable()
 export class TransportationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly marginService: MarginService,
+  ) {}
 
   async findAll(query: TransportationQueryDto, user: AuthUser) {
     if (query.includeDeleted && !user.roles.includes('ADMIN')) {
@@ -118,6 +122,14 @@ export class TransportationsService {
 
   async findOne(id: string, user: AuthUser) {
     return this.present(await this.getVisible(id, user, user.roles.includes('ADMIN')), user);
+  }
+
+  async getMargin(id: string, user: AuthUser) {
+    if (!canSeeTransportationClientRate(user)) {
+      throw new ForbiddenException('Нет доступа к финансовым показателям перевозки');
+    }
+    await this.getActiveVisible(id, user);
+    return this.marginService.calculateForTransportations([id]);
   }
 
   async create(dto: CreateTransportationDto, user: AuthUser) {
@@ -561,12 +573,16 @@ export class TransportationsService {
     return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined)) as T;
   }
 
-  private text(value: string | undefined): string | null | undefined {
-    return value === undefined ? undefined : value.trim() || null;
+  private text(value: string | null | undefined): string | null | undefined {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+    return value.trim() || null;
   }
 
-  private date(value: string | undefined): Date | undefined {
-    return value === undefined ? undefined : new Date(value);
+  private date(value: string | null | undefined): Date | null | undefined {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+    return new Date(value);
   }
 
   private isUniqueConflict(error: unknown): boolean {

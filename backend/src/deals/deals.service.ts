@@ -7,10 +7,12 @@ import {
 import { AuditAction, DealRejectReason, DealStage, Prisma } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
 import { PrismaService } from '../prisma/prisma.service';
+import { canSeeTransportationClientRate } from '../transportations/transportation-policy';
 import { CreateDealDto } from './dto/create-deal.dto';
 import { DealQueryDto } from './dto/deal-query.dto';
 import { UpdateDealStageDto } from './dto/update-deal-stage.dto';
 import { UpdateDealDto } from './dto/update-deal.dto';
+import { MarginService } from './margin.service';
 
 const dealInclude = {
   client: { select: { id: true, name: true } },
@@ -25,7 +27,10 @@ type Changes = Record<string, { old: unknown; new: unknown }>;
 
 @Injectable()
 export class DealsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly marginService: MarginService,
+  ) {}
 
   async findAll(query: DealQueryDto, user: AuthUser): Promise<DealWithRelations[]> {
     if (query.includeDeleted && !user.roles.includes('ADMIN')) {
@@ -58,6 +63,20 @@ export class DealsService {
 
   async findOne(id: string, user: AuthUser): Promise<DealWithRelations> {
     return this.getVisibleDeal(id, user, user.roles.includes('ADMIN'));
+  }
+
+  async getMargin(id: string, user: AuthUser) {
+    if (!canSeeTransportationClientRate(user)) {
+      throw new ForbiddenException('Нет доступа к финансовым показателям сделки');
+    }
+    await this.getVisibleDeal(id, user);
+    const transportations = await this.prisma.transportation.findMany({
+      where: { dealId: id, deletedAt: null },
+      select: { id: true },
+    });
+    return this.marginService.calculateForTransportations(
+      transportations.map((row) => row.id),
+    );
   }
 
   async create(dto: CreateDealDto, user: AuthUser): Promise<DealWithRelations> {

@@ -11,6 +11,7 @@ export interface PaymentRequest {
   status: PaymentRequestStatus;
   approvedAt: string | null;
   paidAt: string | null;
+  actualExchangeRate: string | null;
   deletedAt: string | null;
   createdAt: string;
   transportation: {

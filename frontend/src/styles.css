@@ -278,6 +278,8 @@ button, input { font: inherit; }
 .leg-payment-requests-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .payment-request-amount { flex: 1; }
 .payment-request-currency { width: 120px; }
+.margin-percent { margin-left: 8px; font-size: 14px; color: #66707d; }
+.margin-hint { font-size: 12px; }
 
 @media (max-width: 900px) {
   .deals-filters { grid-template-columns: 1fr 1fr; }

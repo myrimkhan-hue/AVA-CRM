@@ -12,6 +12,7 @@ import { AuthUser } from '../auth/auth-user.type';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreatePaymentRequestDto } from './dto/create-payment-request.dto';
+import { PayPaymentRequestDto } from './dto/pay-payment-request.dto';
 import { PaymentRequestContextQueryDto } from './dto/payment-request-context-query.dto';
 import { PaymentRequestQueryDto } from './dto/payment-request-query.dto';
 import { UpdatePaymentRequestDto } from './dto/update-payment-request.dto';
@@ -55,8 +56,12 @@ export class PaymentRequestsController {
 
   @Patch(':id/pay')
   @Roles('ADMIN', 'DIRECTOR', 'FINANCIER')
-  pay(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.paymentRequestsService.pay(id, user);
+  pay(
+    @Param('id') id: string,
+    @Body() dto: PayPaymentRequestDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.paymentRequestsService.pay(id, dto, user);
   }
 
   @Patch(':id')

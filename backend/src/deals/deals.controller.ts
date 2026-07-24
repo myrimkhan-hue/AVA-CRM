@@ -17,6 +17,11 @@ export class DealsController {
     return this.dealsService.findAll(query, user);
   }
 
+  @Get(':id/margin')
+  margin(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.dealsService.getMargin(id, user);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.dealsService.findOne(id, user);

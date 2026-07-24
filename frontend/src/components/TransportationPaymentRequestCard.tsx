@@ -1,4 +1,4 @@
-import { App, Button, Card, Form, Input, Modal, Select, Space, Spin, Tag, Typography } from 'antd';
+import { App, Button, Card, Form, Input, InputNumber, Modal, Select, Space, Spin, Tag, Typography } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, apiRequest } from '../api/client';
@@ -41,6 +41,10 @@ interface FormValues {
   purpose: string;
 }
 
+interface PayValues {
+  actualExchangeRate?: number;
+}
+
 interface Props {
   transportationId: string;
   leg: Leg;
@@ -54,11 +58,13 @@ export function TransportationPaymentRequestCard({
   const { user } = useAuth();
   const { message } = App.useApp();
   const [form] = Form.useForm<FormValues>();
+  const [payForm] = Form.useForm<PayValues>();
   const [requests, setRequests] = useState<PaymentRequest[]>([]);
   const [context, setContext] = useState<Context>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [open, setOpen] = useState(false);
+  const [payTarget, setPayTarget] = useState<PaymentRequest>();
   const canApprove = Boolean(user?.roles.some((role) =>
     ['ADMIN', 'DIRECTOR', 'FINANCIER'].includes(role),
   ));
@@ -139,23 +145,35 @@ export function TransportationPaymentRequestCard({
   const transition = async (
     request: PaymentRequest,
     action: 'approve' | 'pay',
+    body?: PayValues,
   ) => {
     setSaving(true);
     try {
       await apiRequest(`/payment-requests/${request.id}/${action}`, {
         method: 'PATCH',
+        body: body ? JSON.stringify(body) : undefined,
       });
       void message.success(t(
         action === 'approve'
           ? 'paymentRequests.messages.approved'
           : 'paymentRequests.messages.paid',
       ));
+      setPayTarget(undefined);
       await load();
     } catch (error) {
       showError(error);
     } finally {
       setSaving(false);
     }
+  };
+
+  const openPay = (request: PaymentRequest) => {
+    if (request.currencyCode === 'KZT') {
+      void transition(request, 'pay');
+      return;
+    }
+    payForm.resetFields();
+    setPayTarget(request);
   };
 
   const formatMoney = (request: PaymentRequest) =>
@@ -207,7 +225,7 @@ export function TransportationPaymentRequestCard({
                     size="small"
                     type="primary"
                     loading={saving}
-                    onClick={() => void transition(request, 'pay')}
+                    onClick={() => openPay(request)}
                   >
                     {t('paymentRequests.actions.markPaid')}
                   </Button>
@@ -298,6 +316,31 @@ export function TransportationPaymentRequestCard({
             }]}
           >
             <Input.TextArea rows={3} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        open={Boolean(payTarget)}
+        title={t('paymentRequests.payModal.title')}
+        okText={t('paymentRequests.actions.markPaid')}
+        cancelText={t('common.cancel')}
+        confirmLoading={saving}
+        onCancel={() => setPayTarget(undefined)}
+        onOk={() => payForm.submit()}
+        destroyOnHidden
+      >
+        <Form<PayValues>
+          form={payForm}
+          layout="vertical"
+          onFinish={(values) => payTarget && void transition(payTarget, 'pay', values)}
+        >
+          <Form.Item
+            name="actualExchangeRate"
+            label={t('paymentRequests.fields.actualExchangeRate')}
+            extra={t('paymentRequests.payModal.hint')}
+          >
+            <InputNumber min={0.000001} precision={6} className="full-width" />
           </Form.Item>
         </Form>
       </Modal>

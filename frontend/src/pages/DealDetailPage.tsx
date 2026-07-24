@@ -26,6 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { MarginCard } from '../components/MarginCard';
 import {
   DEAL_PIPELINE_STAGES,
   DEAL_REJECT_REASONS,
@@ -278,6 +279,8 @@ export function DealDetailPage() {
       </div>
 
       <aside className="deal-detail-side">
+        <MarginCard endpoint={`/deals/${deal.id}/margin`} />
+
         <Card className="transport-card" title={t('deals.detail.sections.parties')}>
           <Descriptions column={1} size="small" items={[
             { key: 'client', label: t('deals.details.client'), children: <Link to="/contractors">{deal.client.name}</Link> },

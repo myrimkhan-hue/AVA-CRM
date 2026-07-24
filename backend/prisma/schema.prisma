@@ -499,6 +499,7 @@ model PaymentRequest {
   approvedAt        DateTime?            @map("approved_at")
   paidByUserId      String?              @map("paid_by_user_id")
   paidAt            DateTime?            @map("paid_at")
+  actualExchangeRate Decimal?            @map("actual_exchange_rate") @db.Decimal(18, 6)
   deletedAt         DateTime?            @map("deleted_at")
   createdByUserId   String               @map("created_by_user_id")
   createdAt         DateTime             @default(now()) @map("created_at")

@@ -14,6 +14,7 @@ import { AuthUser } from '../auth/auth-user.type';
 import { PrismaService } from '../prisma/prisma.service';
 import { transportationVisibilityWhere } from '../transportations/transportation-policy';
 import { CreatePaymentRequestDto } from './dto/create-payment-request.dto';
+import { PayPaymentRequestDto } from './dto/pay-payment-request.dto';
 import { PaymentRequestContextQueryDto } from './dto/payment-request-context-query.dto';
 import { PaymentRequestQueryDto } from './dto/payment-request-query.dto';
 import { UpdatePaymentRequestDto } from './dto/update-payment-request.dto';
@@ -263,7 +264,7 @@ export class PaymentRequestsService {
     );
   }
 
-  async pay(id: string, user: AuthUser) {
+  async pay(id: string, dto: PayPaymentRequestDto, user: AuthUser) {
     const current = await this.getActiveVisible(id, user);
     if (current.status !== PaymentRequestStatus.APPROVED) {
       throw new BadRequestException(
@@ -278,6 +279,10 @@ export class PaymentRequestsService {
         status: PaymentRequestStatus.PAID,
         paidByUserId: user.id,
         paidAt: new Date(),
+        actualExchangeRate:
+          dto.actualExchangeRate === undefined
+            ? undefined
+            : new Prisma.Decimal(dto.actualExchangeRate),
       },
     );
   }
@@ -481,6 +486,7 @@ export class PaymentRequestsService {
       approvedAt: row.approvedAt?.toISOString() ?? null,
       paidByUserId: row.paidByUserId,
       paidAt: row.paidAt?.toISOString() ?? null,
+      actualExchangeRate: row.actualExchangeRate?.toString() ?? null,
       deletedAt: row.deletedAt?.toISOString() ?? null,
       createdByUserId: row.createdByUserId,
     };
@@ -539,6 +545,7 @@ export class PaymentRequestsService {
       ...row,
       amount: row.amount.toString(),
       dueDate: this.dateString(row.dueDate),
+      actualExchangeRate: row.actualExchangeRate?.toString() ?? null,
     };
   }
 }

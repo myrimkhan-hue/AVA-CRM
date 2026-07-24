@@ -23,6 +23,11 @@ export class TransportationsController {
     return this.transportationsService.history(id, user);
   }
 
+  @Get(':id/margin')
+  margin(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.transportationsService.getMargin(id, user);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.transportationsService.findOne(id, user);
