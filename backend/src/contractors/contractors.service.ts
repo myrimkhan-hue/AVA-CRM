@@ -133,7 +133,7 @@ export class ContractorsService {
           ...this.scalarData(dto),
           contacts: dto.contacts?.length ? { create: dto.contacts.map((item) => this.contactData(item)) } : undefined,
           bankAccounts: dto.bankAccounts?.length
-            ? { create: dto.bankAccounts.map((item) => this.bankAccountData(item)) }
+            ? { create: this.normalizeBankAccounts(dto.bankAccounts).map((item) => this.bankAccountData(item)) }
             : undefined,
         },
         include: contractorInclude,
@@ -156,7 +156,7 @@ export class ContractorsService {
     if (dto.bankAccounts !== undefined) {
       data.bankAccounts = {
         deleteMany: {},
-        create: dto.bankAccounts.map((item) => this.bankAccountData(item)),
+        create: this.normalizeBankAccounts(dto.bankAccounts).map((item) => this.bankAccountData(item)),
       };
     }
 
@@ -242,8 +242,7 @@ export class ContractorsService {
     const data: Record<string, unknown> = {};
     const textFields = [
       'name', 'bin', 'country', 'legalAddress', 'notes', 'problemComment', 'blacklistReason',
-      'legalForm', 'bankName', 'bankAccount', 'bankBik',
-      'signerPosition', 'signerFullName', 'signerShortName',
+      'legalForm', 'signerPosition', 'signerFullName', 'signerShortName',
       'signBasis', 'talonNumber', 'phone', 'email',
     ] as const;
     for (const field of textFields) {
@@ -280,8 +279,17 @@ export class ContractorsService {
       bankName: item.bankName.trim(),
       accountNumber: item.accountNumber.trim(),
       currency: item.currency.trim().toUpperCase(),
+      bik: item.bik?.trim() || null,
+      isPrimary: item.isPrimary ?? false,
       notes: item.notes?.trim() || null,
     };
+  }
+
+  /** Не больше одного счёта с пометкой "для документов" — оставляем первый отмеченный, остальные снимаем. */
+  private normalizeBankAccounts(items: ContractorBankAccountDto[]): ContractorBankAccountDto[] {
+    const primaryIndex = items.findIndex((item) => item.isPrimary);
+    if (primaryIndex < 0) return items;
+    return items.map((item, index) => ({ ...item, isPrimary: index === primaryIndex }));
   }
 
   private creationChanges(contractor: ContractorWithRelations): Changes {
@@ -323,9 +331,6 @@ export class ContractorsService {
       isBlacklisted: contractor.isBlacklisted,
       blacklistReason: contractor.blacklistReason,
       legalForm: contractor.legalForm,
-      bankName: contractor.bankName,
-      bankAccount: contractor.bankAccount,
-      bankBik: contractor.bankBik,
       signerPosition: contractor.signerPosition,
       signerFullName: contractor.signerFullName,
       signerShortName: contractor.signerShortName,

@@ -128,16 +128,20 @@ export class DocumentsService {
   }
 
   async getContractorParty(id: string): Promise<PartyInfo> {
-    const contractor = await this.prisma.contractor.findFirst({ where: { id, deletedAt: null } });
+    const contractor = await this.prisma.contractor.findFirst({
+      where: { id, deletedAt: null },
+      include: { bankAccounts: true },
+    });
     if (!contractor) throw new BadRequestException('Контрагент не найден');
+    const bankAccount = contractor.bankAccounts.find((item) => item.isPrimary) ?? contractor.bankAccounts[0];
     return {
       id: contractor.id,
       name: contractor.name,
       bin: contractor.bin ?? DASH,
       address: contractor.legalAddress ?? DASH,
-      account: contractor.bankAccount ?? DASH,
-      bank: contractor.bankName ?? DASH,
-      bik: contractor.bankBik ?? DASH,
+      account: bankAccount?.accountNumber ?? DASH,
+      bank: bankAccount?.bankName ?? DASH,
+      bik: bankAccount?.bik ?? DASH,
       position: contractor.signerPosition ?? DASH,
       signerFull: contractor.signerFullName ?? DASH,
       signerShort: contractor.signerShortName ?? DASH,
@@ -148,16 +152,53 @@ export class DocumentsService {
     };
   }
 
+  /**
+   * Реквизиты подписанта и юр. данные пишутся прямо в контрагента; банковские
+   * (bankName/bankAccount/bankBik) — в отдельный счёт из "Банковские счета"
+   * с пометкой isPrimary, чтобы не дублировать поля с карточкой контрагента
+   * (см. решение владельца от 2026-07-24).
+   */
   async applyContractorOverrides(
     contractorId: string,
     overrides: PartyRequisitesOverride,
   ): Promise<void> {
+    const { bankName, bankAccount, bankBik, ...scalarOverrides } = overrides;
     const data: Prisma.ContractorUpdateInput = {};
-    for (const [key, value] of Object.entries(overrides)) {
+    for (const [key, value] of Object.entries(scalarOverrides)) {
       if (value === undefined) continue;
       (data as Record<string, unknown>)[key] = value.trim() || null;
     }
-    if (Object.keys(data).length === 0) return;
-    await this.prisma.contractor.update({ where: { id: contractorId }, data });
+
+    await this.prisma.$transaction(async (tx) => {
+      if (Object.keys(data).length > 0) {
+        await tx.contractor.update({ where: { id: contractorId }, data });
+      }
+      if (bankName === undefined && bankAccount === undefined && bankBik === undefined) return;
+
+      const primary = await tx.contractorBankAccount.findFirst({
+        where: { contractorId, isPrimary: true },
+      });
+      if (primary) {
+        await tx.contractorBankAccount.update({
+          where: { id: primary.id },
+          data: {
+            bankName: bankName !== undefined ? bankName.trim() || primary.bankName : undefined,
+            accountNumber: bankAccount !== undefined ? bankAccount.trim() || primary.accountNumber : undefined,
+            bik: bankBik !== undefined ? bankBik.trim() || null : undefined,
+          },
+        });
+      } else if (bankName?.trim() && bankAccount?.trim()) {
+        await tx.contractorBankAccount.create({
+          data: {
+            contractorId,
+            bankName: bankName.trim(),
+            accountNumber: bankAccount.trim(),
+            currency: 'KZT',
+            bik: bankBik?.trim() || null,
+            isPrimary: true,
+          },
+        });
+      }
+    });
   }
 }

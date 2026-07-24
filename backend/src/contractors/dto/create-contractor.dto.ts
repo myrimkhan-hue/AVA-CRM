@@ -85,18 +85,6 @@ export class CreateContractorDto {
   legalForm?: string;
 
   @IsOptional()
-  @IsString({ message: 'Название банка должно быть строкой' })
-  bankName?: string;
-
-  @IsOptional()
-  @IsString({ message: 'Расчётный счёт должен быть строкой' })
-  bankAccount?: string;
-
-  @IsOptional()
-  @IsString({ message: 'БИК должен быть строкой' })
-  bankBik?: string;
-
-  @IsOptional()
   @IsString({ message: 'Должность подписанта должна быть строкой' })
   signerPosition?: string;
 

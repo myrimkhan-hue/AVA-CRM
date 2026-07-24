@@ -63,6 +63,8 @@ interface ContractorBankAccount {
   bankName: string;
   accountNumber: string;
   currency: string;
+  bik?: string | null;
+  isPrimary?: boolean;
   notes?: string | null;
 }
 
@@ -84,9 +86,6 @@ interface Contractor {
   contacts: ContractorContact[];
   bankAccounts: ContractorBankAccount[];
   legalForm: string | null;
-  bankName: string | null;
-  bankAccount: string | null;
-  bankBik: string | null;
   signerPosition: string | null;
   signerFullName: string | null;
   signerShortName: string | null;
@@ -121,9 +120,6 @@ interface ContractorFormValues {
   contacts?: ContractorContact[];
   bankAccounts?: ContractorBankAccount[];
   legalForm?: string;
-  bankName?: string;
-  bankAccount?: string;
-  bankBik?: string;
   signerPosition?: string;
   signerFullName?: string;
   signerShortName?: string;
@@ -135,18 +131,14 @@ interface ContractorFormValues {
 
 interface DuplicateMatch { id: string; name: string; bin: string | null }
 
-type ContractorRequisitesTextField = 'name' | 'bin' | 'legalAddress' | 'legalForm' | 'bankName'
-  | 'bankAccount' | 'bankBik' | 'signerPosition' | 'signerFullName' | 'signerShortName'
-  | 'signBasis' | 'phone' | 'email';
+type ContractorRequisitesTextField = 'name' | 'bin' | 'legalAddress' | 'legalForm'
+  | 'signerPosition' | 'signerFullName' | 'signerShortName' | 'signBasis' | 'phone' | 'email';
 
 const REQUISITES_PASTE_MAPPING: Partial<Record<keyof ParsedRequisites, ContractorRequisitesTextField>> = {
   type: 'legalForm',
   name: 'name',
   bin: 'bin',
   address: 'legalAddress',
-  bank: 'bankName',
-  account: 'bankAccount',
-  bik: 'bankBik',
   position: 'signerPosition',
   signerFull: 'signerFullName',
   signerShort: 'signerShortName',
@@ -355,9 +347,6 @@ export function ContractorsPage() {
       contacts: contractor.contacts.map(({ id: _id, ...item }) => item),
       bankAccounts: contractor.bankAccounts.map(({ id: _id, ...item }) => item),
       legalForm: contractor.legalForm ?? undefined,
-      bankName: contractor.bankName ?? undefined,
-      bankAccount: contractor.bankAccount ?? undefined,
-      bankBik: contractor.bankBik ?? undefined,
       signerPosition: contractor.signerPosition ?? undefined,
       signerFullName: contractor.signerFullName ?? undefined,
       signerShortName: contractor.signerShortName ?? undefined,
@@ -674,7 +663,7 @@ export function ContractorsPage() {
         </Card>
 
         <Card className="contractor-form-section" title={t('contractors.form.bankAccounts')}>
-          <Form.List name="bankAccounts">{(fields, { add, remove }) => <>{fields.map((field) => <Card size="small" className="nested-form-card" key={field.key} extra={<Button type="text" danger icon={<MinusCircleOutlined />} aria-label={t('contractors.form.removeAccount')} onClick={() => remove(field.name)} />}><Row gutter={12}><Col xs={24} md={8}><Form.Item {...field} name={[field.name, 'bankName']} label={t('contractors.form.bankName')} rules={[{ required: true, whitespace: true, message: t('contractors.validation.bankName') }]}><Input /></Form.Item></Col><Col xs={24} md={8}><Form.Item {...field} name={[field.name, 'accountNumber']} label={t('contractors.form.accountNumber')} rules={[{ required: true, whitespace: true, message: t('contractors.validation.accountNumber') }]}><Input /></Form.Item></Col><Col xs={24} md={8}><Form.Item {...field} name={[field.name, 'currency']} label={t('contractors.form.currency')} rules={[{ required: true, message: t('contractors.validation.currency') }]}><Select options={CURRENCIES.map((value) => ({ value, label: value }))} /></Form.Item></Col><Col span={24}><Form.Item {...field} name={[field.name, 'notes']} label={t('contractors.form.accountNotes')}><Input /></Form.Item></Col></Row></Card>)}<Button type="dashed" block icon={<PlusOutlined />} onClick={() => add()}>{t('contractors.form.addAccount')}</Button></>}</Form.List>
+          <Form.List name="bankAccounts">{(fields, { add, remove }) => <>{fields.map((field) => <Card size="small" className="nested-form-card" key={field.key} extra={<Button type="text" danger icon={<MinusCircleOutlined />} aria-label={t('contractors.form.removeAccount')} onClick={() => remove(field.name)} />}><Row gutter={12}><Col xs={24} md={8}><Form.Item {...field} name={[field.name, 'bankName']} label={t('contractors.form.bankName')} rules={[{ required: true, whitespace: true, message: t('contractors.validation.bankName') }]}><Input /></Form.Item></Col><Col xs={24} md={8}><Form.Item {...field} name={[field.name, 'accountNumber']} label={t('contractors.form.accountNumber')} rules={[{ required: true, whitespace: true, message: t('contractors.validation.accountNumber') }]}><Input /></Form.Item></Col><Col xs={24} md={8}><Form.Item {...field} name={[field.name, 'currency']} label={t('contractors.form.currency')} rules={[{ required: true, message: t('contractors.validation.currency') }]}><Select options={CURRENCIES.map((value) => ({ value, label: value }))} /></Form.Item></Col><Col xs={24} md={12}><Form.Item {...field} name={[field.name, 'bik']} label={t('contractors.form.bik')}><Input /></Form.Item></Col><Col xs={24} md={12}><Form.Item {...field} name={[field.name, 'notes']} label={t('contractors.form.accountNotes')}><Input /></Form.Item></Col><Col span={24}><Form.Item {...field} name={[field.name, 'isPrimary']} valuePropName="checked" noStyle><Checkbox>{t('contractors.form.isPrimary')}</Checkbox></Form.Item></Col></Row></Card>)}<Button type="dashed" block icon={<PlusOutlined />} onClick={() => add()}>{t('contractors.form.addAccount')}</Button></>}</Form.List>
         </Card>
 
         <Collapse
@@ -686,7 +675,26 @@ export function ContractorsPage() {
               <div className="legal-entity-form-grid">
                 <PasteRequisitesBox
                   fields={REQUISITES_PASTE_FIELDS}
-                  onApply={(parsed) => form.setFieldsValue(mapParsedToFields(parsed, REQUISITES_PASTE_MAPPING))}
+                  onApply={(parsed) => {
+                    form.setFieldsValue(mapParsedToFields(parsed, REQUISITES_PASTE_MAPPING));
+                    if (parsed.bank || parsed.account || parsed.bik) {
+                      const accounts: ContractorBankAccount[] = form.getFieldValue('bankAccounts') ?? [];
+                      const primaryIndex = accounts.findIndex((item) => item.isPrimary);
+                      const targetIndex = primaryIndex >= 0 ? primaryIndex : 0;
+                      const target = accounts[targetIndex];
+                      const updated: ContractorBankAccount = {
+                        bankName: parsed.bank || target?.bankName || '',
+                        accountNumber: parsed.account || target?.accountNumber || '',
+                        currency: target?.currency || 'KZT',
+                        bik: parsed.bik || target?.bik,
+                        notes: target?.notes,
+                        isPrimary: true,
+                      };
+                      const next = [...accounts];
+                      next[targetIndex] = updated;
+                      form.setFieldValue('bankAccounts', next);
+                    }
+                  }}
                 />
                 <Form.Item name="legalForm" label={t('contractors.form.legalForm')}>
                   <Input placeholder="ТОО / ИП" />
@@ -704,15 +712,6 @@ export function ContractorsPage() {
                   <Input placeholder="Устава / Талона / Доверенности" />
                 </Form.Item>
                 <Form.Item name="talonNumber" label={t('contractors.form.talonNumber')}>
-                  <Input />
-                </Form.Item>
-                <Form.Item name="bankName" label={t('contractors.form.documentBankName')}>
-                  <Input />
-                </Form.Item>
-                <Form.Item name="bankAccount" label={t('contractors.form.documentBankAccount')}>
-                  <Input />
-                </Form.Item>
-                <Form.Item name="bankBik" label={t('contractors.form.documentBankBik')}>
                   <Input />
                 </Form.Item>
                 <Form.Item name="phone" label={t('contractors.form.documentPhone')}>
@@ -792,7 +791,7 @@ function ContractorDetails({ contractor, related, relatedLoading, paymentText, o
         {contractor.contacts.length ? <div className="contractor-info-list">{contractor.contacts.map((item, index) => <div key={item.id ?? index}><Typography.Text strong>{item.fullName}</Typography.Text><span>{[item.position, item.phone, item.email, item.whatsapp && t('contractors.details.whatsappValue', { value: item.whatsapp })].filter(Boolean).join(' · ')}</span></div>)}</div> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('contractors.details.noContacts')} />}
       </Card>
       <Card className="contractor-detail-card" title={t('contractors.details.accounts')}>
-        {contractor.bankAccounts.length ? <div className="contractor-info-list">{contractor.bankAccounts.map((item, index) => <div key={item.id ?? index}><Typography.Text strong>{t('contractors.details.accountTitle', { bank: item.bankName, currency: item.currency })}</Typography.Text><span>{[item.accountNumber, item.notes].filter(Boolean).join(' · ')}</span></div>)}</div> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('contractors.details.noAccounts')} />}
+        {contractor.bankAccounts.length ? <div className="contractor-info-list">{contractor.bankAccounts.map((item, index) => <div key={item.id ?? index}><Typography.Text strong>{t('contractors.details.accountTitle', { bank: item.bankName, currency: item.currency })}</Typography.Text>{item.isPrimary && <Tag color="blue">{t('contractors.details.primaryAccount')}</Tag>}<span>{[item.accountNumber, item.bik && t('contractors.form.bik') + ': ' + item.bik, item.notes].filter(Boolean).join(' · ')}</span></div>)}</div> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t('contractors.details.noAccounts')} />}
       </Card>
     </div>
 

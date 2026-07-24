@@ -283,9 +283,6 @@ model Contractor {
   isBlacklisted      Boolean                 @default(false) @map("is_blacklisted")
   blacklistReason    String?                 @map("blacklist_reason")
   legalForm          String?                 @map("legal_form")
-  bankName           String?                 @map("bank_name")
-  bankAccount        String?                 @map("bank_account")
-  bankBik            String?                 @map("bank_bik")
   signerPosition     String?                 @map("signer_position")
   signerFullName     String?                 @map("signer_full_name")
   signerShortName    String?                 @map("signer_short_name")
@@ -580,6 +577,8 @@ model ContractorBankAccount {
   bankName      String     @map("bank_name")
   accountNumber String     @map("account_number")
   currency      String
+  bik           String?
+  isPrimary     Boolean    @default(false) @map("is_primary")
   notes         String?
   contractor    Contractor @relation(fields: [contractorId], references: [id], onDelete: Cascade)
 
