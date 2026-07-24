@@ -131,6 +131,7 @@ model User {
   createdPaymentRequests     PaymentRequest[]            @relation("PaymentRequestCreatedBy")
   approvedPaymentRequests    PaymentRequest[]            @relation("PaymentRequestApprovedBy")
   paidPaymentRequests        PaymentRequest[]            @relation("PaymentRequestPaidBy")
+  generatedDocuments         GeneratedDocument[]          @relation("GeneratedDocumentGeneratedBy")
 
   @@map("users")
 }
@@ -313,6 +314,7 @@ model Deal {
   responsible     User              @relation(fields: [responsibleId], references: [id])
   department      Department?       @relation(fields: [departmentId], references: [id])
   transportations Transportation[]
+  generatedDocuments GeneratedDocument[]
 
   @@map("deals")
 }
@@ -365,6 +367,7 @@ model Transportation {
   statusEvents          TransportationStatusEvent[]
   invoices              Invoice[]
   paymentRequests       PaymentRequest[]
+  generatedDocuments    GeneratedDocument[]
 
   @@unique([dealId, sequenceInDeal])
   @@index([logistId])
@@ -576,4 +579,42 @@ model MotivationSettings {
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   @@map("motivation_settings")
+}
+
+enum GeneratedDocumentType {
+  CONTRACT
+  TRANSPORT_REQUEST
+  INVOICE
+}
+
+// Атомарный счётчик номеров документов. key уже содержит дату
+// (напр. "TT-EX-2407/2026"), поэтому отдельного сброса "раз в день" не нужно —
+// каждый день формирует свой ключ. Второй документ с тем же ключом за день
+// получает суффикс "/2" (см. DocumentsService.nextDocumentNumber).
+model DocumentNumberCounter {
+  id    String @id @default(cuid())
+  key   String @unique
+  count Int    @default(0)
+
+  @@map("document_number_counters")
+}
+
+// Документы не хранятся файлами — .docx пересобирается из данных сделки/
+// перевозки при каждом скачивании (тот же принцип, что в исходном
+// contract-generator). Здесь — только лёгкий журнал "кто/когда/какой номер".
+model GeneratedDocument {
+  id                String                @id @default(cuid())
+  type              GeneratedDocumentType
+  number            String
+  dealId            String?               @map("deal_id")
+  transportationId  String?               @map("transportation_id")
+  generatedByUserId String                @map("generated_by_user_id")
+  generatedAt       DateTime              @default(now()) @map("generated_at")
+  deal              Deal?                 @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  transportation    Transportation?       @relation(fields: [transportationId], references: [id], onDelete: SetNull)
+  generatedBy       User                  @relation("GeneratedDocumentGeneratedBy", fields: [generatedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([dealId])
+  @@index([transportationId])
+  @@map("generated_documents")
 }
