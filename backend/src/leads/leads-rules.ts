@@ -1,4 +1,19 @@
+import { createHmac, timingSafeEqual } from 'crypto';
 import { LeadStatus } from '@prisma/client';
+
+/** Проверка подписи заявки с сайта (HMAC-SHA256 общим секретом, раздел 4.6.3 ТЗ). */
+export function verifyWebsiteLeadSignature(
+  rawBody: Buffer | undefined,
+  signature: string | undefined,
+  secret: string | undefined,
+): boolean {
+  if (!secret || !rawBody || !signature) return false;
+  const expected = createHmac('sha256', secret).update(rawBody).digest('hex');
+  const providedBuffer = Buffer.from(signature.trim(), 'hex');
+  const expectedBuffer = Buffer.from(expected, 'hex');
+  if (expectedBuffer.length !== providedBuffer.length) return false;
+  return timingSafeEqual(expectedBuffer, providedBuffer);
+}
 
 /** Приводит телефон к последним 10 цифрам для сравнения — форматы ввода различаются (+7/8, пробелы, скобки). */
 export function normalizePhone(phone: string | null | undefined): string | null {

@@ -8,6 +8,7 @@ import {
   ContractorType,
   DealStage,
   LeadNotInterestedReason,
+  LeadSource,
   LeadStatus,
   NotificationType,
   Prisma,
@@ -19,6 +20,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AssignLeadsDto } from './dto/assign-leads.dto';
 import { ConvertLeadDto } from './dto/convert-lead.dto';
+import { CreateWebsiteLeadDto } from './dto/create-website-lead.dto';
 import { DistributeLeadsDto } from './dto/distribute-leads.dto';
 import { ImportLeadsDto } from './dto/import-leads.dto';
 import { LeadQueryDto } from './dto/lead-query.dto';
@@ -65,6 +67,7 @@ export class LeadsService {
           {
             deletedAt: query.includeDeleted ? undefined : null,
             status: query.status,
+            source: query.source,
             responsibleId: query.unassigned ? null : query.responsibleId,
             departmentId: query.departmentId,
             OR: query.search
@@ -195,6 +198,98 @@ export class LeadsService {
     });
   }
 
+  /** Создание лида из заявки сайта (раздел 4.6.3 ТЗ) — источник WEBSITE, без отдела/ответственного, распределяет админ/директор. */
+  async createFromWebsite(dto: CreateWebsiteLeadDto): Promise<void> {
+    const phoneKey = normalizePhone(dto.phone);
+    const email = dto.email?.trim().toLowerCase() || null;
+
+    let matchedContractorId: string | null = null;
+    if (phoneKey) {
+      const candidates = await this.prisma.contractor.findMany({
+        where: { deletedAt: null, phone: { not: null } },
+        select: { id: true, phone: true },
+      });
+      matchedContractorId = candidates.find((c) => normalizePhone(c.phone) === phoneKey)?.id ?? null;
+    }
+    if (!matchedContractorId && email) {
+      const byEmail = await this.prisma.contractor.findFirst({
+        where: { deletedAt: null, email: { equals: email, mode: 'insensitive' } },
+        select: { id: true },
+      });
+      matchedContractorId = byEmail?.id ?? null;
+    }
+
+    const notesParts = [dto.comment?.trim(), dto.page ? `Страница: ${dto.page}` : null].filter(Boolean);
+
+    const lead = await this.prisma.lead.create({
+      data: {
+        name: dto.name.trim(),
+        phone: dto.phone?.trim() || null,
+        email: dto.email?.trim() || null,
+        routeFrom: dto.routeFrom?.trim() || null,
+        routeTo: dto.routeTo?.trim() || null,
+        cargoDescription: dto.cargoDescription?.trim() || null,
+        notes: notesParts.length ? notesParts.join('. ') : null,
+        source: LeadSource.WEBSITE,
+        sourcePage: dto.page?.trim() || null,
+        sourceLanguage: dto.language ?? null,
+        utmSource: dto.utm?.source?.trim() || null,
+        utmMedium: dto.utm?.medium?.trim() || null,
+        utmCampaign: dto.utm?.campaign?.trim() || null,
+        utmContent: dto.utm?.content?.trim() || null,
+        utmTerm: dto.utm?.term?.trim() || null,
+        isExistingClient: Boolean(matchedContractorId),
+        matchedContractorId,
+      },
+    });
+
+    const managers = await this.prisma.user.findMany({
+      where: { isActive: true, roles: { some: { role: { code: 'MANAGER' } } } },
+      select: { id: true },
+    });
+    if (managers.length) {
+      await this.notificationsService.notifyMany(
+        managers.map((manager) => manager.id),
+        NotificationType.WEBSITE_LEAD_RECEIVED,
+        'Новая заявка с сайта',
+        `Заявка с сайта: ${lead.name}`,
+        'Lead',
+        lead.id,
+      );
+    }
+  }
+
+  /** Отчёт «скорость реакции на заявки» с сайта (раздел 4.6.3 ТЗ) — время от поступления до первого действия менеджера. */
+  async getReactionTimeReport(user: AuthUser): Promise<{
+    averageMinutes: number | null;
+    items: Array<{
+      id: string;
+      name: string;
+      createdAt: Date;
+      firstHandledAt: Date | null;
+      responsible: { id: string; fullName: string } | null;
+    }>;
+  }> {
+    const leads = await this.prisma.lead.findMany({
+      where: { AND: [{ source: LeadSource.WEBSITE, deletedAt: null }, this.visibilityWhere(user)] },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        firstHandledAt: true,
+        responsible: { select: { id: true, fullName: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    const handledMinutes = leads
+      .filter((lead) => lead.firstHandledAt)
+      .map((lead) => (lead.firstHandledAt!.getTime() - lead.createdAt.getTime()) / 60000);
+    const averageMinutes = handledMinutes.length
+      ? handledMinutes.reduce((sum, value) => sum + value, 0) / handledMinutes.length
+      : null;
+    return { averageMinutes, items: leads };
+  }
+
   async update(id: string, dto: UpdateLeadDto, user: AuthUser): Promise<LeadWithActivities> {
     await this.getVisibleLead(id, user);
     const data: Prisma.LeadUpdateInput = {};
@@ -270,6 +365,7 @@ export class LeadsService {
       throw new BadRequestException('Лид уже конвертирован — изменить статус нельзя');
     }
     const data: Prisma.LeadUpdateInput = { status: dto.status };
+    if (!lead.firstHandledAt) data.firstHandledAt = new Date();
     if (dto.status === LeadStatus.CALL_BACK) {
       data.callBackAt = new Date(dto.callBackAt as string);
     } else {
@@ -346,6 +442,7 @@ export class LeadsService {
           status: LeadStatus.CONVERTED,
           convertedContractorId: contractor.id,
           convertedDealId: deal.id,
+          firstHandledAt: lead.firstHandledAt ?? new Date(),
         },
       });
       await tx.leadActivity.create({

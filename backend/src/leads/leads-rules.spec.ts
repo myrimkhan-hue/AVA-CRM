@@ -1,5 +1,11 @@
+import { createHmac } from 'crypto';
 import { LeadStatus } from '@prisma/client';
-import { compareCallQueue, distributeRoundRobin, normalizePhone } from './leads-rules';
+import {
+  compareCallQueue,
+  distributeRoundRobin,
+  normalizePhone,
+  verifyWebsiteLeadSignature,
+} from './leads-rules';
 
 describe('normalizePhone', () => {
   it('приводит разные форматы одного номера к одному ключу', () => {
@@ -69,5 +75,38 @@ describe('compareCallQueue', () => {
     };
     const olderLead = { status: LeadStatus.NEW, callBackAt: null, createdAt: new Date('2026-07-10T00:00:00.000Z') };
     expect(compareCallQueue(futureCallback, olderLead, today)).toBeGreaterThan(0);
+  });
+});
+
+describe('verifyWebsiteLeadSignature', () => {
+  const secret = 'test-secret';
+  const body = Buffer.from(JSON.stringify({ name: 'Тест' }));
+  const validSignature = createHmac('sha256', secret).update(body).digest('hex');
+
+  it('принимает верную подпись', () => {
+    expect(verifyWebsiteLeadSignature(body, validSignature, secret)).toBe(true);
+  });
+
+  it('отклоняет неверную подпись', () => {
+    expect(verifyWebsiteLeadSignature(body, 'a'.repeat(64), secret)).toBe(false);
+  });
+
+  it('отклоняет подпись другим секретом (тело изменено или подписано неверным ключом)', () => {
+    const wrongSignature = createHmac('sha256', 'other-secret').update(body).digest('hex');
+    expect(verifyWebsiteLeadSignature(body, wrongSignature, secret)).toBe(false);
+  });
+
+  it('отклоняет, если секрет не настроен на сервере', () => {
+    expect(verifyWebsiteLeadSignature(body, validSignature, undefined)).toBe(false);
+  });
+
+  it('отклоняет отсутствующее тело или подпись', () => {
+    expect(verifyWebsiteLeadSignature(undefined, validSignature, secret)).toBe(false);
+    expect(verifyWebsiteLeadSignature(body, undefined, secret)).toBe(false);
+  });
+
+  it('не падает на подписи другой длины (короче/длиннее ожидаемой)', () => {
+    expect(verifyWebsiteLeadSignature(body, 'ab', secret)).toBe(false);
+    expect(verifyWebsiteLeadSignature(body, validSignature + 'ff', secret)).toBe(false);
   });
 });

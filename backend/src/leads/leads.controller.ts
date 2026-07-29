@@ -37,6 +37,12 @@ export class LeadsController {
     return this.leadsService.findImportBatches(user);
   }
 
+  @Get('reports/reaction-time')
+  @Roles('ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD')
+  getReactionTimeReport(@CurrentUser() user: AuthUser) {
+    return this.leadsService.getReactionTimeReport(user);
+  }
+
   @Patch('assign')
   @Roles('ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD')
   assign(@Body() dto: AssignLeadsDto, @CurrentUser() user: AuthUser) {

@@ -1,4 +1,5 @@
 import {
+  BarChartOutlined,
   HistoryOutlined,
   PhoneOutlined,
   TeamOutlined,
@@ -26,7 +27,7 @@ import type { ColumnsType } from 'antd/es/table';
 import dayjs, { Dayjs } from 'dayjs';
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { parseCsv } from '../leads/csv';
@@ -52,8 +53,13 @@ interface ImportBatchRecord {
 }
 interface EditValues { name: string; phone?: string; bin?: string; city?: string; contactName?: string; email?: string; notes?: string }
 interface TouchValues { status: LeadStatus; comment: string; callBackAt?: Dayjs; notInterestedReason?: LeadNotInterestedReason; notInterestedComment?: string }
+interface ReactionReportItem {
+  id: string; name: string; createdAt: string; firstHandledAt: string | null;
+  responsible: { id: string; fullName: string } | null;
+}
+interface ReactionReport { averageMinutes: number | null; items: ReactionReportItem[] }
 
-type LeadTab = 'all' | 'my';
+type LeadTab = 'all' | 'my' | 'site';
 type StatusFilter = LeadStatus | 'ALL';
 
 const MANAGE_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD'];
@@ -79,10 +85,24 @@ function isOverdueCallback(lead: LeadRecord): boolean {
   return lead.status === 'CALL_BACK' && Boolean(lead.callBackAt) && dayjs(lead.callBackAt).isBefore(dayjs());
 }
 
+function formatMinutes(minutes: number): string {
+  const totalMinutes = Math.round(minutes);
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  if (hours <= 0) return `${mins} мин`;
+  return `${hours} ч ${mins} мин`;
+}
+
+function formatRoute(lead: LeadRecord): string | null {
+  if (!lead.routeFrom && !lead.routeTo) return null;
+  return `${lead.routeFrom || '?'} → ${lead.routeTo || '?'}`;
+}
+
 export function LeadsPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { message } = App.useApp();
 
   const canManage = Boolean(user?.roles.some((role) => MANAGE_ROLES.includes(role)));
@@ -107,6 +127,13 @@ export function LeadsPage() {
 
   const [myLeads, setMyLeads] = useState<LeadRecord[]>([]);
   const [loadingMy, setLoadingMy] = useState(true);
+
+  const [siteLeads, setSiteLeads] = useState<LeadRecord[]>([]);
+  const [loadingSite, setLoadingSite] = useState(true);
+
+  const [reactionReportOpen, setReactionReportOpen] = useState(false);
+  const [reactionReport, setReactionReport] = useState<ReactionReport>();
+  const [reactionReportLoading, setReactionReportLoading] = useState(false);
 
   const [users, setUsers] = useState<UserReference[]>([]);
   const [canSelectUsers, setCanSelectUsers] = useState(false);
@@ -190,8 +217,20 @@ export function LeadsPage() {
     }
   }, [showError]);
 
+  const loadSite = useCallback(async () => {
+    setLoadingSite(true);
+    try {
+      setSiteLeads(await apiRequest<LeadRecord[]>('/leads?source=WEBSITE'));
+    } catch (error: unknown) {
+      showError(error);
+    } finally {
+      setLoadingSite(false);
+    }
+  }, [showError]);
+
   useEffect(() => { void loadAll(); }, [loadAll]);
   useEffect(() => { void loadMy(); }, [loadMy]);
+  useEffect(() => { if (canManage) void loadSite(); }, [canManage, loadSite]);
 
   useEffect(() => {
     apiRequest<DepartmentReference[]>('/departments').then(setDepartments).catch(showError);
@@ -214,8 +253,8 @@ export function LeadsPage() {
   );
 
   const refreshLists = useCallback(async () => {
-    await Promise.all([loadAll(), loadMy()]);
-  }, [loadAll, loadMy]);
+    await Promise.all([loadAll(), loadMy(), canManage ? loadSite() : Promise.resolve()]);
+  }, [loadAll, loadMy, loadSite, canManage]);
 
   const openDetail = useCallback((id: string) => {
     setDetailId(id);
@@ -226,7 +265,22 @@ export function LeadsPage() {
       .finally(() => setDetailLoading(false));
   }, [showError]);
 
-  const closeDetail = () => { setDetailId(undefined); setDetailLead(undefined); };
+  const closeDetail = () => {
+    setDetailId(undefined);
+    setDetailLead(undefined);
+    if (searchParams.get('open')) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('open');
+      setSearchParams(next, { replace: true });
+    }
+  };
+
+  // Открыть карточку лида по ссылке из уведомления (/leads?open=ID) — только при первой загрузке страницы.
+  useEffect(() => {
+    const openId = searchParams.get('open');
+    if (openId) openDetail(openId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const applyDetailUpdate = (updated: LeadRecord) => {
     setDetailLead(updated);
@@ -423,6 +477,15 @@ export function LeadsPage() {
     }
   };
 
+  const openReactionReport = () => {
+    setReactionReportOpen(true);
+    setReactionReportLoading(true);
+    apiRequest<ReactionReport>('/leads/reports/reaction-time')
+      .then(setReactionReport)
+      .catch((error: unknown) => showError(error))
+      .finally(() => setReactionReportLoading(false));
+  };
+
   const openHistory = () => {
     setHistoryOpen(true);
     setHistoryLoading(true);
@@ -458,6 +521,28 @@ export function LeadsPage() {
     { title: t('leads.columns.createdAt'), key: 'createdAt', width: 130, render: (_, item) => new Date(item.createdAt).toLocaleDateString('ru-RU') },
   ];
 
+  const siteColumns: ColumnsType<LeadRecord> = [
+    {
+      title: t('leads.columns.name'), key: 'name', fixed: 'left', width: 220,
+      render: (_, item) => <div>
+        <Typography.Text strong>{item.name}</Typography.Text>
+        {item.isExistingClient && <Tag color="gold" style={{ marginLeft: 6 }}>{t('leads.existingClientTag')}</Tag>}
+      </div>,
+    },
+    {
+      title: t('leads.columns.contact'), key: 'contact', width: 200,
+      render: (_, item) => <div>{item.phone || t('common.dash')}<div className="table-cell-secondary">{item.email || t('common.dash')}</div></div>,
+    },
+    { title: t('leads.columns.route'), key: 'route', width: 200, render: (_, item) => formatRoute(item) || t('common.dash') },
+    { title: t('leads.columns.cargo'), key: 'cargo', width: 200, render: (_, item) => item.cargoDescription || t('common.dash') },
+    {
+      title: t('leads.columns.status'), key: 'status', width: 170,
+      render: (_, item) => <Tag bordered={false} style={LEAD_STATUS_COLORS[item.status]}>{t(`leads.status.${item.status}`)}</Tag>,
+    },
+    { title: t('leads.columns.responsible'), key: 'responsible', width: 170, render: (_, item) => item.responsible?.fullName || t('leads.detail.unassigned') },
+    { title: t('leads.columns.createdAt'), key: 'createdAt', width: 150, render: (_, item) => new Date(item.createdAt).toLocaleString('ru-RU') },
+  ];
+
   const myColumns: ColumnsType<LeadRecord> = [
     {
       title: t('leads.columns.name'), key: 'name', width: 240,
@@ -491,9 +576,11 @@ export function LeadsPage() {
           <Segmented<LeadTab> value={tab} onChange={setTab} options={[
             { value: 'all', label: t('leads.tabs.all') },
             { value: 'my', label: t('leads.tabs.my') },
+            ...(canManage ? [{ value: 'site' as LeadTab, label: t('leads.tabs.site') }] : []),
           ]} />
         </div>
         {canManage && <div className="leads-heading-actions">
+          <Button icon={<BarChartOutlined />} onClick={openReactionReport}>{t('leads.actions.reactionReport')}</Button>
           <Button icon={<HistoryOutlined />} onClick={openHistory}>{t('leads.actions.importHistory')}</Button>
           <Button type="primary" icon={<UploadOutlined />} onClick={openImport}>{t('leads.actions.import')}</Button>
         </div>}
@@ -526,7 +613,7 @@ export function LeadsPage() {
           rowSelection={canManage ? { selectedRowKeys, onChange: (keys) => setSelectedRowKeys(keys as string[]) } : undefined}
           onRow={(item) => ({ onClick: () => openDetail(item.id) })}
         />
-      </> : <Table<LeadRecord>
+      </> : tab === 'my' ? <Table<LeadRecord>
         className="leads-table"
         rowKey="id"
         columns={myColumns}
@@ -537,7 +624,20 @@ export function LeadsPage() {
         locale={{ emptyText: t('leads.myCalls.empty') }}
         rowClassName={(item) => isOverdueCallback(item) ? 'overdue-row' : ''}
         onRow={(item) => ({ onClick: () => openDetail(item.id) })}
-      />}
+      /> : <>
+        <Typography.Paragraph type="secondary">{t('leads.siteQueue.unresolvedHint')}</Typography.Paragraph>
+        <Table<LeadRecord>
+          className="leads-table"
+          rowKey="id"
+          columns={siteColumns}
+          dataSource={siteLeads}
+          loading={loadingSite}
+          scroll={{ x: 'max-content' }}
+          pagination={{ pageSize: 20, showSizeChanger: false }}
+          locale={{ emptyText: t('leads.siteQueue.empty') }}
+          onRow={(item) => ({ onClick: () => openDetail(item.id) })}
+        />
+      </>}
     </section>
 
     <Modal open={Boolean(detailId)} title={detailLead?.name} width={760} footer={null} onCancel={closeDetail} destroyOnHidden>
@@ -673,6 +773,32 @@ export function LeadsPage() {
         ]}
       />
     </Modal>
+
+    <Modal open={reactionReportOpen} title={t('leads.reactionReport.title')} footer={null} width={720} onCancel={() => setReactionReportOpen(false)} destroyOnHidden>
+      {reactionReport && <Typography.Paragraph>
+        <Typography.Text strong>{t('leads.reactionReport.average')}: </Typography.Text>
+        {reactionReport.averageMinutes !== null ? formatMinutes(reactionReport.averageMinutes) : t('leads.reactionReport.noData')}
+      </Typography.Paragraph>}
+      <Table<ReactionReportItem>
+        rowKey="id"
+        loading={reactionReportLoading}
+        dataSource={reactionReport?.items ?? []}
+        pagination={{ pageSize: 10, showSizeChanger: false }}
+        scroll={{ x: 640 }}
+        locale={{ emptyText: t('leads.siteQueue.empty') }}
+        columns={[
+          { title: t('leads.reactionReport.columns.name'), dataIndex: 'name', key: 'name' },
+          { title: t('leads.reactionReport.columns.createdAt'), key: 'createdAt', render: (_, item) => new Date(item.createdAt).toLocaleString('ru-RU') },
+          { title: t('leads.reactionReport.columns.responsible'), key: 'responsible', render: (_, item) => item.responsible?.fullName || t('leads.detail.unassigned') },
+          {
+            title: t('leads.reactionReport.columns.reactionTime'), key: 'reactionTime',
+            render: (_, item) => item.firstHandledAt
+              ? formatMinutes((new Date(item.firstHandledAt).getTime() - new Date(item.createdAt).getTime()) / 60000)
+              : <Typography.Text type="warning">{t('leads.reactionReport.notHandled')}</Typography.Text>,
+          },
+        ]}
+      />
+    </Modal>
   </>;
 }
 
@@ -702,6 +828,11 @@ function LeadDetail({ lead, onEdit, onTouch, onConvert, onGoToDeal }: {
       <DetailValue label={t('leads.columns.department')} value={lead.department?.name} />
       <DetailValue label={t('leads.detail.source')} value={t(`leads.source.${lead.source}`)} />
       {lead.importBatch && <DetailValue label={t('leads.detail.importSource')} value={`${lead.importBatch.fileName} (${new Date(lead.importBatch.createdAt).toLocaleDateString('ru-RU')})`} />}
+      {lead.source === 'WEBSITE' && <DetailValue label={t('leads.detail.route')} value={formatRoute(lead)} />}
+      {lead.source === 'WEBSITE' && <DetailValue label={t('leads.detail.cargo')} value={lead.cargoDescription} />}
+      {lead.source === 'WEBSITE' && lead.sourcePage && <DetailValue label={t('leads.detail.sourcePage')} value={lead.sourcePage} />}
+      {lead.source === 'WEBSITE' && lead.sourceLanguage && <DetailValue label={t('leads.detail.sourceLanguage')} value={t(`leads.sourceLanguage.${lead.sourceLanguage}`, lead.sourceLanguage)} />}
+      {lead.source === 'WEBSITE' && (lead.utmSource || lead.utmMedium || lead.utmCampaign) && <DetailValue label={t('leads.detail.utm')} value={[lead.utmSource, lead.utmMedium, lead.utmCampaign].filter(Boolean).join(' / ')} />}
       <DetailValue label={t('leads.fields.notes')} value={lead.notes} />
     </div>
 

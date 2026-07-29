@@ -48,6 +48,7 @@ enum NotificationType {
   INVOICE_OVERDUE
   PAYMENT_REQUEST_PENDING
   TRANSPORTATION_OVERDUE
+  WEBSITE_LEAD_RECEIVED
 }
 
 enum LeadStatus {
@@ -739,8 +740,19 @@ model Lead {
   contactName           String?                  @map("contact_name")
   email                 String?
   notes                 String?
+  routeFrom             String?                  @map("route_from")
+  routeTo               String?                  @map("route_to")
+  cargoDescription      String?                  @map("cargo_description")
+  sourcePage            String?                  @map("source_page")
+  sourceLanguage        String?                  @map("source_language")
+  utmSource             String?                  @map("utm_source")
+  utmMedium             String?                  @map("utm_medium")
+  utmCampaign           String?                  @map("utm_campaign")
+  utmContent            String?                  @map("utm_content")
+  utmTerm               String?                  @map("utm_term")
   source                LeadSource               @default(COLD_CALL_IMPORT)
   status                LeadStatus               @default(NEW)
+  firstHandledAt        DateTime?                @map("first_handled_at")
   notInterestedReason   LeadNotInterestedReason? @map("not_interested_reason")
   notInterestedComment  String?                  @map("not_interested_comment")
   callBackAt            DateTime?                @map("call_back_at")
