@@ -167,6 +167,7 @@ model User {
   leads                      Lead[]
   leadActivities             LeadActivity[]
   leadImportBatches          LeadImportBatch[]
+  whatsappMessages           WhatsAppMessage[]           @relation("WhatsAppMessageAuthor")
 
   @@map("users")
 }
@@ -339,6 +340,7 @@ model Contractor {
   generatedDocuments GeneratedDocument[]
   matchedByLeads     Lead[]                  @relation("LeadMatchedContractor")
   convertedFromLeads Lead[]                  @relation("LeadConvertedContractor")
+  whatsappMessages   WhatsAppMessage[]
 
   @@map("contractors")
 }
@@ -781,4 +783,55 @@ model LeadActivity {
 
   @@index([leadId, createdAt])
   @@map("lead_activities")
+}
+
+enum WhatsAppDirection {
+  IN
+  OUT
+}
+
+enum WhatsAppMessageStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  RECEIVED
+}
+
+// Заготовка интеграции с Wazzup (ТЗ 4.6.1) — переписка хранится отдельно от Lead/LeadActivity,
+// так как это не касание по лиду, а сквозная история сообщений с контрагентом.
+model WhatsAppTemplate {
+  id        String            @id @default(cuid())
+  title     String
+  body      String
+  isActive  Boolean           @default(true) @map("is_active")
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+  messages  WhatsAppMessage[]
+
+  @@map("whatsapp_templates")
+}
+
+model WhatsAppMessage {
+  id              String                @id @default(cuid())
+  direction       WhatsAppDirection
+  channelId       String?               @map("channel_id")
+  chatId          String                @map("chat_id")
+  contactName     String?               @map("contact_name")
+  contractorId    String?               @map("contractor_id")
+  text            String
+  status          WhatsAppMessageStatus
+  wazzupMessageId String?               @unique @map("wazzup_message_id")
+  templateId      String?               @map("template_id")
+  authorUserId    String?               @map("author_user_id")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  contractor      Contractor?           @relation(fields: [contractorId], references: [id], onDelete: SetNull)
+  template        WhatsAppTemplate?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  author          User?                 @relation("WhatsAppMessageAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  @@index([contractorId, createdAt])
+  @@index([chatId, createdAt])
+  @@map("whatsapp_messages")
 }

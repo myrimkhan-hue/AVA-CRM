@@ -32,6 +32,7 @@ import {
   GenerateContractModal,
 } from '../components/GenerateContractModal';
 import { MarginCard } from '../components/MarginCard';
+import { WhatsAppFeed } from '../components/WhatsAppFeed';
 import {
   DEAL_PIPELINE_STAGES,
   DEAL_REJECT_REASONS,
@@ -292,6 +293,10 @@ export function DealDetailPage() {
           extra={mayEditDeals && activeDeal ? <Button type="link" icon={<EditOutlined />} onClick={openNotes}>{t('deals.detail.actions.edit')}</Button> : undefined}
         >
           <Typography.Paragraph className="deal-notes">{deal.notes || t('common.dash')}</Typography.Paragraph>
+        </Card>
+
+        <Card className="transport-card" title={t('whatsapp.title')}>
+          <WhatsAppFeed contractorId={deal.client.id} />
         </Card>
       </div>
 

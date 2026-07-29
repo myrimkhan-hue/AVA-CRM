@@ -15,6 +15,8 @@ import { AuthUser } from '../auth/auth-user.type';
 import { MarginService } from '../deals/margin.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { renderTemplate } from '../whatsapp/whatsapp-rules';
+import { WhatsappService } from '../whatsapp/whatsapp.service';
 import { CreateTransportationDto } from './dto/create-transportation.dto';
 import {
   CreateTransportationLegDto,
@@ -81,6 +83,7 @@ export class TransportationsService {
     private readonly prisma: PrismaService,
     private readonly marginService: MarginService,
     private readonly notificationsService: NotificationsService,
+    private readonly whatsappService: WhatsappService,
   ) {}
 
   async findAll(query: TransportationQueryDto, user: AuthUser) {
@@ -388,7 +391,30 @@ export class TransportationsService {
       });
       return row;
     });
-    return this.present(updated, user);
+
+    const presented = this.present(updated, user);
+    if (dto.notifyWhatsapp && dto.whatsappTemplateId) {
+      const notifyError = await this.notifyClientWhatsapp(updated, dto.whatsappTemplateId, user.id);
+      if (notifyError) return { ...presented, whatsappNotifyError: notifyError };
+    }
+    return presented;
+  }
+
+  /** Возвращает текст ошибки, если отправку не удалось выполнить — статус перевозки при этом уже сохранён. */
+  private async notifyClientWhatsapp(
+    transportation: TransportationWithRelations,
+    templateId: string,
+    userId: string,
+  ): Promise<string | null> {
+    try {
+      const template = await this.prisma.whatsAppTemplate.findUnique({ where: { id: templateId } });
+      if (!template) return 'Шаблон сообщения не найден';
+      const text = renderTemplate(template.body, { number: transportation.number });
+      await this.whatsappService.sendToContractor(transportation.deal.client.id, text, userId, templateId);
+      return null;
+    } catch (error: unknown) {
+      return error instanceof Error ? error.message : 'Не удалось отправить сообщение в WhatsApp';
+    }
   }
 
   async history(id: string, user: AuthUser) {

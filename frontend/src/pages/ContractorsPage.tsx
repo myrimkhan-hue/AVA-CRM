@@ -11,6 +11,7 @@ import {
 import {
   Alert,
   App,
+  Badge,
   Button,
   Card,
   Checkbox,
@@ -24,6 +25,7 @@ import {
   Popover,
   Row,
   Select,
+  Space,
   Spin,
   Switch,
   Table,
@@ -37,6 +39,8 @@ import { useNavigate } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { PasteRequisitesBox } from '../components/PasteRequisitesBox';
+import { WhatsAppFeed } from '../components/WhatsAppFeed';
+import { WhatsAppUnmatchedThread } from '../whatsapp/shared';
 import { mapParsedToFields, ParsedRequisites } from '../documents/parse-requisites';
 import { CURRENCIES, STATUS_COLORS, type TransportationStatus } from '../transportations/shared';
 
@@ -209,6 +213,11 @@ export function ContractorsPage() {
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [draggedKey, setDraggedKey] = useState<ColumnKey>();
+  const [unmatchedOpen, setUnmatchedOpen] = useState(false);
+  const [unmatched, setUnmatched] = useState<WhatsAppUnmatchedThread[]>([]);
+  const [unmatchedLoading, setUnmatchedLoading] = useState(false);
+  const [linkTargetId, setLinkTargetId] = useState<string>();
+  const [pendingUnmatchedChatId, setPendingUnmatchedChatId] = useState<string>();
   const lastSavedSettings = useRef('');
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
   const paymentTerm = Form.useWatch('paymentTerm', form);
@@ -240,6 +249,39 @@ export function ContractorsPage() {
   }, [includeDeleted, isAdmin, search, showError]);
 
   useEffect(() => { void loadContractors(); }, [loadContractors]);
+
+  const loadUnmatched = useCallback(async () => {
+    setUnmatchedLoading(true);
+    try {
+      setUnmatched(await apiRequest<WhatsAppUnmatchedThread[]>('/whatsapp/unmatched'));
+    } catch (error: unknown) {
+      showError(error);
+    } finally {
+      setUnmatchedLoading(false);
+    }
+  }, [showError]);
+
+  useEffect(() => { void loadUnmatched(); }, [loadUnmatched]);
+
+  const linkThread = async (chatId: string, contractorId: string) => {
+    try {
+      await apiRequest(`/whatsapp/unmatched/${encodeURIComponent(chatId)}/link`, {
+        method: 'POST',
+        body: JSON.stringify({ contractorId }),
+      });
+      void message.success(t('whatsapp.unmatched.linked'));
+      setLinkTargetId(undefined);
+      await loadUnmatched();
+    } catch (error: unknown) {
+      showError(error);
+    }
+  };
+
+  const createFromThread = (chatId: string) => {
+    setPendingUnmatchedChatId(chatId);
+    setUnmatchedOpen(false);
+    openCreate(`+${chatId}`);
+  };
 
   useEffect(() => {
     let active = true;
@@ -319,11 +361,14 @@ export function ContractorsPage() {
     setDuplicateSignature(undefined);
   };
 
-  const openCreate = () => {
+  const openCreate = (prefillPhone?: string) => {
     setEditing(null);
     resetDuplicateWarning();
     form.resetFields();
-    form.setFieldsValue({ types: [], isProblem: false, isBlacklisted: false, contacts: [], bankAccounts: [] });
+    form.setFieldsValue({
+      types: prefillPhone ? ['CLIENT'] : [],
+      isProblem: false, isBlacklisted: false, contacts: [], bankAccounts: [], phone: prefillPhone,
+    });
     setEditorOpen(true);
   };
 
@@ -402,6 +447,13 @@ export function ContractorsPage() {
       setEditorOpen(false);
       form.resetFields();
       setSelectedId(saved.id);
+      if (!editing && pendingUnmatchedChatId) {
+        await apiRequest(`/whatsapp/unmatched/${encodeURIComponent(pendingUnmatchedChatId)}/link`, {
+          method: 'POST', body: JSON.stringify({ contractorId: saved.id }),
+        });
+        setPendingUnmatchedChatId(undefined);
+        await loadUnmatched();
+      }
       await loadContractors();
     } catch (error: unknown) {
       showError(error);
@@ -569,7 +621,10 @@ export function ContractorsPage() {
           {viewMode === 'table' && <Popover trigger="click" placement="bottomRight" open={settingsOpen} onOpenChange={setSettingsOpen} content={settingsContent}>
             <Button icon={<SettingOutlined />}>{t('contractors.settings.button')}</Button>
           </Popover>}
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>{t('contractors.add')}</Button>
+          <Badge count={unmatched.length} size="small" offset={[-6, 4]}>
+            <Button onClick={() => setUnmatchedOpen(true)}>{t('whatsapp.unmatched.button')}</Button>
+          </Badge>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreate()}>{t('contractors.add')}</Button>
         </div>
       </div>
 
@@ -629,6 +684,28 @@ export function ContractorsPage() {
         </div>
       </div>}
     </section>
+
+    <Modal open={unmatchedOpen} title={t('whatsapp.unmatched.title')} footer={null} width={700} onCancel={() => setUnmatchedOpen(false)} destroyOnHidden>
+      {unmatchedLoading ? <Spin className="contractor-list-spin" /> : unmatched.length ? unmatched.map((thread) => <Card key={thread.chatId} size="small" className="whatsapp-unmatched-card">
+        <div className="whatsapp-unmatched-info">
+          <strong>{thread.contactName || `+${thread.chatId}`}</strong>
+          <span>{thread.lastText || t('common.dash')} · {t('whatsapp.unmatched.count', { count: thread.count })} · {new Date(thread.lastAt).toLocaleString('ru-RU')}</span>
+        </div>
+        <Space>
+          <Select
+            allowClear showSearch style={{ width: 220 }}
+            placeholder={t('whatsapp.unmatched.selectContractor')}
+            value={linkTargetId}
+            onFocus={() => setLinkTargetId(undefined)}
+            onChange={setLinkTargetId}
+            optionFilterProp="label"
+            options={contractors.map((item) => ({ value: item.id, label: item.name }))}
+          />
+          <Button disabled={!linkTargetId} onClick={() => linkTargetId && void linkThread(thread.chatId, linkTargetId)}>{t('whatsapp.unmatched.link')}</Button>
+          <Button onClick={() => createFromThread(thread.chatId)}>{t('whatsapp.unmatched.createContractor')}</Button>
+        </Space>
+      </Card>) : <Empty description={t('whatsapp.unmatched.empty')} />}
+    </Modal>
 
     <Modal open={Boolean(flagKind)} title={t(flagKind === 'blacklist' ? 'contractors.flags.blacklistTitle' : 'contractors.flags.problemTitle')} okText={t('common.save')} cancelText={t('common.cancel')} confirmLoading={flagSaving} okButtonProps={{ disabled: !flagReason.trim() }} onOk={saveFlag} onCancel={() => setFlagKind(undefined)} destroyOnHidden>
       <Typography.Paragraph type="secondary">{t(flagKind === 'blacklist' ? 'contractors.flags.blacklistHelp' : 'contractors.flags.problemHelp')}</Typography.Paragraph>
@@ -797,6 +874,10 @@ function ContractorDetails({ contractor, related, relatedLoading, paymentText, o
 
     <Card className="contractor-detail-card" title={t('contractors.related.title')}>
       <Table<ContractorTransportation> className="contractor-related-table" rowKey="id" columns={relatedColumns} dataSource={related} loading={relatedLoading} pagination={false} scroll={{ x: 620 }} locale={{ emptyText: t('contractors.related.empty') }} onRow={(item) => ({ onClick: () => onTransportation(item.id) })} />
+    </Card>
+
+    <Card className="contractor-detail-card" title={t('whatsapp.title')}>
+      <WhatsAppFeed contractorId={contractor.id} />
     </Card>
   </>;
 }

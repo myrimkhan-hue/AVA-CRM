@@ -25,6 +25,9 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://${POSTGRES_USER:-ava_crm}:${POSTGRES_PASSWORD:-change-me-for-production}@postgres:5432/${POSTGRES_DB:-ava_crm}?schema=public
       JWT_SECRET: ${JWT_SECRET:?Задайте JWT_SECRET в файле .env}
+      WAZZUP_API_KEY: ${WAZZUP_API_KEY:-}
+      WAZZUP_CHANNEL_ID: ${WAZZUP_CHANNEL_ID:-}
+      WAZZUP_WEBHOOK_SECRET: ${WAZZUP_WEBHOOK_SECRET:-}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
     depends_on:

@@ -15,6 +15,7 @@ import { LegalEntitiesPage } from './pages/LegalEntitiesPage';
 import { SettingsLayout } from './components/SettingsLayout';
 import { CurrenciesPage } from './pages/CurrenciesPage';
 import { MotivationSettingsPage } from './pages/MotivationSettingsPage';
+import { WhatsappTemplatesPage } from './pages/WhatsappTemplatesPage';
 import { InvoicesPage } from './pages/InvoicesPage';
 import { PaymentRequestsPage } from './pages/PaymentRequestsPage';
 import { ReportsLayout } from './components/ReportsLayout';
@@ -85,6 +86,7 @@ export default function App() {
             <Route path="legal-entities" element={<LegalEntitiesPage />} />
             <Route path="currencies" element={<CurrenciesPage />} />
             <Route path="motivation" element={<MotivationSettingsPage />} />
+            <Route path="whatsapp-templates" element={<WhatsappTemplatesPage />} />
           </Route>
           <Route path="reports" element={<ReportsLayout />}>
             <Route index element={<Navigate to="cash-calendar" replace />} />

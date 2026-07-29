@@ -21,6 +21,7 @@ import { MotivationModule } from './motivation/motivation.module';
 import { DocumentsModule } from './documents/documents.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { LeadsModule } from './leads/leads.module';
+import { WhatsappModule } from './whatsapp/whatsapp.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { LeadsModule } from './leads/leads.module';
     DocumentsModule,
     NotificationsModule,
     LeadsModule,
+    WhatsappModule,
   ],
   controllers: [HealthController],
   providers: [

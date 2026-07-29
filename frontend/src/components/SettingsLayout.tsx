@@ -11,11 +11,14 @@ export function SettingsLayout() {
   const canManage = Boolean(
     user?.roles.some((role) => role === 'ADMIN' || role === 'FINANCIER'),
   );
+  const isAdmin = Boolean(user?.roles.includes('ADMIN'));
   const activeKey = location.pathname.includes('/settings/currencies')
     ? 'currencies'
     : location.pathname.includes('/settings/motivation')
       ? 'motivation'
-      : 'legal-entities';
+      : location.pathname.includes('/settings/whatsapp-templates')
+        ? 'whatsapp-templates'
+        : 'legal-entities';
 
   if (!canManage) return <Navigate to="/" replace />;
 
@@ -38,6 +41,10 @@ export function SettingsLayout() {
             key: 'motivation',
             label: t('settings.tabs.motivation'),
           },
+          ...(isAdmin ? [{
+            key: 'whatsapp-templates',
+            label: t('settings.tabs.whatsappTemplates'),
+          }] : []),
         ]}
       />
       <Outlet />

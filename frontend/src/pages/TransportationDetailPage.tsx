@@ -1,5 +1,5 @@
 import { CheckOutlined, DeleteOutlined, EditOutlined, FileTextOutlined, LockOutlined, PlusOutlined } from '@ant-design/icons';
-import { App, Button, Card, DatePicker, Descriptions, Form, Input, InputNumber, Modal, Progress, Radio, Select, Space, Spin, Tag, Tooltip, Typography } from 'antd';
+import { App, Button, Card, Checkbox, DatePicker, Descriptions, Form, Input, InputNumber, Modal, Progress, Radio, Select, Space, Spin, Tag, Tooltip, Typography } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -26,12 +26,14 @@ const money = (value: string | number | null | undefined, currency: string | nul
 export function TransportationDetailPage() {
   const { id } = useParams(); const navigate = useNavigate(); const { t } = useTranslation(); const { user } = useAuth(); const { message, modal } = App.useApp();
   const [item, setItem] = useState<Transportation>(); const [history, setHistory] = useState<Event[]>([]); const [loading, setLoading] = useState(true);
-  const [editOpen, setEditOpen] = useState(false); const [legOpen, setLegOpen] = useState(false); const [editingLeg, setEditingLeg] = useState<Leg>(); const [statusDate, setStatusDate] = useState<{ status: TransportationStatus; date: Dayjs }>();
+  const [editOpen, setEditOpen] = useState(false); const [legOpen, setLegOpen] = useState(false); const [editingLeg, setEditingLeg] = useState<Leg>(); const [statusDate, setStatusDate] = useState<{ status: TransportationStatus; date: Dayjs; notifyWhatsapp: boolean; whatsappTemplateId?: string }>();
   const [carriers, setCarriers] = useState<Ref[]>([]); const [editForm] = Form.useForm<EditValues>(); const [legForm] = Form.useForm<LegValues>();
   const [requestLeg, setRequestLeg] = useState<Leg>();
+  const [whatsappTemplates, setWhatsappTemplates] = useState<{ id: string; title: string }[]>([]);
   const showError = useCallback((error: unknown) => void message.error(errorText(error, t('errors.connection'))), [message, t]);
   const load = useCallback(async () => { if (!id) return; setLoading(true); try { const [record, events] = await Promise.all([apiRequest<Transportation>(`/transportations/${id}`), apiRequest<Event[]>(`/transportations/${id}/history`)]); setItem(record); setHistory(events.reverse()); } catch (error) { showError(error); } finally { setLoading(false); } }, [id, showError]);
   useEffect(() => { void load(); }, [load]);
+  useEffect(() => { apiRequest<{ id: string; title: string }[]>('/whatsapp/templates?activeOnly=true').then(setWhatsappTemplates).catch(() => undefined); }, []);
   const formatDate = (value: string | null | undefined, time = false) => value ? new Intl.DateTimeFormat('ru-RU', time ? { dateStyle: 'short', timeStyle: 'short' } : undefined).format(new Date(value)) : t('common.dash');
   const mutate = async (path: string, options: RequestInit) => { try { await apiRequest(path, options); await load(); } catch (error) { showError(error); throw error; } };
   const generateRequest = async (values: TransportRequestFormValues) => {
@@ -52,8 +54,25 @@ export function TransportationDetailPage() {
   const missing = required.filter(([, value]) => !value); const complete = required.length - missing.length; const labels = (key: unknown) => t(`transportationDetail.requestFields.${String(key)}`);
 
   const changeStatus = (status: TransportationStatus) => {
-    if (status === 'CARGO_PICKED' || status === 'DELIVERED') setStatusDate({ status, date: dayjs() });
+    if (status === 'CARGO_PICKED' || status === 'DELIVERED') setStatusDate({ status, date: dayjs(), notifyWhatsapp: false });
     else void mutate(`/transportations/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+  };
+  const confirmStatusDate = async () => {
+    if (!statusDate) return;
+    const body = {
+      status: statusDate.status,
+      eventDate: iso(statusDate.date),
+      notifyWhatsapp: statusDate.notifyWhatsapp,
+      whatsappTemplateId: statusDate.whatsappTemplateId,
+    };
+    try {
+      const result = await apiRequest<{ whatsappNotifyError?: string }>(`/transportations/${id}/status`, { method: 'PATCH', body: JSON.stringify(body) });
+      await load();
+      setStatusDate(undefined);
+      if (result.whatsappNotifyError) void message.warning(t('whatsapp.notifyErrorPrefix', { error: result.whatsappNotifyError }));
+    } catch (error) {
+      showError(error);
+    }
   };
   const rollback = () => modal.confirm({ title: t('transportationDetail.status.rollbackTitle'), content: t('transportationDetail.status.rollbackText'), okText: t('transportationDetail.status.rollback'), cancelText: t('common.cancel'), onOk: () => mutate(`/transportations/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: TRANSPORTATION_STATUSES[statusIndex - 1] }) }) });
   const openEdit = () => { if (!item) return; editForm.setFieldsValue({ ...item, plannedDeliveryDate: item.plannedDeliveryDate ? dayjs(item.plannedDeliveryDate) : undefined, loadingDateTime: item.loadingDateTime ? dayjs(item.loadingDateTime) : undefined }); setEditOpen(true); };
@@ -81,7 +100,22 @@ export function TransportationDetailPage() {
       {hasClientRate && <MarginCard endpoint={`/transportations/${item.id}/margin`} />}
       <Card className="transport-card" title={t('transportationDetail.sections.info')}><Descriptions column={1} size="small" items={[[t('transportationWizard.fields.deal'),item.deal.number],[t('transportationWizard.fields.client'),item.deal.client.name],[t('transportationWizard.fields.legalEntity'),item.deal.legalEntity.name],[t('transportationWizard.fields.logist'),item.logist.fullName],[t('transportationDetail.created'),formatDate(item.createdAt)],[t('transportationWizard.fields.plannedDelivery'),formatDate(item.plannedDeliveryDate)],[t('transportationDetail.actualDelivery'),formatDate(item.actualDeliveryDate)],[t('transportationDetail.unloadingFact'),formatDate(item.unloadingEventDate)]].map(([label, children], index) => ({ key: index, label, children }))} /><Typography.Paragraph type="secondary" className="motivation-note">{t('transportationDetail.motivation')}</Typography.Paragraph></Card>
       <Card className="transport-card" title={t('transportationDetail.sections.history')}><div className="history-list">{history.map((event) => <div key={event.id} className={event.fromStatus && TRANSPORTATION_STATUSES.indexOf(event.toStatus) < TRANSPORTATION_STATUSES.indexOf(event.fromStatus) ? 'rollback-event' : ''}><b>{event.fromStatus && TRANSPORTATION_STATUSES.indexOf(event.toStatus) < TRANSPORTATION_STATUSES.indexOf(event.fromStatus) ? t('transportationDetail.history.rollback', { from: t(`transportations.statuses.${event.fromStatus}`), to: t(`transportations.statuses.${event.toStatus}`) }) : t(`transportations.statuses.${event.toStatus}`)}</b><small>{event.setBy.fullName} · {formatDate(event.setAt, true)}</small>{event.eventDate && <small>{t('transportationDetail.history.eventDate', { date: formatDate(event.eventDate) })}</small>}</div>)}</div></Card></aside></div>
-    <Modal open={Boolean(statusDate)} title={statusDate && t(`transportationDetail.status.dateTitles.${statusDate.status}`)} onCancel={() => setStatusDate(undefined)} onOk={() => statusDate && mutate(`/transportations/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: statusDate.status, eventDate: iso(statusDate.date) }) }).then(() => setStatusDate(undefined))}><Typography.Paragraph type="secondary">{statusDate && t(`transportationDetail.status.dateHints.${statusDate.status}`)}</Typography.Paragraph><DatePicker value={statusDate?.date} maxDate={dayjs()} onChange={(date) => statusDate && date && setStatusDate({ ...statusDate, date })} className="full-width" /></Modal>
+    <Modal open={Boolean(statusDate)} title={statusDate && t(`transportationDetail.status.dateTitles.${statusDate.status}`)} onCancel={() => setStatusDate(undefined)} onOk={() => void confirmStatusDate()} okButtonProps={{ disabled: Boolean(statusDate?.notifyWhatsapp && !statusDate.whatsappTemplateId) }}>
+      <Typography.Paragraph type="secondary">{statusDate && t(`transportationDetail.status.dateHints.${statusDate.status}`)}</Typography.Paragraph>
+      <DatePicker value={statusDate?.date} maxDate={dayjs()} onChange={(date) => statusDate && date && setStatusDate({ ...statusDate, date })} className="full-width" />
+      {whatsappTemplates.length > 0 && <div className="status-whatsapp-notify">
+        <Checkbox checked={statusDate?.notifyWhatsapp ?? false} onChange={(event) => statusDate && setStatusDate({ ...statusDate, notifyWhatsapp: event.target.checked })}>
+          {t('whatsapp.notifyCheckbox')}
+        </Checkbox>
+        {statusDate?.notifyWhatsapp && <Select
+          className="full-width"
+          placeholder={t('whatsapp.templatePlaceholder')}
+          value={statusDate.whatsappTemplateId}
+          onChange={(value) => statusDate && setStatusDate({ ...statusDate, whatsappTemplateId: value })}
+          options={whatsappTemplates.map((template) => ({ value: template.id, label: template.title }))}
+        />}
+      </div>}
+    </Modal>
     <Modal open={editOpen} title={t('transportationDetail.editTitle')} onCancel={() => setEditOpen(false)} onOk={() => editForm.submit()} destroyOnHidden><Form form={editForm} layout="vertical" onFinish={(v) => void saveEdit(v)}><div className="form-grid two"><Form.Item name="cargoName" label={t('transportationWizard.fields.cargoName')}><Input /></Form.Item><Form.Item name="plannedDeliveryDate" label={t('transportationWizard.fields.plannedDelivery')}><DatePicker /></Form.Item><Form.Item name="originPoint" label={t('transportationWizard.fields.origin')}><Input /></Form.Item><Form.Item name="destinationPoint" label={t('transportationWizard.fields.destination')}><Input /></Form.Item><Form.Item name="isDomestic" label={t('transportationWizard.routeType')} className="span-all"><Radio.Group optionType="button" buttonStyle="solid" options={[{ value: true, label: t('transportationWizard.routeTypes.domestic') }, { value: false, label: t('transportationWizard.routeTypes.international') }]} /></Form.Item><Form.Item name="shipperName" label={t('transportationWizard.fields.shipper')}><Input /></Form.Item><Form.Item name="consigneeName" label={t('transportationWizard.fields.consignee')}><Input /></Form.Item><Form.Item name="loadingAddress" label={t('transportationWizard.fields.loadingAddress')}><Input /></Form.Item><Form.Item name="loadingDateTime" label={t('transportationWizard.fields.loadingDateTime')}><DatePicker showTime /></Form.Item><Form.Item name="loadingContactName" label={t('transportationWizard.fields.loadingContact')}><Input /></Form.Item><Form.Item name="loadingContactPhone" label={t('transportationWizard.fields.loadingPhone')}><Input /></Form.Item><Form.Item name="unloadingAddress" label={t('transportationWizard.fields.unloadingAddress')}><Input /></Form.Item><Form.Item name="unloadingContactName" label={t('transportationWizard.fields.unloadingContact')}><Input /></Form.Item><Form.Item name="unloadingContactPhone" label={t('transportationWizard.fields.unloadingPhone')}><Input /></Form.Item><Form.Item name="bodyType" label={t('transportationWizard.fields.bodyType')}><Input /></Form.Item><Form.Item name="accompanyingDocs" label={t('transportationWizard.fields.docs')}><Select mode="tags" /></Form.Item><Form.Item name="specialConditions" label={t('transportationWizard.fields.specialConditions')}><Input.TextArea /></Form.Item>{hasClientRate && <><Form.Item name="clientRate" label={t('transportationWizard.fields.clientRate')}><MoneyInput min={0} className="full-width" /></Form.Item><Form.Item name="clientRateCurrency" label={t('transportationWizard.fields.currency')}><Select options={CURRENCIES.map((value) => ({ value }))} /></Form.Item></>}</div></Form></Modal>
     <Modal open={legOpen} title={t(editingLeg ? 'transportationDetail.legs.editTitle' : 'transportationDetail.legs.addTitle')} onCancel={() => setLegOpen(false)} onOk={() => legForm.submit()} destroyOnHidden><Form form={legForm} layout="vertical" onFinish={(v) => void saveLeg(v)}><div className="form-grid two"><Form.Item name="fromPoint" label={t('transportationWizard.fields.origin')} rules={[{ required: true }]}><Input /></Form.Item><Form.Item name="toPoint" label={t('transportationWizard.fields.destination')} rules={[{ required: true }]}><Input /></Form.Item><Form.Item name="mode" label={t('transportationWizard.fields.transportMode')} rules={[{ required: true }]}><Select options={LEG_MODES.map((value) => ({ value, label: t(`transportationDetail.legModes.${value}`) }))} /></Form.Item><Form.Item name="status" label={t('transportations.columns.status')}><Select options={['WAITING','IN_PROGRESS','DONE'].map((value) => ({ value, label: t(`transportationDetail.legStatuses.${value}`) }))} /></Form.Item><Form.Item name="subcontractorId" label={t('transportationWizard.fields.carrier')}><Select showSearch filterOption={false} onSearch={(v) => void searchCarriers(v)} options={carriers.map((x) => ({ value: x.id, label: x.name }))} /></Form.Item><Form.Item name="subcontractorRate" label={t('transportationWizard.fields.subcontractorRate')}><MoneyInput min={0} className="full-width" /></Form.Item><Form.Item name="subcontractorRateCurrency" label={t('transportationWizard.fields.currency')}><Select options={CURRENCIES.map((value) => ({ value }))} /></Form.Item>{['plannedStartDate','plannedEndDate','actualStartDate','actualEndDate'].map((name) => <Form.Item key={name} name={name} label={t(`transportationDetail.legs.${name}`)}><DatePicker /></Form.Item>)}<Form.Item name="vehicleNumber" label={t('transportationWizard.fields.vehicle')}><Input /></Form.Item><Form.Item name="trailerNumber" label={t('transportationWizard.fields.trailer')}><Input /></Form.Item><Form.Item name="driverFullName" label={t('transportationWizard.fields.driverName')}><Input /></Form.Item><Form.Item name="driverPhone" label={t('transportationWizard.fields.driverPhone')}><Input /></Form.Item><Form.Item name="driverIin" label={t('transportationWizard.fields.iin')}><Input /></Form.Item><Form.Item name="driverLicenseNumber" label={t('transportationWizard.fields.license')}><Input /></Form.Item><Form.Item name="driverLicenseDate" label={t('transportationWizard.fields.licenseDate')}><DatePicker /></Form.Item><Form.Item name="driverLicenseIssuer" label={t('transportationWizard.fields.licenseIssuer')}><Input /></Form.Item></div></Form></Modal>
     <GenerateTransportRequestModal open={Boolean(requestLeg)} carrierContractorId={requestLeg?.subcontractor?.id} onClose={() => setRequestLeg(undefined)} onGenerate={generateRequest} />
