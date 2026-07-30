@@ -170,6 +170,7 @@ model User {
   leadImportBatches          LeadImportBatch[]
   whatsappMessages           WhatsAppMessage[]           @relation("WhatsAppMessageAuthor")
   attachments                Attachment[]                @relation("AttachmentUploadedBy")
+  createdContracts           Contract[]                  @relation("ContractCreatedBy")
 
   @@map("users")
 }
@@ -245,6 +246,7 @@ model LegalEntity {
   invoiceSequences       InvoiceNumberSequence[]
   paymentRequestsAsPayer PaymentRequest[]        @relation("PaymentRequestPayerLegalEntity")
   generatedDocuments     GeneratedDocument[]
+  contracts              Contract[]
 
   @@map("legal_entities")
 }
@@ -338,6 +340,7 @@ model Contractor {
   transportationLegs TransportationLeg[]     @relation("TransportationLegSubcontractor")
   clientInvoices     Invoice[]
   paymentRequests    PaymentRequest[]        @relation("PaymentRequestPayee")
+  contracts          Contract[]
   legalEntity        LegalEntity?
   generatedDocuments GeneratedDocument[]
   matchedByLeads     Lead[]                  @relation("LeadMatchedContractor")
@@ -878,4 +881,40 @@ model Attachment {
 
   @@index([entityType, entityId])
   @@map("attachments")
+}
+
+// Реестр договоров с контрагентом (раздел 4.2 ТЗ). У одной пары
+// «юрлицо группы ↔ контрагент» может быть несколько договоров, поэтому
+// уникальности по паре нет. Номер вводится вручную (бумажные договоры
+// сохраняют свои номера) либо подставляется при генерации из системы.
+enum ContractStatus {
+  ACTIVE
+  EXPIRED
+  TERMINATED
+}
+
+model Contract {
+  id               String         @id @default(cuid())
+  contractorId     String         @map("contractor_id")
+  legalEntityId    String         @map("legal_entity_id")
+  number           String
+  signedAt         DateTime       @map("signed_at") @db.Date
+  validUntil       DateTime?      @map("valid_until") @db.Date
+  status           ContractStatus @default(ACTIVE)
+  terminatedAt     DateTime?      @map("terminated_at") @db.Date
+  subject          String?
+  notes            String?
+  expiryNotifiedAt DateTime?      @map("expiry_notified_at")
+  createdById      String         @map("created_by_id")
+  deletedAt        DateTime?      @map("deleted_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  contractor       Contractor     @relation(fields: [contractorId], references: [id], onDelete: Restrict)
+  legalEntity      LegalEntity    @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
+  createdBy        User           @relation("ContractCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([contractorId])
+  @@index([legalEntityId])
+  @@index([validUntil])
+  @@map("contracts")
 }

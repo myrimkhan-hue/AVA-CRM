@@ -176,6 +176,12 @@ export class AttachmentsService {
           where: { id: entityId, deletedAt: null },
           select: { id: true },
         });
+      case AttachmentEntityType.CONTRACT:
+        // Договоры видны всем, как и карточка контрагента, в которой они лежат.
+        return this.prisma.contract.findFirst({
+          where: { id: entityId, deletedAt: null },
+          select: { id: true },
+        });
       default:
         // Неизвестный тип — доступ закрыт, а не открыт.
         throw new BadRequestException('Неизвестный тип карточки для вложения');
