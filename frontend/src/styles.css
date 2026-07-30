@@ -27,11 +27,11 @@ button, input { font: inherit; }
 .app-shell { min-height: 100vh; }
 .app-header { height: 64px; padding: 0 24px; background: #fff; border-bottom: 1px solid #e3e8ef; }
 .app-header-inner { display: flex; align-items: center; width: min(100%, 1400px); height: 100%; margin: 0 auto; }
-.brand { display: flex; align-items: center; gap: 10px; color: #1b2430; font-size: 17px; font-weight: 800; }
-.brand img { width: 36px; height: 36px; }
-.brand-button { padding: 0; background: none; border: 0; cursor: pointer; }
+.brand { display: flex; align-items: center; gap: 10px; color: #1b2430; font-size: 17px; font-weight: 800; white-space: nowrap; }
+.brand img { width: 36px; height: 36px; flex-shrink: 0; }
+.brand-button { flex-shrink: 0; padding: 0; background: none; border: 0; cursor: pointer; }
 .top-navigation { align-self: stretch; display: flex; gap: 4px; margin-left: 38px; }
-.top-navigation-link { position: relative; padding: 0 14px; color: #66707d; background: transparent; border: 0; cursor: pointer; }
+.top-navigation-link { position: relative; padding: 0 14px; color: #66707d; background: transparent; border: 0; cursor: pointer; white-space: nowrap; }
 .top-navigation-link:hover, .top-navigation-link.active { color: #1b2430; }
 .top-navigation-link.active::after { position: absolute; right: 12px; bottom: 0; left: 12px; height: 3px; background: #e4140e; border-radius: 3px 3px 0 0; content: ""; }
 .user-menu { display: flex; align-items: center; gap: 10px; margin-left: auto; }
