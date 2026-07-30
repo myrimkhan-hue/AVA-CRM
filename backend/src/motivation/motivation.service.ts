@@ -3,10 +3,17 @@ import { InvoiceStatus, Prisma } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
 import { MarginService } from '../deals/margin.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { buildXlsx, xlsxFileName } from '../reports/lib/build-xlsx';
 import { UpdateMotivationSettingsDto } from './dto/update-motivation-settings.dto';
 import { DEFAULT_MOTIVATION_RATE_PERCENT, MOTIVATION_SETTINGS_ID } from './motivation.constants';
 
 type PaymentStatusBadge = 'full' | 'part' | 'none';
+
+const MOTIVATION_PAYMENT_LABELS: Record<PaymentStatusBadge, string> = {
+  full: 'Оплачен полностью',
+  part: 'Оплачен частично',
+  none: 'Не оплачен',
+};
 
 export interface MotivationRow {
   transportationId: string;
@@ -76,6 +83,58 @@ export class MotivationService {
     });
     const reports = await this.buildReports(employees.map((employee) => employee.id), range);
     return reports.filter((report) => report.rows.length > 0);
+  }
+
+  /**
+   * Сводный отчёт по мотивации книгой Excel: лист «Итого по сотрудникам» и
+   * лист с построчной расшифровкой по перевозкам. Права проверяет getSummaryReport.
+   */
+  async exportSummaryReport(user: AuthUser, month?: string) {
+    const reports = await this.getSummaryReport(user, month);
+    const period = month ?? this.currentMonth();
+
+    const details = reports.flatMap((report) =>
+      report.rows.map((row) => ({ employee: report.fullName, ...row })),
+    );
+
+    const buffer = await buildXlsx([
+      {
+        name: 'Итого по сотрудникам',
+        columns: [
+          { header: 'Сотрудник', value: (row: EmployeeMotivationReport) => row.fullName, width: 32 },
+          { header: 'Ставка бонуса, %', value: (row: EmployeeMotivationReport) => row.ratePercent, type: 'number', width: 18 },
+          { header: 'Перевозок', value: (row: EmployeeMotivationReport) => row.rows.length, type: 'number', width: 14 },
+          { header: 'Маржа, KZT', value: (row: EmployeeMotivationReport) => row.totalMarginKzt, type: 'money', width: 20 },
+          { header: 'Бонус, KZT', value: (row: EmployeeMotivationReport) => row.totalBonusKzt, type: 'money', width: 20 },
+        ],
+        rows: reports,
+      },
+      {
+        name: 'Расшифровка',
+        columns: [
+          { header: 'Сотрудник', value: (row: MotivationRow & { employee: string }) => row.employee, width: 32 },
+          { header: 'Перевозка', value: (row: MotivationRow) => row.number, width: 20 },
+          { header: 'Клиент', value: (row: MotivationRow) => row.clientName, width: 32 },
+          { header: 'Маршрут', value: (row: MotivationRow) => row.route, width: 36 },
+          {
+            header: 'Дата выгрузки',
+            value: (row: MotivationRow) => new Date(`${row.unloadingDate}T00:00:00.000Z`),
+            type: 'date',
+            width: 16,
+          },
+          { header: 'Маржа, KZT', value: (row: MotivationRow) => row.marginKzt, type: 'money', width: 20 },
+          { header: 'Маржа', value: (row: MotivationRow) => (row.isForecast ? 'Прогноз' : 'Финальная'), width: 16 },
+          {
+            header: 'Оплата клиента',
+            value: (row: MotivationRow) => MOTIVATION_PAYMENT_LABELS[row.paymentStatus],
+            width: 20,
+          },
+        ],
+        rows: details,
+      },
+    ]);
+
+    return { buffer, filename: xlsxFileName(`Мотивация ${period}`) };
   }
 
   private async buildReports(

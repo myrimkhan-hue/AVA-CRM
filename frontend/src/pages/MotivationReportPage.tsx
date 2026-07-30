@@ -1,10 +1,11 @@
-import { App, Card, Collapse, DatePicker, Table, Tag, Typography } from 'antd';
+import { App, Card, Collapse, DatePicker, Space, Table, Tag, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs, { Dayjs } from 'dayjs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
+import { ExportXlsxButton } from '../reports/ExportXlsxButton';
 import {
   MOTIVATION_PAYMENT_STATUS_COLORS,
   MotivationReport,
@@ -83,7 +84,10 @@ export function MotivationReportPage() {
           <Typography.Title level={2}>{t('motivation.summary.title')}</Typography.Title>
           <Typography.Text type="secondary">{t('motivation.summary.subtitle')}</Typography.Text>
         </div>
-        <DatePicker picker="month" value={month} onChange={(value) => value && setMonth(value)} allowClear={false} />
+        <Space>
+          <DatePicker picker="month" value={month} onChange={(value) => value && setMonth(value)} allowClear={false} />
+          <ExportXlsxButton path={`/motivation/report/export?month=${month.format('YYYY-MM')}`} />
+        </Space>
       </div>
 
       <div className="reports-summary-row motivation-kpis">

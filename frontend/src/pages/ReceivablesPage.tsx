@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
+import { ExportXlsxButton } from '../reports/ExportXlsxButton';
 import { ReceivableRow } from '../reports/shared';
 
 export function ReceivablesPage() {
@@ -75,9 +76,12 @@ export function ReceivablesPage() {
   return (
     <section className="reports-page">
       <Card className="transport-card">
-        <div className="reports-summary">
-          <Typography.Text type="secondary">{t('reports.receivables.total')}</Typography.Text>
-          <Typography.Title level={3}>{formatMoney(totalKzt, 'KZT')}</Typography.Title>
+        <div className="reports-toolbar">
+          <div className="reports-summary">
+            <Typography.Text type="secondary">{t('reports.receivables.total')}</Typography.Text>
+            <Typography.Title level={3}>{formatMoney(totalKzt, 'KZT')}</Typography.Title>
+          </div>
+          <ExportXlsxButton path="/reports/receivables/export" />
         </div>
         <Table<ReceivableRow>
           rowKey="invoiceId"

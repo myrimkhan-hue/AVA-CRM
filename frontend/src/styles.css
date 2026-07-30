@@ -307,6 +307,7 @@ button, input { font: inherit; }
 .dashboard-status-list li { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .dashboard-subtitle { margin-top: 24px; }
 .dashboard-forecast-tag { margin-left: 8px; vertical-align: middle; }
+.dashboard-period-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .motivation-hint-banner { background: #FFF7E6; border: 1px solid #F5D98B; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; color: #7A5A00; margin-bottom: 16px; }
 .motivation-kpis { margin-bottom: 16px; }
 .motivation-kpis .transport-card { flex: 1; min-width: 180px; }

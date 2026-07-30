@@ -1,8 +1,9 @@
-import { App, Card, Radio, Table, Typography } from 'antd';
+import { App, Card, Radio, Space, Table, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, apiRequest } from '../api/client';
+import { ExportXlsxButton } from '../reports/ExportXlsxButton';
 import { CashCalendarPeriod, CashCalendarResult } from '../reports/shared';
 
 export function CashCalendarPage() {
@@ -90,10 +91,13 @@ export function CashCalendarPage() {
               </Typography.Title>
             </div>
           </div>
-          <Radio.Group value={groupBy} onChange={(event) => setGroupBy(event.target.value)} optionType="button">
-            <Radio.Button value="day">{t('reports.cashCalendar.byDay')}</Radio.Button>
-            <Radio.Button value="week">{t('reports.cashCalendar.byWeek')}</Radio.Button>
-          </Radio.Group>
+          <Space>
+            <Radio.Group value={groupBy} onChange={(event) => setGroupBy(event.target.value)} optionType="button">
+              <Radio.Button value="day">{t('reports.cashCalendar.byDay')}</Radio.Button>
+              <Radio.Button value="week">{t('reports.cashCalendar.byWeek')}</Radio.Button>
+            </Radio.Group>
+            <ExportXlsxButton path={`/reports/cash-calendar/export?groupBy=${groupBy}`} />
+          </Space>
         </div>
         <Table<CashCalendarPeriod>
           rowKey="periodStart"

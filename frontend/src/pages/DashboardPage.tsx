@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
+import { ExportXlsxButton } from '../reports/ExportXlsxButton';
 import {
   CashCalendarPeriod,
   DashboardFinanceRow,
@@ -109,13 +110,16 @@ export function DashboardPage() {
         <div className="reports-toolbar">
           <div>
             <Typography.Text type="secondary">{t('reports.dashboard.periodLabel')}</Typography.Text>
-            <div>
+            <div className="dashboard-period-row">
               <RangePicker
                 value={range}
                 allowClear={false}
                 onChange={(value) => {
                   if (value?.[0] && value[1]) setRange([value[0], value[1]]);
                 }}
+              />
+              <ExportXlsxButton
+                path={`/reports/dashboard/export?from=${range[0].format('YYYY-MM-DD')}&to=${range[1].format('YYYY-MM-DD')}`}
               />
             </div>
           </div>
