@@ -1,6 +1,6 @@
-import { LogoutOutlined } from '@ant-design/icons';
-import { Button, Layout } from 'antd';
-import { useMemo } from 'react';
+import { LogoutOutlined, MenuOutlined } from '@ant-design/icons';
+import { Button, Drawer, Layout } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/ava-logo.svg';
@@ -71,15 +71,29 @@ export function AppLayout() {
     [user?.fullName],
   );
 
+  // На узких экранах меню уезжает в выдвижную панель — 10 пунктов в строку не помещаются.
+  const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => setMenuOpen(false), [location.pathname]);
+
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
   };
 
+  const isActive = (path: string) => location.pathname.startsWith(path);
+
   return (
     <Layout className="app-shell">
       <Header className="app-header">
         <div className="app-header-inner">
+          <Button
+            type="text"
+            className="nav-burger"
+            icon={<MenuOutlined />}
+            aria-label={t('nav.main')}
+            onClick={() => setMenuOpen(true)}
+          />
+
           <button className="brand brand-button" onClick={() => navigate('/transportations')}>
             <img src={logo} alt={t('brand.logoAlt')} />
             <span>{t('brand.name')}</span>
@@ -89,7 +103,7 @@ export function AppLayout() {
             {navigation.map((item) => (
               <button
                 key={item.path}
-                className={`top-navigation-link${location.pathname.startsWith(item.path) ? ' active' : ''}`}
+                className={`top-navigation-link${isActive(item.path) ? ' active' : ''}`}
                 onClick={() => navigate(item.path)}
               >
                 {item.label}
@@ -101,12 +115,40 @@ export function AppLayout() {
             <NotificationBell />
             <span className="user-initials" aria-hidden="true">{initials}</span>
             <span className="user-name">{user?.fullName}</span>
-            <Button type="text" icon={<LogoutOutlined />} onClick={handleLogout}>
-              {t('auth.logout')}
+            <Button
+              type="text"
+              className="logout-button"
+              icon={<LogoutOutlined />}
+              aria-label={t('auth.logout')}
+              onClick={handleLogout}
+            >
+              <span className="logout-label">{t('auth.logout')}</span>
             </Button>
           </div>
         </div>
       </Header>
+
+      <Drawer
+        className="nav-drawer"
+        title={t('brand.name')}
+        placement="left"
+        width={280}
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+      >
+        <nav className="drawer-navigation" aria-label={t('nav.main')}>
+          {navigation.map((item) => (
+            <button
+              key={item.path}
+              className={`drawer-navigation-link${isActive(item.path) ? ' active' : ''}`}
+              onClick={() => navigate(item.path)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </Drawer>
+
       <Content className="app-content"><Outlet /></Content>
     </Layout>
   );

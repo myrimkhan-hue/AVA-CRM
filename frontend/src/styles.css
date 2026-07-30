@@ -30,13 +30,19 @@ button, input { font: inherit; }
 .brand { display: flex; align-items: center; gap: 10px; color: #1b2430; font-size: 17px; font-weight: 800; white-space: nowrap; }
 .brand img { width: 36px; height: 36px; flex-shrink: 0; }
 .brand-button { flex-shrink: 0; padding: 0; background: none; border: 0; cursor: pointer; }
-.top-navigation { align-self: stretch; display: flex; gap: 4px; margin-left: 38px; }
-.top-navigation-link { position: relative; padding: 0 14px; color: #66707d; background: transparent; border: 0; cursor: pointer; white-space: nowrap; }
+.top-navigation { align-self: stretch; display: flex; gap: 2px; min-width: 0; margin-left: 24px; }
+.top-navigation-link { position: relative; padding: 0 10px; color: #66707d; background: transparent; border: 0; cursor: pointer; white-space: nowrap; }
+.nav-burger { display: none; margin-right: 8px; }
 .top-navigation-link:hover, .top-navigation-link.active { color: #1b2430; }
 .top-navigation-link.active::after { position: absolute; right: 12px; bottom: 0; left: 12px; height: 3px; background: #e4140e; border-radius: 3px 3px 0 0; content: ""; }
-.user-menu { display: flex; align-items: center; gap: 10px; margin-left: auto; }
-.user-initials { display: grid; width: 34px; height: 34px; place-items: center; color: #fff; background: #1b2430; border-radius: 50%; font-size: 12px; font-weight: 700; }
+.user-menu { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-left: auto; padding-left: 12px; }
+.user-initials { display: grid; flex-shrink: 0; width: 34px; height: 34px; place-items: center; color: #fff; background: #1b2430; border-radius: 50%; font-size: 12px; font-weight: 700; }
 .user-name { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drawer-navigation { display: flex; flex-direction: column; gap: 2px; }
+.drawer-navigation-link { position: relative; padding: 12px 14px; color: #66707d; text-align: left; background: transparent; border: 0; border-radius: 8px; cursor: pointer; font-size: 15px; }
+.drawer-navigation-link:hover { color: #1b2430; background: #f6f7f9; }
+.drawer-navigation-link.active { color: #1b2430; background: #fff4f3; font-weight: 600; }
+.nav-drawer .ant-drawer-body { padding: 12px; }
 .notification-panel { width: 360px; }
 .notification-panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .notification-panel-actions { display: flex; align-items: center; gap: 4px; }
@@ -163,6 +169,26 @@ button, input { font: inherit; }
 .detail-spin{display:block;margin:100px auto}.detail-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.detail-heading h2.ant-typography{margin:8px 0 18px}.status-card{margin-bottom:14px}.status-scale{display:flex;overflow-x:auto}.status-step{position:relative;flex:1;min-width:115px;text-align:center}.status-line{position:absolute;left:0;right:0;top:14px;height:2px;background:#e3e8ef}.status-line.done{background:#15803d}.status-dot{position:relative;z-index:1;display:grid;place-items:center;width:28px;height:28px;margin:auto;background:#fff;border:2px solid #c9d1db;border-radius:50%;font-size:12px}.status-dot.done{color:#fff;background:#15803d;border-color:#15803d}.status-dot.current{color:#fff;background:#e4140e;border-color:#e4140e}.status-step small{display:block;margin-top:7px}.status-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid #e3e8ef;margin-top:14px;padding-top:13px}.status-actions .ant-typography{font-size:12px;margin-left:auto}
 .detail-columns{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:14px}.detail-main,.detail-side{display:flex;flex-direction:column;gap:14px}.data-grid{display:grid;gap:12px 18px}.data-grid.two{grid-template-columns:repeat(2,1fr)}.data-grid.four{grid-template-columns:repeat(4,1fr)}.data-grid .ant-typography{font-size:12px}.route-row{display:flex;gap:10px;border-top:1px solid #e3e8ef;margin-top:14px;padding-top:12px}.route-row span{margin-left:auto;color:#66707d;font-size:12px}.completion{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin-bottom:14px}.completion span{color:#66707d;font-size:12px}.completion .ant-progress{grid-column:1/-1}.leg-card+.leg-card{margin-top:10px}.locked-rate{color:#66707d}.locked-rate .anticon{margin-right:8px}.motivation-note{border-top:1px solid #e3e8ef;margin-top:10px;padding-top:10px;font-size:12px}.history-list{display:flex;flex-direction:column;gap:14px}.history-list>div{display:flex;flex-direction:column;border-left:3px solid #15803d;padding-left:10px}.history-list small{color:#66707d}.history-list .rollback-event{border-color:#e4140e;color:#b91c1c}
 
+/*
+  Шапка. Все 10 пунктов меню умещаются в строку только на широком экране:
+  меню требует ~900px, плюс логотип и меню пользователя. Поэтому от 1440px
+  и ниже прячем подписи у пользователя (остаются инициалы и иконка выхода),
+  а с 1100px меню целиком уезжает в выдвижную панель по кнопке-бургеру.
+*/
+@media (max-width: 1439px) {
+  .user-name { display: none; }
+  .logout-label { display: none; }
+}
+
+@media (max-width: 1100px) {
+  .nav-burger { display: inline-flex; }
+  .top-navigation { display: none; }
+}
+
+@media (max-width: 480px) {
+  .brand span { display: none; }
+}
+
 @media (max-width: 1050px) {
   .contractor-cards-layout { grid-template-columns: 340px minmax(0, 1fr); }
   .contractor-detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -174,11 +200,6 @@ button, input { font: inherit; }
   .login-panel { min-height: 100vh; padding: 32px 24px; border: 0; }
   .login-visual { display: none; }
   .app-header { padding: 0 12px; }
-  .brand span { display: none; }
-  .top-navigation { gap: 0; margin-left: 10px; overflow-x: auto; }
-  .top-navigation-link { padding: 0 9px; font-size: 12px; white-space: nowrap; }
-  .user-menu .ant-btn span:not(.ant-btn-icon) { display: none; }
-  .user-name { display: none; }
   .app-content { padding: 16px; }
   .page-heading { align-items: stretch; flex-direction: column; }
   .contractor-filters { grid-template-columns: 1fr; }
@@ -194,7 +215,9 @@ button, input { font: inherit; }
   .transportations-heading-side { align-items: stretch; flex-direction: column; gap: 10px; }
   .transportation-filters { grid-template-columns: 1fr; }
   .transportations-footer { flex-direction: column; }
-  .form-grid.two,.form-grid.three,.summary-grid,.data-grid.two,.data-grid.four,.detail-columns{grid-template-columns:1fr}.detail-heading{align-items:flex-start;flex-direction:column}.detail-side{order:-1}.route-row{flex-wrap:wrap}.route-row span{width:100%;margin-left:0}
+  /* minmax(0, 1fr), а не 1fr: иначе колонка не сжимается уже своего содержимого
+     и широкие блоки (дорожка стадий, таблицы) выталкивают страницу за экран. */
+  .form-grid.two,.form-grid.three,.summary-grid,.data-grid.two,.data-grid.four,.detail-columns{grid-template-columns:minmax(0,1fr)}.detail-heading{align-items:flex-start;flex-direction:column}.detail-side{order:-1}.route-row{flex-wrap:wrap}.route-row span{width:100%;margin-left:0}
 }
 .deal-number {
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
@@ -248,8 +271,8 @@ button, input { font: inherit; }
 .deal-detail-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 14px; }
 .deal-detail-heading h2.ant-typography { margin: 0; }
 .deal-stage-card { margin-bottom: 14px; }
-.deal-stage-scale { display: flex; gap: 2px; overflow-x: auto; }
-.deal-stage-step { position: relative; flex: 1; min-width: 145px; min-height: 66px; padding: 10px 15px 10px 25px; color: #4e5865; background: #edf0f4; border: 0; clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 50%, calc(100% - 13px) 100%, 0 100%, 13px 50%); cursor: pointer; text-align: left; }
+.deal-stage-scale { display: flex; gap: 2px; min-width: 0; overflow-x: auto; }
+.deal-stage-step { position: relative; flex: 1 0 145px; min-width: 145px; min-height: 66px; padding: 10px 15px 10px 25px; color: #4e5865; background: #edf0f4; border: 0; clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 50%, calc(100% - 13px) 100%, 0 100%, 13px 50%); cursor: pointer; text-align: left; }
 .deal-stage-step:first-child { padding-left: 17px; clip-path: polygon(0 0, calc(100% - 13px) 0, 100% 50%, calc(100% - 13px) 100%, 0 100%); }
 .deal-stage-step:hover:not(:disabled) { background: #dce1e8; }
 .deal-stage-step:disabled { cursor: default; opacity: 1; }
@@ -375,7 +398,9 @@ button, input { font: inherit; }
 @media (max-width: 900px) {
   .deals-filters { grid-template-columns: 1fr 1fr; }
   .deals-filters > .ant-input-search { grid-column: 1 / -1; }
-  .deal-detail-columns { grid-template-columns: 1fr; }
+  /* minmax(0, 1fr), а не 1fr: иначе колонка не сжимается уже дорожки стадий
+     и карточка сделки выталкивает страницу за край экрана. */
+  .deal-detail-columns { grid-template-columns: minmax(0, 1fr); }
   .deal-detail-side { order: -1; }
 }
 
