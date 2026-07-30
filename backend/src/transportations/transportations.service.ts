@@ -97,6 +97,9 @@ export class TransportationsService {
           this.visibilityWhere(user),
           {
             deletedAt: query.includeDeleted ? undefined : null,
+            // Перевозка удалённой сделки не считается активной: так же её
+            // исключают все отчёты (дебиторка, кредиторка, дашборд, мотивация).
+            deal: query.includeDeleted ? undefined : { deletedAt: null },
             status: query.status,
             dealId: query.dealId,
             logistId: query.logistId,
@@ -466,7 +469,16 @@ export class TransportationsService {
     const exists = await this.prisma.transportation.findUnique({ where: { id }, select: { id: true } });
     if (!exists) throw new NotFoundException('Перевозка не найдена');
     const row = await this.prisma.transportation.findFirst({
-      where: { AND: [{ id }, this.visibilityWhere(user), { deletedAt: includeDeleted ? undefined : null }] },
+      where: {
+        AND: [
+          { id },
+          this.visibilityWhere(user),
+          {
+            deletedAt: includeDeleted ? undefined : null,
+            deal: includeDeleted ? undefined : { deletedAt: null },
+          },
+        ],
+      },
       include: transportationInclude,
     });
     if (!row) throw new ForbiddenException('Нет доступа к этой перевозке');
