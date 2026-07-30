@@ -1,8 +1,10 @@
 import { createHmac } from 'crypto';
 import { LeadStatus } from '@prisma/client';
+import { AuthUser } from '../auth/auth-user.type';
 import {
   compareCallQueue,
   distributeRoundRobin,
+  leadVisibilityWhere,
   normalizePhone,
   verifyWebsiteLeadSignature,
 } from './leads-rules';
@@ -108,5 +110,37 @@ describe('verifyWebsiteLeadSignature', () => {
   it('не падает на подписи другой длины (короче/длиннее ожидаемой)', () => {
     expect(verifyWebsiteLeadSignature(body, 'ab', secret)).toBe(false);
     expect(verifyWebsiteLeadSignature(body, validSignature + 'ff', secret)).toBe(false);
+  });
+});
+
+describe('Права доступа: видимость лидов (раздел 4.9 ТЗ)', () => {
+  const DEPT_CHINA = 'dept-china';
+  const user = (roles: string[], departmentId: string | null = null, id = 'u1'): AuthUser =>
+    ({ id, fullName: 'Тест', email: 't@ava.local', roles, departmentId });
+
+  it('администратор и руководитель видят все лиды', () => {
+    expect(leadVisibilityWhere(user(['ADMIN']))).toEqual({});
+    expect(leadVisibilityWhere(user(['DIRECTOR']))).toEqual({});
+  });
+
+  it('менеджер видит только свои лиды', () => {
+    expect(leadVisibilityWhere(user(['MANAGER'], DEPT_CHINA, 'mgr'))).toEqual({
+      OR: [{ responsibleId: 'mgr' }],
+    });
+  });
+
+  it('руководитель отдела видит лиды своего отдела', () => {
+    expect(leadVisibilityWhere(user(['DEPARTMENT_HEAD'], DEPT_CHINA, 'head'))).toEqual({
+      OR: [{ departmentId: DEPT_CHINA }],
+    });
+  });
+
+  it('финансист и логист лиды не видят', () => {
+    expect(leadVisibilityWhere(user(['FINANCIER']))).toEqual({ id: { in: [] } });
+    expect(leadVisibilityWhere(user(['LOGIST']))).toEqual({ id: { in: [] } });
+  });
+
+  it('роль без прав не видит ничего (заведомо пустое условие, а не «всё»)', () => {
+    expect(leadVisibilityWhere(user([]))).toEqual({ id: { in: [] } });
   });
 });

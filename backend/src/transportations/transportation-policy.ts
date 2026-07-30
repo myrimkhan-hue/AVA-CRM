@@ -34,6 +34,36 @@ export function canAssignTransportationResponsible(
   return candidate.id === actor.id;
 }
 
+/** Порядок статусов перевозки по разделу 4.3 ТЗ. */
+export const TRANSPORTATION_STATUS_ORDER: TransportationStatus[] = [
+  TransportationStatus.REQUEST_ACCEPTED,
+  TransportationStatus.CARGO_PICKED,
+  TransportationStatus.IN_TRANSIT,
+  TransportationStatus.CUSTOMS,
+  TransportationStatus.DELIVERED,
+  TransportationStatus.CLOSED,
+];
+
+/**
+ * Проверяет допустимость смены статуса и определяет, откат это или движение вперёд.
+ * Вперёд можно только на один шаг; назад — на любое число шагов, но такой переход
+ * помечается откатом и попадает в журнал (раздел 4.3 ТЗ).
+ */
+export function resolveStatusTransition(
+  current: TransportationStatus,
+  target: TransportationStatus,
+): { isRollback: boolean } {
+  if (current === target) {
+    throw new BadRequestException('Перевозка уже имеет этот статус');
+  }
+  const currentIndex = TRANSPORTATION_STATUS_ORDER.indexOf(current);
+  const targetIndex = TRANSPORTATION_STATUS_ORDER.indexOf(target);
+  if (targetIndex > currentIndex + 1) {
+    throw new BadRequestException('Можно перейти только на следующий статус');
+  }
+  return { isRollback: targetIndex < currentIndex };
+}
+
 export function resolveStatusBusinessEventDate(
   status: TransportationStatus,
   value?: string,

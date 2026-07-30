@@ -29,17 +29,9 @@ import {
   assertCanAssignTransportationResponsible,
   canSeeTransportationClientRate,
   resolveStatusBusinessEventDate,
+  resolveStatusTransition,
   transportationVisibilityWhere,
 } from './transportation-policy';
-
-const STATUS_ORDER: TransportationStatus[] = [
-  TransportationStatus.REQUEST_ACCEPTED,
-  TransportationStatus.CARGO_PICKED,
-  TransportationStatus.IN_TRANSIT,
-  TransportationStatus.CUSTOMS,
-  TransportationStatus.DELIVERED,
-  TransportationStatus.CLOSED,
-];
 
 const transportationInclude = {
   deal: {
@@ -360,15 +352,9 @@ export class TransportationsService {
 
   async updateStatus(id: string, dto: UpdateTransportationStatusDto, user: AuthUser) {
     const current = await this.getActiveVisible(id, user);
-    if (current.status === dto.status) throw new BadRequestException('Перевозка уже имеет этот статус');
+    const { isRollback } = resolveStatusTransition(current.status, dto.status);
     const businessEventDate = resolveStatusBusinessEventDate(dto.status, dto.eventDate);
     const eventDate = businessEventDate ?? null;
-    const currentIndex = STATUS_ORDER.indexOf(current.status);
-    const targetIndex = STATUS_ORDER.indexOf(dto.status);
-    if (targetIndex > currentIndex + 1) {
-      throw new BadRequestException('Можно перейти только на следующий статус');
-    }
-    const isRollback = targetIndex < currentIndex;
     const statusDates: Prisma.TransportationUncheckedUpdateInput = {};
     if (dto.status === TransportationStatus.CARGO_PICKED) statusDates.pickupEventDate = businessEventDate;
     if (dto.status === TransportationStatus.DELIVERED) {

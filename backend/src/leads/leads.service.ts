@@ -26,7 +26,12 @@ import { ImportLeadsDto } from './dto/import-leads.dto';
 import { LeadQueryDto } from './dto/lead-query.dto';
 import { TouchLeadDto } from './dto/touch-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
-import { compareCallQueue, distributeRoundRobin, normalizePhone } from './leads-rules';
+import {
+  compareCallQueue,
+  distributeRoundRobin,
+  leadVisibilityWhere,
+  normalizePhone,
+} from './leads-rules';
 
 const leadListInclude = {
   responsible: { select: { id: true, fullName: true } },
@@ -471,15 +476,7 @@ export class LeadsService {
   }
 
   private visibilityWhere(user: AuthUser): Prisma.LeadWhereInput {
-    if (user.roles.some((role) => ['ADMIN', 'DIRECTOR'].includes(role))) return {};
-    const conditions: Prisma.LeadWhereInput[] = [];
-    if (user.roles.includes('DEPARTMENT_HEAD') && user.departmentId) {
-      conditions.push({ departmentId: user.departmentId });
-    }
-    if (user.roles.includes('MANAGER')) {
-      conditions.push({ responsibleId: user.id });
-    }
-    return conditions.length ? { OR: conditions } : { id: { in: [] } };
+    return leadVisibilityWhere(user);
   }
 
   private async visibleLeadIds(leadIds: string[], user: AuthUser): Promise<string[]> {

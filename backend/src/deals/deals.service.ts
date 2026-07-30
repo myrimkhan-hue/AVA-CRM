@@ -9,6 +9,7 @@ import { AuthUser } from '../auth/auth-user.type';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { canSeeTransportationClientRate } from '../transportations/transportation-policy';
+import { dealVisibilityWhere } from './deal-policy';
 import { CreateDealDto } from './dto/create-deal.dto';
 import { DealQueryDto } from './dto/deal-query.dto';
 import { UpdateDealStageDto } from './dto/update-deal-stage.dto';
@@ -229,15 +230,7 @@ export class DealsService {
   }
 
   private visibilityWhere(user: AuthUser): Prisma.DealWhereInput {
-    if (user.roles.some((role) => ['ADMIN', 'DIRECTOR', 'FINANCIER'].includes(role))) return {};
-    const conditions: Prisma.DealWhereInput[] = [];
-    if (user.roles.includes('DEPARTMENT_HEAD') && user.departmentId) {
-      conditions.push({ departmentId: user.departmentId });
-    }
-    if (user.roles.includes('DEPARTMENT_HEAD') || user.roles.includes('MANAGER')) {
-      conditions.push({ responsibleId: user.id });
-    }
-    return conditions.length ? { OR: conditions } : { id: { in: [] } };
+    return dealVisibilityWhere(user);
   }
 
   private async getVisibleDeal(id: string, user: AuthUser, includeDeleted = false): Promise<DealWithRelations> {

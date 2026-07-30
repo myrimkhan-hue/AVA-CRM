@@ -1,5 +1,23 @@
 import { createHmac, timingSafeEqual } from 'crypto';
-import { LeadStatus } from '@prisma/client';
+import { LeadStatus, Prisma } from '@prisma/client';
+import { AuthUser } from '../auth/auth-user.type';
+
+/**
+ * Кто какие лиды видит (раздел 4.9 ТЗ): администратор и руководитель — все;
+ * руководитель отдела — лиды своего отдела; менеджер — только свои.
+ * Финансисту и логисту лиды не видны.
+ */
+export function leadVisibilityWhere(user: AuthUser): Prisma.LeadWhereInput {
+  if (user.roles.some((role) => ['ADMIN', 'DIRECTOR'].includes(role))) return {};
+  const conditions: Prisma.LeadWhereInput[] = [];
+  if (user.roles.includes('DEPARTMENT_HEAD') && user.departmentId) {
+    conditions.push({ departmentId: user.departmentId });
+  }
+  if (user.roles.includes('MANAGER')) {
+    conditions.push({ responsibleId: user.id });
+  }
+  return conditions.length ? { OR: conditions } : { id: { in: [] } };
+}
 
 /** Проверка подписи заявки с сайта (HMAC-SHA256 общим секретом, раздел 4.6.3 ТЗ). */
 export function verifyWebsiteLeadSignature(

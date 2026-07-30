@@ -21,6 +21,7 @@ import { InvoiceLineDto } from './dto/invoice-line.dto';
 import { InvoiceQueryDto } from './dto/invoice-query.dto';
 import { UpdateInvoiceLineDto } from './dto/update-invoice-line.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
+import { invoiceVisibilityWhere } from './invoice-policy';
 
 const invoiceInclude = {
   transportation: {
@@ -591,23 +592,7 @@ export class InvoicesService {
   }
 
   private visibilityWhere(user: AuthUser): Prisma.InvoiceWhereInput {
-    if (
-      user.roles.some((role) =>
-        ['ADMIN', 'DIRECTOR', 'FINANCIER'].includes(role),
-      )
-    ) {
-      return {};
-    }
-    const conditions: Prisma.TransportationWhereInput[] = [];
-    if (user.roles.includes('DEPARTMENT_HEAD') && user.departmentId) {
-      conditions.push({ deal: { departmentId: user.departmentId } });
-    }
-    if (user.roles.includes('MANAGER')) {
-      conditions.push({ deal: { responsibleId: user.id } });
-    }
-    return conditions.length
-      ? { transportation: { is: { OR: conditions } } }
-      : { id: { in: [] } };
+    return invoiceVisibilityWhere(user);
   }
 
   private transportationVisibilityWhere(
