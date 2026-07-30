@@ -1,11 +1,15 @@
 {
-  "app": { "title": "CRM AVA Solution" },
+  "app": {
+    "title": "CRM AVA Solution"
+  },
   "brand": {
     "name": "AVA Solution",
     "subtitle": "CRM для экспедиторской компании",
     "logoAlt": "Логотип AVA Solution"
   },
-  "auth": { "logout": "Выйти" },
+  "auth": {
+    "logout": "Выйти"
+  },
   "login": {
     "title": "Вход в систему",
     "help": "Доступ только для авторизованных сотрудников. Сессия завершается после 12 часов неактивности.",
@@ -70,62 +74,322 @@
     "title": "Контрагенты",
     "subtitle": "Единый справочник клиентов, перевозчиков и партнёров",
     "add": "Добавить контрагента",
-    "filters": { "search": "Поиск по названию, БИН, телефону или контактному лицу", "type": "Тип контрагента", "includeDeleted": "Показать удалённых" },
-    "views": { "cards": "Карточки", "table": "Таблица" },
-    "columns": { "name": "Название", "types": "Типы", "bin": "БИН/ИИН", "country": "Страна", "payment": "Условия оплаты", "contact": "Контакт", "status": "Метки", "actions": "Действия" },
-    "types": { "ALL": "Все", "CLIENT": "Клиент", "CARRIER": "Перевозчик", "CUSTOMS_BROKER": "Таможенный брокер", "WAREHOUSE": "Склад", "SUPPLIER": "Поставщик", "OTHER": "Прочее" },
-    "payment": { "PREPAYMENT": "Предоплата", "POSTPAYMENT": "Постоплата", "postpaymentDays": "Постоплата {{days}} дн." },
-    "status": { "active": "Активный", "blacklisted": "Не работаем", "problem": "Проблемный", "deleted": "Удалён" },
-    "actions": { "open": "Открыть", "edit": "Изменить", "delete": "Удалить", "restore": "Восстановить" },
-    "confirm": { "deleteTitle": "Удалить контрагента?", "deleteText": "Контрагент {{name}} будет мягко удалён. Администратор сможет восстановить его позднее." },
-    "messages": { "created": "Контрагент создан", "updated": "Контрагент обновлён", "deleted": "Контрагент удалён", "restored": "Контрагент восстановлен", "problemAdded": "Метка «Проблемный» добавлена", "problemRemoved": "Метка «Проблемный» снята", "blacklistAdded": "Контрагент добавлен в чёрный список", "blacklistRemoved": "Контрагент исключён из чёрного списка" },
-    "duplicates": { "title": "Возможный дубль", "item": "{{name}} — БИН/ИИН: {{bin}}" },
-    "empty": "Контрагенты не найдены",
-    "footer": { "shown": "Показано: {{total}}", "summary": "Показано {{shown}} из {{total}}. Настройки колонок хранятся в профиле. Клик по строке открывает карточку." },
-    "settings": { "button": "Колонки", "title": "Колонки таблицы", "reset": "Сбросить к стандартному виду", "help": "Перетаскивайте колонки, чтобы изменить порядок. Настройки сохраняются автоматически." },
-    "flags": { "addProblem": "Отметить проблемным", "removeProblem": "Снять метку «Проблемный»", "addBlacklist": "Добавить в чёрный список", "removeBlacklist": "Убрать из чёрного списка", "problemTitle": "Причина проблемной метки", "blacklistTitle": "Причина добавления в чёрный список", "problemHelp": "Опишите проблему — комментарий будет виден всем сотрудникам в карточке контрагента.", "blacklistHelp": "Укажите, почему с контрагентом нельзя работать.", "reasonPlaceholder": "Введите причину" },
-    "related": { "title": "Связанные перевозки", "number": "№", "routeRole": "Маршрут / роль", "status": "Статус", "clientRole": "Клиент", "legRole": "Перевозчик участка {{number}}", "empty": "Связанных перевозок нет" },
-    "form": {
-      "createTitle": "Новый контрагент", "editTitle": "Редактирование контрагента", "sections": { "requisites": "Реквизиты и условия", "status": "Метки и ограничения" }, "name": "Название", "types": "Типы", "bin": "БИН/ИИН", "country": "Страна", "legalAddress": "Юридический адрес", "paymentTerm": "Условия оплаты", "postpaymentDays": "Количество дней постоплаты", "notes": "Заметки", "problem": "Проблемный контрагент", "problemComment": "Комментарий о проблеме", "blacklisted": "Не работаем (чёрный список)", "blacklistReason": "Причина добавления в чёрный список", "contacts": "Контактные лица", "contactFullName": "ФИО", "position": "Должность", "phone": "Телефон", "email": "Email", "whatsapp": "WhatsApp", "addContact": "Добавить контакт", "removeContact": "Удалить контакт", "bankAccounts": "Банковские счета", "bankName": "Банк", "accountNumber": "Номер счёта", "currency": "Валюта", "bik": "БИК", "isPrimary": "Использовать для документов (договоры, заявки, счета)", "accountNotes": "Примечание", "addAccount": "Добавить счёт", "removeAccount": "Удалить банковский счёт",
-      "documentFieldsTitle": "Реквизиты для документов", "legalForm": "Организационная форма", "signerPosition": "Должность подписанта", "signerFullName": "ФИО подписанта полностью", "signerShortName": "ФИО подписанта кратко", "signBasis": "Действует на основании", "talonNumber": "Номер талона", "documentPhone": "Телефон", "documentEmail": "Email"
+    "filters": {
+      "search": "Поиск по названию, БИН, телефону или контактному лицу",
+      "type": "Тип контрагента",
+      "includeDeleted": "Показать удалённых"
     },
-    "validation": { "name": "Укажите название контрагента", "types": "Выберите хотя бы один тип", "postpaymentDays": "Укажите количество дней постоплаты", "problemComment": "Укажите причину проблемной метки", "blacklistReason": "Укажите причину добавления в чёрный список", "contactName": "Укажите ФИО контактного лица", "email": "Введите корректный email", "bankName": "Укажите банк", "accountNumber": "Укажите номер счёта", "currency": "Выберите валюту" },
-    "details": { "select": "Выберите контрагента слева", "blacklisted": "Контрагент в чёрном списке — не работаем", "problem": "Проблемный контрагент", "requisites": "Реквизиты и условия", "contacts": "Контактные лица", "accounts": "Банковские счета", "noContacts": "Контактные лица не добавлены", "noAccounts": "Банковские счета не добавлены", "whatsappValue": "WhatsApp: {{value}}", "accountTitle": "{{bank}} · {{currency}}", "primaryAccount": "Для документов" }
+    "views": {
+      "cards": "Карточки",
+      "table": "Таблица"
+    },
+    "columns": {
+      "name": "Название",
+      "types": "Типы",
+      "bin": "БИН/ИИН",
+      "country": "Страна",
+      "payment": "Условия оплаты",
+      "contact": "Контакт",
+      "status": "Метки",
+      "actions": "Действия"
+    },
+    "types": {
+      "ALL": "Все",
+      "CLIENT": "Клиент",
+      "CARRIER": "Перевозчик",
+      "CUSTOMS_BROKER": "Таможенный брокер",
+      "WAREHOUSE": "Склад",
+      "SUPPLIER": "Поставщик",
+      "OTHER": "Прочее"
+    },
+    "payment": {
+      "PREPAYMENT": "Предоплата",
+      "POSTPAYMENT": "Постоплата",
+      "postpaymentDays": "Постоплата {{days}} дн."
+    },
+    "status": {
+      "active": "Активный",
+      "blacklisted": "Не работаем",
+      "problem": "Проблемный",
+      "deleted": "Удалён"
+    },
+    "actions": {
+      "open": "Открыть",
+      "edit": "Изменить",
+      "delete": "Удалить",
+      "restore": "Восстановить"
+    },
+    "confirm": {
+      "deleteTitle": "Удалить контрагента?",
+      "deleteText": "Контрагент {{name}} будет мягко удалён. Администратор сможет восстановить его позднее."
+    },
+    "messages": {
+      "created": "Контрагент создан",
+      "updated": "Контрагент обновлён",
+      "deleted": "Контрагент удалён",
+      "restored": "Контрагент восстановлен",
+      "problemAdded": "Метка «Проблемный» добавлена",
+      "problemRemoved": "Метка «Проблемный» снята",
+      "blacklistAdded": "Контрагент добавлен в чёрный список",
+      "blacklistRemoved": "Контрагент исключён из чёрного списка"
+    },
+    "duplicates": {
+      "title": "Возможный дубль",
+      "item": "{{name}} — БИН/ИИН: {{bin}}"
+    },
+    "empty": "Контрагенты не найдены",
+    "footer": {
+      "shown": "Показано: {{total}}",
+      "summary": "Показано {{shown}} из {{total}}. Настройки колонок хранятся в профиле. Клик по строке открывает карточку."
+    },
+    "settings": {
+      "button": "Колонки",
+      "title": "Колонки таблицы",
+      "reset": "Сбросить к стандартному виду",
+      "help": "Перетаскивайте колонки, чтобы изменить порядок. Настройки сохраняются автоматически."
+    },
+    "flags": {
+      "addProblem": "Отметить проблемным",
+      "removeProblem": "Снять метку «Проблемный»",
+      "addBlacklist": "Добавить в чёрный список",
+      "removeBlacklist": "Убрать из чёрного списка",
+      "problemTitle": "Причина проблемной метки",
+      "blacklistTitle": "Причина добавления в чёрный список",
+      "problemHelp": "Опишите проблему — комментарий будет виден всем сотрудникам в карточке контрагента.",
+      "blacklistHelp": "Укажите, почему с контрагентом нельзя работать.",
+      "reasonPlaceholder": "Введите причину"
+    },
+    "related": {
+      "title": "Связанные перевозки",
+      "number": "№",
+      "routeRole": "Маршрут / роль",
+      "status": "Статус",
+      "clientRole": "Клиент",
+      "legRole": "Перевозчик участка {{number}}",
+      "empty": "Связанных перевозок нет"
+    },
+    "form": {
+      "createTitle": "Новый контрагент",
+      "editTitle": "Редактирование контрагента",
+      "sections": {
+        "requisites": "Реквизиты и условия",
+        "status": "Метки и ограничения"
+      },
+      "name": "Название",
+      "types": "Типы",
+      "bin": "БИН/ИИН",
+      "country": "Страна",
+      "legalAddress": "Юридический адрес",
+      "paymentTerm": "Условия оплаты",
+      "postpaymentDays": "Количество дней постоплаты",
+      "notes": "Заметки",
+      "problem": "Проблемный контрагент",
+      "problemComment": "Комментарий о проблеме",
+      "blacklisted": "Не работаем (чёрный список)",
+      "blacklistReason": "Причина добавления в чёрный список",
+      "contacts": "Контактные лица",
+      "contactFullName": "ФИО",
+      "position": "Должность",
+      "phone": "Телефон",
+      "email": "Email",
+      "whatsapp": "WhatsApp",
+      "addContact": "Добавить контакт",
+      "removeContact": "Удалить контакт",
+      "bankAccounts": "Банковские счета",
+      "bankName": "Банк",
+      "accountNumber": "Номер счёта",
+      "currency": "Валюта",
+      "bik": "БИК",
+      "isPrimary": "Использовать для документов (договоры, заявки, счета)",
+      "accountNotes": "Примечание",
+      "addAccount": "Добавить счёт",
+      "removeAccount": "Удалить банковский счёт",
+      "documentFieldsTitle": "Реквизиты для документов",
+      "legalForm": "Организационная форма",
+      "signerPosition": "Должность подписанта",
+      "signerFullName": "ФИО подписанта полностью",
+      "signerShortName": "ФИО подписанта кратко",
+      "signBasis": "Действует на основании",
+      "talonNumber": "Номер талона",
+      "documentPhone": "Телефон",
+      "documentEmail": "Email"
+    },
+    "validation": {
+      "name": "Укажите название контрагента",
+      "types": "Выберите хотя бы один тип",
+      "postpaymentDays": "Укажите количество дней постоплаты",
+      "problemComment": "Укажите причину проблемной метки",
+      "blacklistReason": "Укажите причину добавления в чёрный список",
+      "contactName": "Укажите ФИО контактного лица",
+      "email": "Введите корректный email",
+      "bankName": "Укажите банк",
+      "accountNumber": "Укажите номер счёта",
+      "currency": "Выберите валюту"
+    },
+    "details": {
+      "select": "Выберите контрагента слева",
+      "blacklisted": "Контрагент в чёрном списке — не работаем",
+      "problem": "Проблемный контрагент",
+      "requisites": "Реквизиты и условия",
+      "contacts": "Контактные лица",
+      "accounts": "Банковские счета",
+      "noContacts": "Контактные лица не добавлены",
+      "noAccounts": "Банковские счета не добавлены",
+      "whatsappValue": "WhatsApp: {{value}}",
+      "accountTitle": "{{bank}} · {{currency}}",
+      "primaryAccount": "Для документов"
+    }
   },
   "deals": {
     "title": "Сделки",
     "subtitle": "Заявки клиентов и этапы работы по ним",
     "add": "Новая сделка",
-    "views": { "table": "Таблица", "kanban": "Канбан" },
-    "filters": { "search": "Поиск по номеру или названию клиента", "stage": "Стадия", "legalEntity": "Юрлицо", "includeDeleted": "Показать удалённые" },
-    "columns": { "number": "Номер", "client": "Клиент", "legalEntity": "Юрлицо", "responsible": "Ответственный", "department": "Отдел", "stage": "Стадия", "createdAt": "Создана", "transportations": "Перевозок", "actions": "Действия" },
-    "stages": { "NEW": "Новая заявка", "RATE_CALCULATION": "Расчёт ставки", "RATE_SENT": "Ставка отправлена", "AGREED": "Согласована", "IN_PROGRESS": "В работе", "COMPLETED": "Выполнена", "CLOSED": "Закрыта", "REJECTED": "Отказ" },
-    "reasons": { "EXPENSIVE": "Дорого", "TIMING": "Сроки", "COMPETITOR": "Ушёл к конкуренту", "NO_CONTACT": "Не вышел на связь", "OTHER": "Другое" },
-    "status": { "deleted": "Удалена" },
-    "actions": { "open": "Открыть", "restore": "Восстановить", "delete": "Удалить", "changeStage": "Изменить стадию", "editNotes": "Изменить заметки" },
-    "form": { "createTitle": "Новая сделка", "client": "Клиент", "legalEntity": "Юрлицо", "responsible": "Ответственный", "notes": "Заметки", "stage": "Стадия", "rejectReason": "Причина отказа", "rejectComment": "Комментарий", "addClient": "Добавить контрагента" },
-    "validation": { "client": "Выберите клиента", "legalEntity": "Выберите юрлицо", "stage": "Выберите стадию", "rejectReason": "Выберите причину отказа", "rejectComment": "Укажите комментарий для причины «Другое»" },
-    "details": { "client": "Клиент", "legalEntity": "Юрлицо", "responsible": "Ответственный", "department": "Отдел", "stage": "Стадия", "rejectReason": "Причина отказа", "notes": "Заметки", "createdAt": "Дата создания" },
-    "quickClient": { "title": "Новый клиент", "created": "Контрагент «{{name}}» добавлен" },
-    "stageModal": { "title": "Изменение стадии" },
-    "rejectModal": { "title": "Отказ по сделке" },
-    "notesModal": { "title": "Редактирование заметок" },
-    "confirm": { "deleteTitle": "Удалить сделку?", "deleteText": "Сделка {{number}} будет мягко удалена. Администратор сможет восстановить её позднее." },
-    "messages": { "created": "Сделка {{number}} создана", "stageUpdated": "Стадия сделки изменена", "notesUpdated": "Заметки обновлены", "deleted": "Сделка удалена", "restored": "Сделка восстановлена" },
-    "settings": { "button": "Колонки", "title": "Колонки таблицы", "reset": "Сбросить к стандартному виду", "help": "Перетаскивайте колонки, чтобы изменить порядок. Настройки сохраняются автоматически в вашем профиле." },
+    "views": {
+      "table": "Таблица",
+      "kanban": "Канбан"
+    },
+    "filters": {
+      "search": "Поиск по номеру или названию клиента",
+      "stage": "Стадия",
+      "legalEntity": "Юрлицо",
+      "includeDeleted": "Показать удалённые"
+    },
+    "columns": {
+      "number": "Номер",
+      "client": "Клиент",
+      "legalEntity": "Юрлицо",
+      "responsible": "Ответственный",
+      "department": "Отдел",
+      "stage": "Стадия",
+      "createdAt": "Создана",
+      "transportations": "Перевозок",
+      "actions": "Действия"
+    },
+    "stages": {
+      "NEW": "Новая заявка",
+      "RATE_CALCULATION": "Расчёт ставки",
+      "RATE_SENT": "Ставка отправлена",
+      "AGREED": "Согласована",
+      "IN_PROGRESS": "В работе",
+      "COMPLETED": "Выполнена",
+      "CLOSED": "Закрыта",
+      "REJECTED": "Отказ"
+    },
+    "reasons": {
+      "EXPENSIVE": "Дорого",
+      "TIMING": "Сроки",
+      "COMPETITOR": "Ушёл к конкуренту",
+      "NO_CONTACT": "Не вышел на связь",
+      "OTHER": "Другое"
+    },
+    "status": {
+      "deleted": "Удалена"
+    },
+    "actions": {
+      "open": "Открыть",
+      "restore": "Восстановить",
+      "delete": "Удалить",
+      "changeStage": "Изменить стадию",
+      "editNotes": "Изменить заметки"
+    },
+    "form": {
+      "createTitle": "Новая сделка",
+      "client": "Клиент",
+      "legalEntity": "Юрлицо",
+      "responsible": "Ответственный",
+      "notes": "Заметки",
+      "stage": "Стадия",
+      "rejectReason": "Причина отказа",
+      "rejectComment": "Комментарий",
+      "addClient": "Добавить контрагента"
+    },
+    "validation": {
+      "client": "Выберите клиента",
+      "legalEntity": "Выберите юрлицо",
+      "stage": "Выберите стадию",
+      "rejectReason": "Выберите причину отказа",
+      "rejectComment": "Укажите комментарий для причины «Другое»"
+    },
+    "details": {
+      "client": "Клиент",
+      "legalEntity": "Юрлицо",
+      "responsible": "Ответственный",
+      "department": "Отдел",
+      "stage": "Стадия",
+      "rejectReason": "Причина отказа",
+      "notes": "Заметки",
+      "createdAt": "Дата создания"
+    },
+    "quickClient": {
+      "title": "Новый клиент",
+      "created": "Контрагент «{{name}}» добавлен"
+    },
+    "stageModal": {
+      "title": "Изменение стадии"
+    },
+    "rejectModal": {
+      "title": "Отказ по сделке"
+    },
+    "notesModal": {
+      "title": "Редактирование заметок"
+    },
+    "confirm": {
+      "deleteTitle": "Удалить сделку?",
+      "deleteText": "Сделка {{number}} будет мягко удалена. Администратор сможет восстановить её позднее."
+    },
+    "messages": {
+      "created": "Сделка {{number}} создана",
+      "stageUpdated": "Стадия сделки изменена",
+      "notesUpdated": "Заметки обновлены",
+      "deleted": "Сделка удалена",
+      "restored": "Сделка восстановлена"
+    },
+    "settings": {
+      "button": "Колонки",
+      "title": "Колонки таблицы",
+      "reset": "Сбросить к стандартному виду",
+      "help": "Перетаскивайте колонки, чтобы изменить порядок. Настройки сохраняются автоматически в вашем профиле."
+    },
     "empty": "Сделки не найдены. Измените фильтры или сбросьте их.",
-    "footer": { "shown": "Показано: {{total}}", "summary": "Показано сделок: {{total}}. Нажмите на строку, чтобы открыть карточку." },
-    "kanban": { "responsible": "Ответственный", "department": "Отдел", "legalEntity": "Юрлицо", "empty": "Нет сделок" },
+    "footer": {
+      "shown": "Показано: {{total}}",
+      "summary": "Показано сделок: {{total}}. Нажмите на строку, чтобы открыть карточку."
+    },
+    "kanban": {
+      "responsible": "Ответственный",
+      "department": "Отдел",
+      "legalEntity": "Юрлицо",
+      "empty": "Нет сделок"
+    },
     "detail": {
       "back": "← Все сделки",
       "title": "Сделка {{number}}",
       "loadFailed": "Не удалось открыть сделку",
       "stageNumber": "Этап {{number}}",
       "stageHint": "Нажмите на этап, чтобы изменить стадию сделки. Для отказа используйте кнопку в шапке.",
-      "actions": { "reject": "Отказ", "edit": "Изменить" },
-      "sections": { "transportations": "Перевозки в сделке", "notes": "Заметки", "parties": "Стороны", "timeline": "Хронология" },
-      "transportations": { "number": "№", "route": "Маршрут", "status": "Статус", "invoice": "Счёт", "plan": "Плановая дата доставки", "empty": "В сделке пока нет перевозок" },
-      "timeline": { "currentStage": "Текущая стадия", "created": "Сделка создана", "noComment": "Комментарий не указан" }
+      "actions": {
+        "reject": "Отказ",
+        "edit": "Изменить"
+      },
+      "sections": {
+        "transportations": "Перевозки в сделке",
+        "notes": "Заметки",
+        "parties": "Стороны",
+        "timeline": "Хронология"
+      },
+      "transportations": {
+        "number": "№",
+        "route": "Маршрут",
+        "status": "Статус",
+        "invoice": "Счёт",
+        "plan": "Плановая дата доставки",
+        "empty": "В сделке пока нет перевозок"
+      },
+      "timeline": {
+        "currentStage": "Текущая стадия",
+        "created": "Сделка создана",
+        "noComment": "Комментарий не указан"
+      }
     }
   },
   "transportations": {
@@ -204,27 +468,194 @@
     }
   },
   "transportationWizard": {
-    "title": "Новая перевозка", "back": "← Активные перевозки",
-    "steps": { "deal": "Сделка и клиент", "cargo": "Груз", "route": "Маршрут и перевозчик", "review": "Проверка" },
-    "sections": { "deal": "Сделка и клиент", "cargo": "Груз", "route": "Маршрут и перевозчик", "addresses": "Уточнить адреса и контакты", "client": "Клиент", "carrier": "Перевозчик", "driver": "Водитель", "review": "Проверьте данные" },
-    "dealsUnavailable": "Сделок нет или недоступны", "askManager": "Попросите менеджера создать сделку", "dealPlaceholder": "НОМЕР · Клиент", "customDoc": "+ Свой",
-    "fields": { "deal": "Сделка", "client": "Клиент", "legalEntity": "Юрлицо", "logist": "Ответственный логист", "plannedDelivery": "Плановая дата доставки", "cargoName": "Наименование", "places": "Мест", "weight": "Вес, кг", "volume": "Объём, м³", "cargoValue": "Стоимость груза", "transportMode": "Вид транспорта", "dangerous": "Опасный груз (ADR)", "temperature": "Температурный режим", "shipper": "Грузоотправитель", "consignee": "Грузополучатель", "docs": "Сопроводительные документы", "origin": "Пункт отправления", "destination": "Пункт назначения", "loadingAddress": "Адрес погрузки", "loadingDateTime": "Дата и время погрузки", "loadingContact": "Контакт на погрузке", "loadingPhone": "Телефон на погрузке", "unloadingAddress": "Адрес выгрузки", "unloadingContact": "Контакт на выгрузке", "unloadingPhone": "Телефон на выгрузке", "bodyType": "Тип кузова", "specialConditions": "Особые условия", "clientRate": "Ставка клиента", "carrier": "Субподрядчик", "subcontractorRate": "Ставка субподрядчика", "plannedPickup": "Плановый забор груза", "vehicle": "№ машины", "trailer": "№ прицепа", "driverName": "ФИО водителя", "driverPhone": "Телефон", "iin": "ИИН", "license": "№ в/у", "licenseDate": "Дата выдачи", "licenseIssuer": "Кем выдано", "route": "Маршрут", "currency": "Валюта" },
+    "title": "Новая перевозка",
+    "back": "← Активные перевозки",
+    "steps": {
+      "deal": "Сделка и клиент",
+      "cargo": "Груз",
+      "route": "Маршрут и перевозчик",
+      "review": "Проверка"
+    },
+    "sections": {
+      "deal": "Сделка и клиент",
+      "cargo": "Груз",
+      "route": "Маршрут и перевозчик",
+      "addresses": "Уточнить адреса и контакты",
+      "client": "Клиент",
+      "carrier": "Перевозчик",
+      "driver": "Водитель",
+      "review": "Проверьте данные"
+    },
+    "dealsUnavailable": "Сделок нет или недоступны",
+    "askManager": "Попросите менеджера создать сделку",
+    "dealPlaceholder": "НОМЕР · Клиент",
+    "customDoc": "+ Свой",
+    "fields": {
+      "deal": "Сделка",
+      "client": "Клиент",
+      "legalEntity": "Юрлицо",
+      "logist": "Ответственный логист",
+      "plannedDelivery": "Плановая дата доставки",
+      "cargoName": "Наименование",
+      "places": "Мест",
+      "weight": "Вес, кг",
+      "volume": "Объём, м³",
+      "cargoValue": "Стоимость груза",
+      "transportMode": "Вид транспорта",
+      "dangerous": "Опасный груз (ADR)",
+      "temperature": "Температурный режим",
+      "shipper": "Грузоотправитель",
+      "consignee": "Грузополучатель",
+      "docs": "Сопроводительные документы",
+      "origin": "Пункт отправления",
+      "destination": "Пункт назначения",
+      "loadingAddress": "Адрес погрузки",
+      "loadingDateTime": "Дата и время погрузки",
+      "loadingContact": "Контакт на погрузке",
+      "loadingPhone": "Телефон на погрузке",
+      "unloadingAddress": "Адрес выгрузки",
+      "unloadingContact": "Контакт на выгрузке",
+      "unloadingPhone": "Телефон на выгрузке",
+      "bodyType": "Тип кузова",
+      "specialConditions": "Особые условия",
+      "clientRate": "Ставка клиента",
+      "carrier": "Субподрядчик",
+      "subcontractorRate": "Ставка субподрядчика",
+      "plannedPickup": "Плановый забор груза",
+      "vehicle": "№ машины",
+      "trailer": "№ прицепа",
+      "driverName": "ФИО водителя",
+      "driverPhone": "Телефон",
+      "iin": "ИИН",
+      "license": "№ в/у",
+      "licenseDate": "Дата выдачи",
+      "licenseIssuer": "Кем выдано",
+      "route": "Маршрут",
+      "currency": "Валюта"
+    },
     "routeType": "Тип маршрута",
-    "routeTypes": { "domestic": "По РК", "international": "Международная" },
-    "units": { "паллеты": "паллеты", "коробки": "коробки", "ролики": "ролики", "биг-бэги": "биг-бэги", "места": "места" },
-    "bodyTypes": { "TENT": "Тент", "REFRIGERATOR": "Рефрижератор", "CONTAINER": "Контейнер", "OPEN_PLATFORM": "Открытая платформа", "ISOTHERM": "Изотерм" },
-    "validation": { "deal": "Выберите сделку", "origin": "Укажите пункт отправления", "destination": "Укажите пункт назначения" },
-    "actions": { "back": "Назад", "next": "Далее", "create": "Создать перевозку" },
-    "success": { "title": "Перевозка создана", "number": "Номер: {{number}}", "list": "К списку", "open": "Открыть карточку" }
+    "routeTypes": {
+      "domestic": "По РК",
+      "international": "Международная"
+    },
+    "units": {
+      "паллеты": "паллеты",
+      "коробки": "коробки",
+      "ролики": "ролики",
+      "биг-бэги": "биг-бэги",
+      "места": "места"
+    },
+    "bodyTypes": {
+      "TENT": "Тент",
+      "REFRIGERATOR": "Рефрижератор",
+      "CONTAINER": "Контейнер",
+      "OPEN_PLATFORM": "Открытая платформа",
+      "ISOTHERM": "Изотерм"
+    },
+    "validation": {
+      "deal": "Выберите сделку",
+      "origin": "Укажите пункт отправления",
+      "destination": "Укажите пункт назначения"
+    },
+    "actions": {
+      "back": "Назад",
+      "next": "Далее",
+      "create": "Создать перевозку"
+    },
+    "success": {
+      "title": "Перевозка создана",
+      "number": "Номер: {{number}}",
+      "list": "К списку",
+      "open": "Открыть карточку"
+    }
   },
   "transportationDetail": {
-    "back": "← Активные перевозки", "title": "Перевозка {{number}}", "edit": "Изменить", "editTitle": "Изменение перевозки", "stage3": "Появится на Этапе 3", "requestCarrier": "Заявка перевозчику", "requestClient": "Заявка клиенту", "planned": "План доставки: {{date}}", "filled": "заполнено {{count}} из 11", "waiting": "ждём: {{fields}}", "clientRate": "Ставка клиента", "rateHidden": "Ставка клиента скрыта для вашей роли", "created": "Создана", "actualDelivery": "Факт доставки", "unloadingFact": "Дата выгрузки (факт)", "motivation": "Дата выгрузки определяет месяц расчёта мотивации.",
-    "sections": { "cargo": "Груз и маршрут", "request": "Данные для заявки", "driver": "Водитель и транспорт", "legs": "Участки маршрута", "carrier": "Перевозчик", "info": "Сведения", "history": "История статусов" },
-    "status": { "advance": "Перевести в «{{status}}»", "rollback": "← Откатить статус", "rollbackTitle": "Откатить статус?", "rollbackText": "Откат будет записан в журнал", "journal": "Смена и откат статуса записываются в журнал", "dateTitles": { "CARGO_PICKED": "Фактическая дата забора груза", "DELIVERED": "Фактическая дата выгрузки" }, "dateHints": { "CARGO_PICKED": "Статус часто проставляют на следующий день — укажите реальную дату", "DELIVERED": "Дата выгрузки определяет месяц расчёта мотивации" } },
-    "requestFields": { "shipperName": "Грузоотправитель", "consigneeName": "Грузополучатель", "loadingAddress": "Адрес погрузки", "loadingDateTime": "Дата/время погрузки", "loadingContactName": "Контакт на погрузке", "loadingContactPhone": "Телефон на погрузке", "unloadingAddress": "Адрес выгрузки", "unloadingContactName": "Контакт на выгрузке", "bodyType": "Тип кузова", "accompanyingDocs": "Сопроводительные документы", "specialConditions": "Особые условия" },
-    "legModes": { "AUTO": "Авто", "RAIL": "Ж/д", "SEA": "Море", "AIR": "Авиа", "BROKER": "Брокер" }, "legStatuses": { "WAITING": "Ожидает", "IN_PROGRESS": "В работе", "DONE": "Завершён" },
-    "legs": { "add": "+ Добавить участок", "merge": "← Объединить в одну перевозку", "split": "Разбить на участки", "splitTitle": "Разбить перевозку на участки?", "number": "Участок {{number}}", "plan": "Даты план", "fact": "Даты факт", "addTitle": "Новый участок", "editTitle": "Изменение участка", "deleteTitle": "Удалить участок?", "delete": "Удалить", "plannedStartDate": "Плановый забор", "plannedEndDate": "Плановая доставка", "actualStartDate": "Фактический забор", "actualEndDate": "Фактическая доставка" },
-    "history": { "rollback": "Откат: {{from}} → {{to}}", "eventDate": "Дата события: {{date}}" }
+    "back": "← Активные перевозки",
+    "title": "Перевозка {{number}}",
+    "edit": "Изменить",
+    "editTitle": "Изменение перевозки",
+    "stage3": "Появится на Этапе 3",
+    "requestCarrier": "Заявка перевозчику",
+    "requestClient": "Заявка клиенту",
+    "planned": "План доставки: {{date}}",
+    "filled": "заполнено {{count}} из 11",
+    "waiting": "ждём: {{fields}}",
+    "clientRate": "Ставка клиента",
+    "rateHidden": "Ставка клиента скрыта для вашей роли",
+    "created": "Создана",
+    "actualDelivery": "Факт доставки",
+    "unloadingFact": "Дата выгрузки (факт)",
+    "motivation": "Дата выгрузки определяет месяц расчёта мотивации.",
+    "sections": {
+      "cargo": "Груз и маршрут",
+      "request": "Данные для заявки",
+      "driver": "Водитель и транспорт",
+      "legs": "Участки маршрута",
+      "carrier": "Перевозчик",
+      "info": "Сведения",
+      "history": "История статусов"
+    },
+    "status": {
+      "advance": "Перевести в «{{status}}»",
+      "rollback": "← Откатить статус",
+      "rollbackTitle": "Откатить статус?",
+      "rollbackText": "Откат будет записан в журнал",
+      "journal": "Смена и откат статуса записываются в журнал",
+      "dateTitles": {
+        "CARGO_PICKED": "Фактическая дата забора груза",
+        "DELIVERED": "Фактическая дата выгрузки"
+      },
+      "dateHints": {
+        "CARGO_PICKED": "Статус часто проставляют на следующий день — укажите реальную дату",
+        "DELIVERED": "Дата выгрузки определяет месяц расчёта мотивации"
+      }
+    },
+    "requestFields": {
+      "shipperName": "Грузоотправитель",
+      "consigneeName": "Грузополучатель",
+      "loadingAddress": "Адрес погрузки",
+      "loadingDateTime": "Дата/время погрузки",
+      "loadingContactName": "Контакт на погрузке",
+      "loadingContactPhone": "Телефон на погрузке",
+      "unloadingAddress": "Адрес выгрузки",
+      "unloadingContactName": "Контакт на выгрузке",
+      "bodyType": "Тип кузова",
+      "accompanyingDocs": "Сопроводительные документы",
+      "specialConditions": "Особые условия"
+    },
+    "legModes": {
+      "AUTO": "Авто",
+      "RAIL": "Ж/д",
+      "SEA": "Море",
+      "AIR": "Авиа",
+      "BROKER": "Брокер"
+    },
+    "legStatuses": {
+      "WAITING": "Ожидает",
+      "IN_PROGRESS": "В работе",
+      "DONE": "Завершён"
+    },
+    "legs": {
+      "add": "+ Добавить участок",
+      "merge": "← Объединить в одну перевозку",
+      "split": "Разбить на участки",
+      "splitTitle": "Разбить перевозку на участки?",
+      "number": "Участок {{number}}",
+      "plan": "Даты план",
+      "fact": "Даты факт",
+      "addTitle": "Новый участок",
+      "editTitle": "Изменение участка",
+      "deleteTitle": "Удалить участок?",
+      "delete": "Удалить",
+      "plannedStartDate": "Плановый забор",
+      "plannedEndDate": "Плановая доставка",
+      "actualStartDate": "Фактический забор",
+      "actualEndDate": "Фактическая доставка"
+    },
+    "history": {
+      "rollback": "Откат: {{from}} → {{to}}",
+      "eventDate": "Дата события: {{date}}"
+    }
   },
   "currencies": {
     "title": "Валюты и курсы",
@@ -486,6 +917,7 @@
   },
   "reports": {
     "tabs": {
+      "dashboard": "Дашборд",
       "cashCalendar": "Кассовый календарь",
       "receivables": "Дебиторка",
       "payables": "Кредиторка"
@@ -529,6 +961,33 @@
         "net": "Разница",
         "balance": "Нарастающим итогом"
       }
+    },
+    "dashboard": {
+      "periodLabel": "Период",
+      "activeTransportations": "Активные перевозки",
+      "activeTransportationsHint": "Все перевозки, кроме закрытых",
+      "byStatus": "Перевозки по статусам",
+      "funnel": "Воронка сделок за период",
+      "funnelTotal": "Заявок за период",
+      "funnelAgreed": "Согласовано",
+      "funnelConversion": "Конверсия",
+      "finance": "Финансы за период",
+      "financeHint": "По перевозкам с датой выгрузки в выбранном периоде",
+      "byLegalEntity": "В разрезе юрлиц",
+      "byManager": "В разрезе менеджеров",
+      "legalEntity": "Юрлицо",
+      "manager": "Менеджер",
+      "topDebtors": "Топ-должники (клиенты)",
+      "topCreditors": "Топ-долги перед подрядчиками",
+      "debt": "Долг",
+      "client": "Клиент",
+      "payee": "Получатель",
+      "cashCalendar": "Кассовый календарь на 2 недели",
+      "cashCalendarLink": "Открыть полный календарь",
+      "noDebtors": "Задолженностей клиентов нет",
+      "noCreditors": "Задолженностей перед подрядчиками нет",
+      "noFinance": "За период нет завершённых перевозок",
+      "loadFailed": "Не удалось загрузить дашборд"
     }
   },
   "documents": {
@@ -750,7 +1209,10 @@
       "status": "Статус",
       "actions": "Действия"
     },
-    "status": { "active": "Активен", "inactive": "Деактивирован" },
+    "status": {
+      "active": "Активен",
+      "inactive": "Деактивирован"
+    },
     "actions": {
       "edit": "Редактировать",
       "resetPassword": "Сбросить пароль",

@@ -299,6 +299,14 @@ button, input { font: inherit; }
 .reports-toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
 .reports-summary-row { display: flex; gap: 32px; flex-wrap: wrap; }
 .cash-calendar-negative { color: #b91c1c; }
+.dashboard-page { display: flex; flex-direction: column; gap: 16px; }
+.dashboard-page .ant-table-tbody > tr { cursor: default; }
+.dashboard-page .reports-toolbar { margin-bottom: 0; }
+.dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.dashboard-status-list { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.dashboard-status-list li { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.dashboard-subtitle { margin-top: 24px; }
+.dashboard-forecast-tag { margin-left: 8px; vertical-align: middle; }
 .motivation-hint-banner { background: #FFF7E6; border: 1px solid #F5D98B; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; color: #7A5A00; margin-bottom: 16px; }
 .motivation-kpis { margin-bottom: 16px; }
 .motivation-kpis .transport-card { flex: 1; min-width: 180px; }

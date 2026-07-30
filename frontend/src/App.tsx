@@ -19,6 +19,7 @@ import { WhatsappTemplatesPage } from './pages/WhatsappTemplatesPage';
 import { InvoicesPage } from './pages/InvoicesPage';
 import { PaymentRequestsPage } from './pages/PaymentRequestsPage';
 import { ReportsLayout } from './components/ReportsLayout';
+import { DashboardPage } from './pages/DashboardPage';
 import { CashCalendarPage } from './pages/CashCalendarPage';
 import { ReceivablesPage } from './pages/ReceivablesPage';
 import { PayablesPage } from './pages/PayablesPage';
@@ -89,7 +90,8 @@ export default function App() {
             <Route path="whatsapp-templates" element={<WhatsappTemplatesPage />} />
           </Route>
           <Route path="reports" element={<ReportsLayout />}>
-            <Route index element={<Navigate to="cash-calendar" replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<DashboardPage />} />
             <Route path="cash-calendar" element={<CashCalendarPage />} />
             <Route path="receivables" element={<ReceivablesPage />} />
             <Route path="payables" element={<PayablesPage />} />

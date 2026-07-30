@@ -1,8 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { InvoiceStatus, PaymentRequestStatus, Prisma } from '@prisma/client';
+import { DealStage, InvoiceStatus, PaymentRequestStatus, Prisma, TransportationStatus } from '@prisma/client';
+import { MarginService } from '../deals/margin.service';
+import { DealMarginResult } from '../deals/margin-calculator';
 import { ExchangeRatesService } from '../currencies/exchange-rates.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CashCalendarQueryDto } from './dto/cash-calendar-query.dto';
+import { DashboardQueryDto } from './dto/dashboard-query.dto';
 
 export interface ReceivableRow {
   invoiceId: string;
@@ -52,12 +55,240 @@ export interface CashCalendarResult {
   periods: CashCalendarPeriod[];
 }
 
+export interface DashboardStatusCount {
+  status: TransportationStatus;
+  count: number;
+}
+
+export interface DashboardFunnel {
+  byStage: Array<{ stage: DealStage; count: number }>;
+  totalDeals: number;
+  agreedCount: number;
+  conversionPercent: number;
+}
+
+export interface DashboardFinanceRow extends DealMarginResult {
+  legalEntityId?: string;
+  legalEntityName?: string;
+  managerId?: string;
+  managerName?: string;
+}
+
+export interface DashboardDebtorRow {
+  clientId: string;
+  clientName: string;
+  balanceKzt: number;
+}
+
+export interface DashboardCreditorRow {
+  payeeId: string;
+  payeeName: string;
+  amountKzt: number;
+}
+
+export interface DashboardResult {
+  period: { from: string; to: string };
+  transportations: { byStatus: DashboardStatusCount[]; activeCount: number };
+  dealsFunnel: DashboardFunnel;
+  finance: {
+    total: DealMarginResult;
+    byLegalEntity: DashboardFinanceRow[];
+    byManager: DashboardFinanceRow[];
+  };
+  topDebtors: DashboardDebtorRow[];
+  topCreditors: DashboardCreditorRow[];
+  cashCalendar: CashCalendarResult;
+}
+
+const TRANSPORTATION_STATUS_ORDER: TransportationStatus[] = [
+  'REQUEST_ACCEPTED',
+  'CARGO_PICKED',
+  'IN_TRANSIT',
+  'CUSTOMS',
+  'DELIVERED',
+  'CLOSED',
+];
+
+const DEAL_STAGE_ORDER: DealStage[] = [
+  'NEW',
+  'RATE_CALCULATION',
+  'RATE_SENT',
+  'AGREED',
+  'IN_PROGRESS',
+  'COMPLETED',
+  'CLOSED',
+  'REJECTED',
+];
+
+const AGREED_OR_LATER_STAGES: DealStage[] = ['AGREED', 'IN_PROGRESS', 'COMPLETED', 'CLOSED'];
+
 @Injectable()
 export class ReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly exchangeRates: ExchangeRatesService,
+    private readonly marginService: MarginService,
   ) {}
+
+  async getDashboard(query: DashboardQueryDto): Promise<DashboardResult> {
+    const range = this.resolvePeriod(query);
+
+    const [statusCounts, dealsInPeriod, transportationsInPeriod, receivables, payables, cashCalendar] =
+      await Promise.all([
+        this.prisma.transportation.groupBy({
+          by: ['status'],
+          where: { deletedAt: null, deal: { deletedAt: null } },
+          _count: { _all: true },
+        }),
+        this.prisma.deal.findMany({
+          where: { deletedAt: null, createdAt: { gte: range.start, lte: this.endOfDay(range.end) } },
+          select: { id: true, stage: true },
+        }),
+        this.prisma.transportation.findMany({
+          where: {
+            deletedAt: null,
+            deal: { deletedAt: null },
+            unloadingEventDate: { gte: range.start, lte: range.end },
+          },
+          select: {
+            id: true,
+            deal: {
+              select: {
+                legalEntityId: true,
+                legalEntity: { select: { name: true } },
+                responsibleId: true,
+                responsible: { select: { fullName: true } },
+              },
+            },
+          },
+        }),
+        this.getReceivables(),
+        this.getPayables(),
+        this.getCashCalendar({ to: this.dateString(this.addDays(this.today(), 13)), groupBy: 'day' }),
+      ]);
+
+    const byStatus: DashboardStatusCount[] = TRANSPORTATION_STATUS_ORDER.map((status) => ({
+      status,
+      count: statusCounts.find((row) => row.status === status)?._count._all ?? 0,
+    }));
+    const activeCount = byStatus
+      .filter((row) => row.status !== 'CLOSED')
+      .reduce((sum, row) => sum + row.count, 0);
+
+    const dealsFunnel = this.buildFunnel(dealsInPeriod);
+
+    const finance = await this.buildFinance(transportationsInPeriod);
+
+    const topDebtors = this.topDebtors(receivables);
+    const topCreditors = this.topCreditors(payables);
+
+    return {
+      period: { from: this.dateString(range.start), to: this.dateString(range.end) },
+      transportations: { byStatus, activeCount },
+      dealsFunnel,
+      finance,
+      topDebtors,
+      topCreditors,
+      cashCalendar,
+    };
+  }
+
+  private buildFunnel(deals: Array<{ stage: DealStage }>): DashboardFunnel {
+    const counts = new Map<DealStage, number>();
+    for (const deal of deals) counts.set(deal.stage, (counts.get(deal.stage) ?? 0) + 1);
+    const byStage = DEAL_STAGE_ORDER.map((stage) => ({ stage, count: counts.get(stage) ?? 0 }));
+    const totalDeals = deals.length;
+    const agreedCount = deals.filter((deal) => AGREED_OR_LATER_STAGES.includes(deal.stage)).length;
+    const conversionPercent = totalDeals === 0 ? 0 : this.round2((agreedCount / totalDeals) * 100);
+    return { byStage, totalDeals, agreedCount, conversionPercent };
+  }
+
+  private async buildFinance(
+    transportations: Array<{
+      id: string;
+      deal: { legalEntityId: string; legalEntity: { name: string }; responsibleId: string; responsible: { fullName: string } };
+    }>,
+  ): Promise<{ total: DealMarginResult; byLegalEntity: DashboardFinanceRow[]; byManager: DashboardFinanceRow[] }> {
+    const allIds = transportations.map((row) => row.id);
+    const total = await this.marginService.calculateForTransportations(allIds);
+
+    const byLegalEntity = new Map<string, { name: string; ids: string[] }>();
+    const byManager = new Map<string, { name: string; ids: string[] }>();
+    for (const row of transportations) {
+      const leGroup = byLegalEntity.get(row.deal.legalEntityId) ?? { name: row.deal.legalEntity.name, ids: [] };
+      leGroup.ids.push(row.id);
+      byLegalEntity.set(row.deal.legalEntityId, leGroup);
+
+      const mgrGroup = byManager.get(row.deal.responsibleId) ?? { name: row.deal.responsible.fullName, ids: [] };
+      mgrGroup.ids.push(row.id);
+      byManager.set(row.deal.responsibleId, mgrGroup);
+    }
+
+    const legalEntityRows = await Promise.all(
+      Array.from(byLegalEntity.entries()).map(async ([legalEntityId, group]) => ({
+        legalEntityId,
+        legalEntityName: group.name,
+        ...(await this.marginService.calculateForTransportations(group.ids)),
+      })),
+    );
+    const managerRows = await Promise.all(
+      Array.from(byManager.entries()).map(async ([managerId, group]) => ({
+        managerId,
+        managerName: group.name,
+        ...(await this.marginService.calculateForTransportations(group.ids)),
+      })),
+    );
+
+    legalEntityRows.sort((a, b) => b.incomeTotalKzt - a.incomeTotalKzt);
+    managerRows.sort((a, b) => b.incomeTotalKzt - a.incomeTotalKzt);
+
+    return { total, byLegalEntity: legalEntityRows, byManager: managerRows };
+  }
+
+  private topDebtors(receivables: ReceivableRow[]): DashboardDebtorRow[] {
+    const byClient = new Map<string, DashboardDebtorRow>();
+    for (const row of receivables) {
+      const existing = byClient.get(row.clientId);
+      if (existing) existing.balanceKzt += row.balanceKzt;
+      else byClient.set(row.clientId, { clientId: row.clientId, clientName: row.clientName, balanceKzt: row.balanceKzt });
+    }
+    return Array.from(byClient.values())
+      .map((row) => ({ ...row, balanceKzt: this.round2(row.balanceKzt) }))
+      .sort((a, b) => b.balanceKzt - a.balanceKzt)
+      .slice(0, 5);
+  }
+
+  private topCreditors(payables: PayableRow[]): DashboardCreditorRow[] {
+    const byPayee = new Map<string, DashboardCreditorRow>();
+    for (const row of payables) {
+      const existing = byPayee.get(row.payeeId);
+      if (existing) existing.amountKzt += row.amountKzt;
+      else byPayee.set(row.payeeId, { payeeId: row.payeeId, payeeName: row.payeeName, amountKzt: row.amountKzt });
+    }
+    return Array.from(byPayee.values())
+      .map((row) => ({ ...row, amountKzt: this.round2(row.amountKzt) }))
+      .sort((a, b) => b.amountKzt - a.amountKzt)
+      .slice(0, 5);
+  }
+
+  private resolvePeriod(query: DashboardQueryDto): { start: Date; end: Date } {
+    if (query.from && query.to) {
+      const start = this.parseDate(query.from);
+      const end = this.parseDate(query.to);
+      if (end.getTime() < start.getTime()) {
+        throw new BadRequestException('Дата окончания раньше даты начала');
+      }
+      return { start, end };
+    }
+    const today = this.today();
+    const start = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
+    const end = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0));
+    return { start, end };
+  }
+
+  private endOfDay(date: Date): Date {
+    return new Date(date.getTime() + (24 * 60 * 60 * 1000 - 1));
+  }
 
   async getReceivables(): Promise<ReceivableRow[]> {
     const today = this.today();

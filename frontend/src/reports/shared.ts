@@ -47,3 +47,61 @@ export interface CashCalendarResult {
   openingBalanceKzt: number;
   periods: CashCalendarPeriod[];
 }
+
+export type TransportationStatus =
+  | 'REQUEST_ACCEPTED'
+  | 'CARGO_PICKED'
+  | 'IN_TRANSIT'
+  | 'CUSTOMS'
+  | 'DELIVERED'
+  | 'CLOSED';
+
+export type DealStage =
+  | 'NEW'
+  | 'RATE_CALCULATION'
+  | 'RATE_SENT'
+  | 'AGREED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CLOSED'
+  | 'REJECTED';
+
+export interface MarginTotals {
+  incomeTotalKzt: number;
+  expenseTotalKzt: number;
+  marginKzt: number;
+  marginPercent: number;
+  paidByClientKzt: number;
+  paidToSubcontractorsKzt: number;
+  currencyDifferenceKzt: number;
+  isForecast: boolean;
+}
+
+export interface DashboardFinanceRow extends MarginTotals {
+  legalEntityId?: string;
+  legalEntityName?: string;
+  managerId?: string;
+  managerName?: string;
+}
+
+export interface DashboardResult {
+  period: { from: string; to: string };
+  transportations: {
+    byStatus: Array<{ status: TransportationStatus; count: number }>;
+    activeCount: number;
+  };
+  dealsFunnel: {
+    byStage: Array<{ stage: DealStage; count: number }>;
+    totalDeals: number;
+    agreedCount: number;
+    conversionPercent: number;
+  };
+  finance: {
+    total: MarginTotals;
+    byLegalEntity: DashboardFinanceRow[];
+    byManager: DashboardFinanceRow[];
+  };
+  topDebtors: Array<{ clientId: string; clientName: string; balanceKzt: number }>;
+  topCreditors: Array<{ payeeId: string; payeeName: string; amountKzt: number }>;
+  cashCalendar: CashCalendarResult;
+}

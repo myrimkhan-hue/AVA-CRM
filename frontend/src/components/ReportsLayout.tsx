@@ -16,7 +16,9 @@ export function ReportsLayout() {
     ? 'receivables'
     : location.pathname.includes('/reports/payables')
       ? 'payables'
-      : 'cash-calendar';
+      : location.pathname.includes('/reports/cash-calendar')
+        ? 'cash-calendar'
+        : 'dashboard';
 
   if (!canView) return <Navigate to="/" replace />;
 
@@ -27,6 +29,7 @@ export function ReportsLayout() {
         activeKey={activeKey}
         onChange={(key) => navigate(`/reports/${key}`)}
         items={[
+          { key: 'dashboard', label: t('reports.tabs.dashboard') },
           { key: 'cash-calendar', label: t('reports.tabs.cashCalendar') },
           { key: 'receivables', label: t('reports.tabs.receivables') },
           { key: 'payables', label: t('reports.tabs.payables') },
