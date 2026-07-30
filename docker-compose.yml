@@ -29,8 +29,14 @@ services:
       WAZZUP_CHANNEL_ID: ${WAZZUP_CHANNEL_ID:-}
       WAZZUP_WEBHOOK_SECRET: ${WAZZUP_WEBHOOK_SECRET:-}
       WEBSITE_LEADS_WEBHOOK_SECRET: ${WEBSITE_LEADS_WEBHOOK_SECRET:-}
+      UPLOADS_DIR: /app/backend/uploads
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}
     ports:
       - "${BACKEND_PORT:-3000}:3000"
+    volumes:
+      # Вложения лежат в отдельном томе, а не внутри контейнера, — переживают
+      # пересборку образа и попадают в резервную копию вместе с базой.
+      - uploads_data:/app/backend/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,3 +55,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

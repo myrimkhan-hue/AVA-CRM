@@ -12,3 +12,6 @@ build/
 
 .DS_Store
 Thumbs.db
+
+# Загруженные файлы (вложения) — хранятся в томе Docker, не в репозитории
+backend/uploads/

@@ -169,6 +169,7 @@ model User {
   leadActivities             LeadActivity[]
   leadImportBatches          LeadImportBatch[]
   whatsappMessages           WhatsAppMessage[]           @relation("WhatsAppMessageAuthor")
+  attachments                Attachment[]                @relation("AttachmentUploadedBy")
 
   @@map("users")
 }
@@ -846,4 +847,35 @@ model WhatsAppMessage {
   @@index([contractorId, createdAt])
   @@index([chatId, createdAt])
   @@map("whatsapp_messages")
+}
+
+// Файловое хранилище (раздел 4.5 ТЗ): сами файлы лежат на диске в томе,
+// в базе — только метаданные и привязка к карточке. Имя на диске генерируется
+// системой (storedName), оригинальное имя показывается пользователю —
+// так исключается подстановка пути через имя файла.
+enum AttachmentEntityType {
+  DEAL
+  TRANSPORTATION
+  CONTRACTOR
+  INVOICE
+  PAYMENT_REQUEST
+  CONTRACT
+}
+
+model Attachment {
+  id           String               @id @default(cuid())
+  entityType   AttachmentEntityType @map("entity_type")
+  entityId     String               @map("entity_id")
+  fileName     String               @map("file_name")
+  storedName   String               @unique @map("stored_name")
+  mimeType     String               @map("mime_type")
+  sizeBytes    Int                  @map("size_bytes")
+  description  String?
+  uploadedById String               @map("uploaded_by_id")
+  uploadedAt   DateTime             @default(now()) @map("uploaded_at")
+  deletedAt    DateTime?            @map("deleted_at")
+  uploadedBy   User                 @relation("AttachmentUploadedBy", fields: [uploadedById], references: [id], onDelete: Restrict)
+
+  @@index([entityType, entityId])
+  @@map("attachments")
 }
