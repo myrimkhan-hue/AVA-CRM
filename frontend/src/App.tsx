@@ -27,6 +27,7 @@ import { MotivationLayout } from './components/MotivationLayout';
 import { MyMotivationPage } from './pages/MyMotivationPage';
 import { MotivationReportPage } from './pages/MotivationReportPage';
 import { DocumentsPage } from './pages/DocumentsPage';
+import { DocumentTemplatesPage } from './pages/DocumentTemplatesPage';
 import { DOCUMENT_ACCESS_ROLES } from './documents/access';
 
 const INVOICE_ROLES = [
@@ -100,6 +101,7 @@ export default function App() {
             <Route path="currencies" element={<CurrenciesPage />} />
             <Route path="motivation" element={<MotivationSettingsPage />} />
             <Route path="whatsapp-templates" element={<WhatsappTemplatesPage />} />
+            <Route path="document-templates" element={<DocumentTemplatesPage />} />
           </Route>
           <Route path="reports" element={<ReportsLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />

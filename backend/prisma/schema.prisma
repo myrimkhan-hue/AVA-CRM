@@ -171,6 +171,7 @@ model User {
   whatsappMessages           WhatsAppMessage[]           @relation("WhatsAppMessageAuthor")
   attachments                Attachment[]                @relation("AttachmentUploadedBy")
   createdContracts           Contract[]                  @relation("ContractCreatedBy")
+  uploadedDocumentTemplates  DocumentTemplate[]          @relation("DocumentTemplateUploadedBy")
 
   @@map("users")
 }
@@ -683,6 +684,11 @@ enum GeneratedDocumentType {
   INVOICE
 }
 
+enum DocumentTemplateType {
+  CONTRACT
+  TRANSPORT_REQUEST
+}
+
 // Атомарный счётчик номеров документов. key уже содержит дату
 // (напр. "TT-EX-2407/2026"), поэтому отдельного сброса "раз в день" не нужно —
 // каждый день формирует свой ключ. Второй документ с тем же ключом за день
@@ -693,6 +699,24 @@ model DocumentNumberCounter {
   count Int    @default(0)
 
   @@map("document_number_counters")
+}
+
+model DocumentTemplate {
+  id               String               @id @default(cuid())
+  type             DocumentTemplateType
+  displayName      String               @map("display_name")
+  storedName       String               @unique @map("stored_name")
+  originalName     String               @map("original_name")
+  sizeBytes        Int                  @map("size_bytes")
+  uploadedByUserId String               @map("uploaded_by_user_id")
+  uploadedAt       DateTime             @default(now()) @map("uploaded_at")
+  isActive         Boolean              @default(false) @map("is_active")
+  note             String?
+  uploadedBy       User                 @relation("DocumentTemplateUploadedBy", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([type, uploadedAt])
+  @@index([uploadedByUserId])
+  @@map("document_templates")
 }
 
 // Документы не хранятся файлами — .docx пересобирается из данных сделки/

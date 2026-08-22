@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { GeneratedDocumentType } from '@prisma/client';
+import { DocumentTemplateType, GeneratedDocumentType } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
 import { DealsService } from '../deals/deals.service';
-import { TEMPLATE_PATHS } from './documents.constants';
+import { ContractTemplatePlaceholder } from './document-template.constants';
+import { DocumentTemplatesService } from './document-templates.service';
 import { DocumentsService, PartyInfo } from './documents.service';
 import { PartyRequisitesOverrideDto } from './dto/party-requisites-override.dto';
 import { safeName } from './lib/fill-docx';
@@ -13,6 +14,7 @@ export class ContractGeneratorService {
   constructor(
     private readonly dealsService: DealsService,
     private readonly documentsService: DocumentsService,
+    private readonly documentTemplatesService: DocumentTemplatesService,
   ) {}
 
   /** Договор с клиентом сделки — наше юрлицо всегда выступает исполнителем. */
@@ -81,7 +83,10 @@ export class ContractGeneratorService {
       ?? await this.documentsService.nextDocumentNumber(baseNumber);
     const dateStr = formatDateRu(today);
 
-    const buffer = await this.documentsService.fillTemplate(TEMPLATE_PATHS.CONTRACT, {
+    const templateValues: Record<
+      ContractTemplatePlaceholder,
+      string | number | null | undefined
+    > = {
       НОМЕР_ДОГОВОРА: number,
       ДАТА_ДОГОВОРА: dateStr,
       ЗАКАЗЧИК_НАЗВАНИЕ: customer.name,
@@ -108,7 +113,11 @@ export class ContractGeneratorService {
       ИСПОЛНИТЕЛЬ_ОСНОВАНИЕ: executor.basis,
       ИСПОЛНИТЕЛЬ_ТЕЛЕФОН: executor.phone,
       ИСПОЛНИТЕЛЬ_EMAIL: executor.email,
-    });
+    };
+    const buffer = await this.documentTemplatesService.fillTemplate(
+      DocumentTemplateType.CONTRACT,
+      templateValues,
+    );
 
     if (!params.existingNumber) {
       await this.documentsService.logGeneration({

@@ -18,7 +18,9 @@ export function SettingsLayout() {
       ? 'motivation'
       : location.pathname.includes('/settings/whatsapp-templates')
         ? 'whatsapp-templates'
-        : 'legal-entities';
+        : location.pathname.includes('/settings/document-templates')
+          ? 'document-templates'
+          : 'legal-entities';
 
   if (!canManage) return <Navigate to="/" replace />;
 
@@ -44,6 +46,9 @@ export function SettingsLayout() {
           ...(isAdmin ? [{
             key: 'whatsapp-templates',
             label: t('settings.tabs.whatsappTemplates'),
+          }, {
+            key: 'document-templates',
+            label: t('settings.tabs.documentTemplates'),
           }] : []),
         ]}
       />

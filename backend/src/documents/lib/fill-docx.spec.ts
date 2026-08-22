@@ -1,6 +1,9 @@
+import { DocumentTemplateType } from '@prisma/client';
 import * as path from 'node:path';
 import JSZip = require('jszip');
-import { fillDocx, safeName } from './fill-docx';
+import { DOCUMENT_TEMPLATE_PLACEHOLDERS } from '../document-template.constants';
+import { BUILTIN_TEMPLATE_PATHS } from '../documents.constants';
+import { fillDocx, findDocxPlaceholders, safeName } from './fill-docx';
 
 const CONTRACT_TEMPLATE = path.join(__dirname, '../templates/contract.docx');
 
@@ -29,6 +32,23 @@ describe('fillDocx', () => {
     const zip = await JSZip.loadAsync(buffer);
     const xml = await zip.file('word/document.xml')!.async('string');
     expect(xml).toContain('{ЗАКАЗЧИК_НАЗВАНИЕ}');
+  });
+
+  it.each([
+    DocumentTemplateType.CONTRACT,
+    DocumentTemplateType.TRANSPORT_REQUEST,
+  ])('replaces every known token used by the built-in %s template', async (type) => {
+    const knownPlaceholders = DOCUMENT_TEMPLATE_PLACEHOLDERS[type];
+    const values = Object.fromEntries(
+      knownPlaceholders.map((key) => [key, `Значение ${key}`]),
+    );
+    const buffer = await fillDocx(BUILTIN_TEMPLATE_PATHS[type], values);
+    const zip = await JSZip.loadAsync(buffer);
+    const xml = await zip.file('word/document.xml')!.async('string');
+    const remainingKnown = findDocxPlaceholders(xml)
+      .filter((key) => (knownPlaceholders as readonly string[]).includes(key));
+
+    expect(remainingKnown).toEqual([]);
   });
 });
 

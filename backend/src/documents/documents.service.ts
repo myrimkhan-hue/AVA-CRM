@@ -10,7 +10,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { generatedDocumentVisibilityWhere } from './document-policy';
 import { DocumentQueryDto } from './dto/document-query.dto';
 import { GenerateTransportRequestDto } from './dto/generate-transport-request.dto';
-import { DocxValues, fillDocx } from './lib/fill-docx';
 
 const DASH = '—';
 
@@ -63,10 +62,6 @@ export class DocumentsService {
       update: { count: { increment: 1 } },
     });
     return counter.count <= 1 ? baseKey : `${baseKey}/${counter.count}`;
-  }
-
-  async fillTemplate(templatePath: string, values: DocxValues): Promise<Buffer> {
-    return fillDocx(templatePath, values);
   }
 
   async logGeneration(params: {

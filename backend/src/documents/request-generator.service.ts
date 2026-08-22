@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { GeneratedDocumentType } from '@prisma/client';
+import { DocumentTemplateType, GeneratedDocumentType } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
 import { PrismaService } from '../prisma/prisma.service';
 import { transportationVisibilityWhere } from '../transportations/transportation-policy';
-import { TEMPLATE_PATHS } from './documents.constants';
+import { TransportRequestTemplatePlaceholder } from './document-template.constants';
+import { DocumentTemplatesService } from './document-templates.service';
 import { DocumentsService } from './documents.service';
 import { GenerateTransportRequestDto } from './dto/generate-transport-request.dto';
 import { amountToWords, formatAmount } from './lib/amount-to-words';
@@ -17,6 +18,7 @@ export class RequestGeneratorService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly documentsService: DocumentsService,
+    private readonly documentTemplatesService: DocumentTemplatesService,
   ) {}
 
   /** Транспортная заявка перевозчику по участку — мы всегда выступаем заказчиком, перевозчик — исполнителем. */
@@ -118,7 +120,10 @@ export class RequestGeneratorService {
       leg.driverLicenseNumber && `В/У ${leg.driverLicenseNumber}`,
     ].filter(Boolean).join(', ') || DASH;
 
-    const buffer = await this.documentsService.fillTemplate(TEMPLATE_PATHS.TRANSPORT_REQUEST, {
+    const templateValues: Record<
+      TransportRequestTemplatePlaceholder,
+      string | number | null | undefined
+    > = {
       ЗАГОЛОВОК_ЗАЯВКИ: title,
       ПРИЛОЖЕНИЕ_К: appendix,
       ЗАКАЗЧИК_НАЗВАНИЕ: legalEntity.name,
@@ -169,7 +174,11 @@ export class RequestGeneratorService {
       УСЛОВИЯ_ОПЛАТЫ: dto.paymentConditions ?? DASH,
       ДОКУМЕНТЫ: dto.documents ?? 'ТТН',
       ПРИМЕЧАНИЕ: dto.notes ?? DASH,
-    });
+    };
+    const buffer = await this.documentTemplatesService.fillTemplate(
+      DocumentTemplateType.TRANSPORT_REQUEST,
+      templateValues,
+    );
 
     if (!existingNumber) {
       await this.documentsService.logGeneration({

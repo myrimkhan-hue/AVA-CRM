@@ -145,6 +145,32 @@ export interface GeneratedDocumentRecord {
   source: GeneratedDocumentSource | null;
 }
 
+export type DocumentTemplateType = 'CONTRACT' | 'TRANSPORT_REQUEST';
+
+export interface DocumentTemplateRecord {
+  id: string;
+  type: DocumentTemplateType;
+  displayName: string;
+  originalName: string;
+  sizeBytes: number;
+  isActive: boolean;
+  note: string | null;
+  uploadedAt: string;
+  uploadedBy: { id: string; fullName: string };
+}
+
+export interface DocumentTemplateListResponse {
+  templates: DocumentTemplateRecord[];
+  placeholders: Record<DocumentTemplateType, string[]>;
+  requiredPlaceholders: Record<DocumentTemplateType, string[]>;
+  maxUploadMb: number;
+}
+
+export interface DocumentTemplateMutationResponse {
+  template: DocumentTemplateRecord;
+  unknownPlaceholders: string[];
+}
+
 export type ContractStatus = 'ACTIVE' | 'EXPIRED' | 'TERMINATED';
 
 export interface ContractRecord {
