@@ -2,12 +2,27 @@ import { ContractStatus } from '@prisma/client';
 import {
   daysUntilExpiry,
   DEFAULT_EXPIRY_WARNING_DAYS,
+  isValidContractPeriod,
   needsExpiryWarning,
   resolveContractStatus,
 } from './contract-rules';
 
 const today = new Date('2026-07-30T14:30:00.000Z');
 const d = (iso: string) => new Date(`${iso}T00:00:00.000Z`);
+
+describe('Проверка срока действия договора', () => {
+  it('не допускает итоговую пару с новой датой договора и сохранённым более ранним сроком', () => {
+    const newSignedAt = d('2026-08-02');
+    const currentValidUntil = d('2026-08-01');
+    expect(isValidContractPeriod(newSignedAt, currentValidUntil)).toBe(false);
+  });
+
+  it('допускает одинаковые даты, более поздний срок и бессрочный договор', () => {
+    expect(isValidContractPeriod(d('2026-08-01'), d('2026-08-01'))).toBe(true);
+    expect(isValidContractPeriod(d('2026-08-01'), d('2026-08-02'))).toBe(true);
+    expect(isValidContractPeriod(d('2026-08-01'), null)).toBe(true);
+  });
+});
 
 describe('Статус договора (раздел 4.2 ТЗ)', () => {
   it('действует, пока дата окончания не прошла', () => {

@@ -17,11 +17,13 @@ import {
   Checkbox,
   Col,
   Collapse,
+  DatePicker,
   Empty,
   Form,
   Input,
   InputNumber,
   Modal,
+  Popconfirm,
   Popover,
   Row,
   Select,
@@ -30,14 +32,22 @@ import {
   Switch,
   Table,
   Tag,
+  Tooltip,
   Typography,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import dayjs, { type Dayjs } from 'dayjs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
+import type {
+  ContractRecord,
+  ContractStatus,
+  LegalEntityReference,
+} from '../api/types';
 import { useAuth } from '../auth/AuthContext';
+import { AttachmentsCard } from '../components/AttachmentsCard';
 import { PasteRequisitesBox } from '../components/PasteRequisitesBox';
 import { WhatsAppFeed } from '../components/WhatsAppFeed';
 import { WhatsAppUnmatchedThread } from '../whatsapp/shared';
@@ -108,6 +118,20 @@ interface ContractorTransportation {
   role: { isClient: boolean; legOrderIndexes: number[] };
 }
 
+interface ContractFormValues {
+  legalEntityId: string;
+  number: string;
+  signedAt: Dayjs;
+  validUntil?: Dayjs;
+  indefinite: boolean;
+  subject?: string;
+  notes?: string;
+}
+
+interface ContractTerminationFormValues {
+  terminatedAt: Dayjs;
+}
+
 interface ContractorFormValues {
   name: string;
   types: ContractorType[];
@@ -152,6 +176,11 @@ const REQUISITES_PASTE_MAPPING: Partial<Record<keyof ParsedRequisites, Contracto
 };
 
 const CONTRACTOR_TYPES: ContractorType[] = ['CLIENT', 'CARRIER', 'CUSTOMS_BROKER', 'WAREHOUSE', 'SUPPLIER', 'OTHER'];
+const CONTRACT_STATUS_COLORS: Record<ContractStatus, { background: string; color: string }> = {
+  ACTIVE: { background: '#DCF5E4', color: '#15803D' },
+  EXPIRED: { background: '#FDE2E1', color: '#B42318' },
+  TERMINATED: { background: '#EDF0F4', color: '#66707D' },
+};
 const COLUMN_KEYS = ['name', 'types', 'bin', 'country', 'payment', 'contact', 'status', 'actions'] as const;
 type ColumnKey = (typeof COLUMN_KEYS)[number];
 interface ColumnSetting { key: ColumnKey; visible: boolean }
@@ -819,6 +848,176 @@ function ContractorDetails({ contractor, related, relatedLoading, paymentText, o
   isAdmin: boolean;
 }) {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const { message } = App.useApp();
+  const [contractForm] = Form.useForm<ContractFormValues>();
+  const [terminationForm] = Form.useForm<ContractTerminationFormValues>();
+  const [contracts, setContracts] = useState<ContractRecord[]>([]);
+  const [contractsLoading, setContractsLoading] = useState(false);
+  const [legalEntities, setLegalEntities] = useState<LegalEntityReference[]>([]);
+  const [contractEditorOpen, setContractEditorOpen] = useState(false);
+  const [editingContract, setEditingContract] = useState<ContractRecord>();
+  const [terminatingContract, setTerminatingContract] = useState<ContractRecord>();
+  const [contractSaving, setContractSaving] = useState(false);
+  const contractLoadId = useRef(0);
+  const indefinite = Form.useWatch('indefinite', contractForm);
+  const contractorReadOnly = Boolean(contractor.deletedAt);
+  const mayManageContracts = !contractorReadOnly && Boolean(user?.roles.some((role) => [
+    'ADMIN',
+    'DIRECTOR',
+    'DEPARTMENT_HEAD',
+    'MANAGER',
+    'FINANCIER',
+  ].includes(role)));
+  const mayDeleteContracts = !contractorReadOnly
+    && Boolean(user?.roles.some((role) => role === 'ADMIN' || role === 'DIRECTOR'));
+
+  const showError = useCallback((error: unknown) => {
+    void message.error(
+      error instanceof ApiError
+        ? error.message || t('errors.request')
+        : t('errors.connection'),
+    );
+  }, [message, t]);
+
+  const loadContracts = useCallback(async () => {
+    const loadId = ++contractLoadId.current;
+    setContractsLoading(true);
+    try {
+      const params = new URLSearchParams({ contractorId: contractor.id });
+      const rows = await apiRequest<ContractRecord[]>(`/contracts?${params.toString()}`);
+      if (loadId === contractLoadId.current) setContracts(rows);
+    } catch (error: unknown) {
+      if (loadId === contractLoadId.current) showError(error);
+    } finally {
+      if (loadId === contractLoadId.current) setContractsLoading(false);
+    }
+  }, [contractor.id, showError]);
+
+  useEffect(() => { void loadContracts(); }, [loadContracts]);
+
+  useEffect(() => {
+    if (!mayManageContracts) {
+      setLegalEntities([]);
+      return;
+    }
+    let active = true;
+    apiRequest<LegalEntityReference[]>('/legal-entities')
+      .then((rows) => { if (active) setLegalEntities(rows); })
+      .catch((error: unknown) => { if (active) showError(error); });
+    return () => { active = false; };
+  }, [mayManageContracts, showError]);
+
+  const formatDate = (value: string) => new Date(value).toLocaleDateString('ru-RU', {
+    timeZone: 'UTC',
+  });
+
+  const openCreateContract = () => {
+    setEditingContract(undefined);
+    contractForm.resetFields();
+    contractForm.setFieldsValue({ indefinite: false });
+    setContractEditorOpen(true);
+  };
+
+  const openEditContract = (contract: ContractRecord) => {
+    setEditingContract(contract);
+    contractForm.resetFields();
+    contractForm.setFieldsValue({
+      legalEntityId: contract.legalEntityId,
+      number: contract.number,
+      signedAt: dayjs(contract.signedAt),
+      validUntil: contract.validUntil ? dayjs(contract.validUntil) : undefined,
+      indefinite: !contract.validUntil,
+      subject: contract.subject ?? undefined,
+      notes: contract.notes ?? undefined,
+    });
+    setContractEditorOpen(true);
+  };
+
+  const saveContract = async (values: ContractFormValues) => {
+    setContractSaving(true);
+    try {
+      const commonValues = {
+        legalEntityId: values.legalEntityId,
+        number: values.number,
+        signedAt: values.signedAt.format('YYYY-MM-DD'),
+        subject: values.subject,
+        notes: values.notes,
+      };
+      if (editingContract) {
+        await apiRequest<ContractRecord>(`/contracts/${editingContract.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            ...commonValues,
+            validUntil: values.indefinite
+              ? null
+              : values.validUntil?.format('YYYY-MM-DD'),
+          }),
+        });
+        void message.success(t('contracts.messages.updated'));
+      } else {
+        await apiRequest<ContractRecord>('/contracts', {
+          method: 'POST',
+          body: JSON.stringify({
+            ...commonValues,
+            contractorId: contractor.id,
+            validUntil: values.indefinite
+              ? undefined
+              : values.validUntil?.format('YYYY-MM-DD'),
+          }),
+        });
+        void message.success(t('contracts.messages.created'));
+      }
+      setContractEditorOpen(false);
+      await loadContracts();
+    } catch (error: unknown) {
+      showError(error);
+    } finally {
+      setContractSaving(false);
+    }
+  };
+
+  const terminateContract = async (values: ContractTerminationFormValues) => {
+    if (!terminatingContract) return;
+    setContractSaving(true);
+    try {
+      await apiRequest<ContractRecord>(`/contracts/${terminatingContract.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ terminatedAt: values.terminatedAt.format('YYYY-MM-DD') }),
+      });
+      void message.success(t('contracts.messages.terminated'));
+      setTerminatingContract(undefined);
+      await loadContracts();
+    } catch (error: unknown) {
+      showError(error);
+    } finally {
+      setContractSaving(false);
+    }
+  };
+
+  const undoTermination = async (contract: ContractRecord) => {
+    try {
+      await apiRequest<ContractRecord>(`/contracts/${contract.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ terminatedAt: null }),
+      });
+      void message.success(t('contracts.messages.terminationUndone'));
+      await loadContracts();
+    } catch (error: unknown) {
+      showError(error);
+    }
+  };
+
+  const deleteContract = async (contract: ContractRecord) => {
+    try {
+      await apiRequest<ContractRecord>(`/contracts/${contract.id}`, { method: 'DELETE' });
+      void message.success(t('contracts.messages.deleted'));
+      await loadContracts();
+    } catch (error: unknown) {
+      showError(error);
+    }
+  };
+
   const relatedColumns: ColumnsType<ContractorTransportation> = [
     { title: t('contractors.related.number'), dataIndex: 'number', key: 'number', width: 170, render: (value: string) => <Typography.Text strong>{value}</Typography.Text> },
     {
@@ -829,6 +1028,120 @@ function ContractorDetails({ contractor, related, relatedLoading, paymentText, o
       ].filter(Boolean).join(' · ')}</div></div>,
     },
     { title: t('contractors.related.status'), dataIndex: 'status', key: 'status', width: 180, render: (status: TransportationStatus) => <Tag bordered={false} style={STATUS_COLORS[status]}>{t(`transportations.statuses.${status}`)}</Tag> },
+  ];
+
+  const contractColumns: ColumnsType<ContractRecord> = [
+    {
+      title: t('contracts.columns.number'),
+      dataIndex: 'number',
+      key: 'number',
+      width: 150,
+      render: (value: string) => <Typography.Text strong>{value}</Typography.Text>,
+    },
+    {
+      title: t('contracts.columns.legalEntity'),
+      key: 'legalEntity',
+      width: 190,
+      render: (_, item) => item.legalEntity.name,
+    },
+    {
+      title: t('contracts.columns.signedAt'),
+      dataIndex: 'signedAt',
+      key: 'signedAt',
+      width: 140,
+      render: formatDate,
+    },
+    {
+      title: t('contracts.columns.validUntil'),
+      dataIndex: 'validUntil',
+      key: 'validUntil',
+      width: 150,
+      render: (value: string | null) => value
+        ? formatDate(value)
+        : t('contracts.expiry.perpetual'),
+    },
+    {
+      title: t('contracts.columns.subject'),
+      dataIndex: 'subject',
+      key: 'subject',
+      width: 240,
+      render: (value: string | null) => value || t('common.dash'),
+    },
+    {
+      title: t('contracts.columns.status'),
+      key: 'status',
+      width: 190,
+      render: (_, item) => (
+        <Space size="small">
+          <Tag bordered={false} style={CONTRACT_STATUS_COLORS[item.status]}>
+            {t(`contracts.statuses.${item.status}`)}
+          </Tag>
+          {item.status === 'ACTIVE'
+            && item.daysUntilExpiry !== null
+            && item.daysUntilExpiry <= 30
+            && (
+              <Tooltip title={t('contracts.expiry.hint', { count: item.daysUntilExpiry })}>
+                <Typography.Text type="warning">
+                  {t('contracts.expiry.daysShort', { count: item.daysUntilExpiry })}
+                </Typography.Text>
+              </Tooltip>
+            )}
+        </Space>
+      ),
+    },
+    {
+      title: t('contracts.columns.actions'),
+      key: 'actions',
+      width: 360,
+      render: (_, item) => (
+        <Space size="small" wrap>
+          {mayManageContracts && (
+            <Button type="link" size="small" onClick={() => openEditContract(item)}>
+              {t('contracts.actions.edit')}
+            </Button>
+          )}
+          {mayManageContracts && item.status !== 'TERMINATED' && (
+            <Button
+              type="link"
+              size="small"
+              onClick={() => {
+                terminationForm.resetFields();
+                setTerminatingContract(item);
+              }}
+            >
+              {t('contracts.actions.terminate')}
+            </Button>
+          )}
+          {mayManageContracts && item.status === 'TERMINATED' && (
+            <Popconfirm
+              title={t('contracts.confirm.undoTerminationTitle')}
+              description={t('contracts.confirm.undoTerminationText', { number: item.number })}
+              okText={t('contracts.actions.undoTermination')}
+              cancelText={t('common.cancel')}
+              onConfirm={() => undoTermination(item)}
+            >
+              <Button type="link" size="small">
+                {t('contracts.actions.undoTermination')}
+              </Button>
+            </Popconfirm>
+          )}
+          {mayDeleteContracts && (
+            <Popconfirm
+              title={t('contracts.confirm.deleteTitle')}
+              description={t('contracts.confirm.deleteText', { number: item.number })}
+              okText={t('contracts.actions.delete')}
+              cancelText={t('common.cancel')}
+              okButtonProps={{ danger: true }}
+              onConfirm={() => deleteContract(item)}
+            >
+              <Button type="link" size="small" danger>
+                {t('contracts.actions.delete')}
+              </Button>
+            </Popconfirm>
+          )}
+        </Space>
+      ),
+    },
   ];
 
   return <>
@@ -876,9 +1189,137 @@ function ContractorDetails({ contractor, related, relatedLoading, paymentText, o
       <Table<ContractorTransportation> className="contractor-related-table" rowKey="id" columns={relatedColumns} dataSource={related} loading={relatedLoading} pagination={false} scroll={{ x: 620 }} locale={{ emptyText: t('contractors.related.empty') }} onRow={(item) => ({ onClick: () => onTransportation(item.id) })} />
     </Card>
 
+    <Card
+      className="contractor-detail-card"
+      title={t('contracts.title')}
+      extra={mayManageContracts && (
+        <Button type="primary" icon={<PlusOutlined />} onClick={openCreateContract}>
+          {t('contracts.add')}
+        </Button>
+      )}
+    >
+      <Table<ContractRecord>
+        className="contractor-related-table"
+        rowKey="id"
+        columns={contractColumns}
+        dataSource={contracts}
+        loading={contractsLoading}
+        pagination={false}
+        scroll={{ x: 1420 }}
+        locale={{ emptyText: t('contracts.empty') }}
+        expandable={{
+          expandedRowRender: (item) => (
+            <AttachmentsCard
+              entityType="CONTRACT"
+              entityId={item.id}
+              canUpload={!contractorReadOnly}
+            />
+          ),
+        }}
+      />
+    </Card>
+
     <Card className="contractor-detail-card" title={t('whatsapp.title')}>
       <WhatsAppFeed contractorId={contractor.id} />
     </Card>
+
+    <Modal
+      open={contractEditorOpen}
+      title={t(editingContract ? 'contracts.form.editTitle' : 'contracts.form.createTitle')}
+      okText={t('common.save')}
+      cancelText={t('common.cancel')}
+      confirmLoading={contractSaving}
+      onOk={() => contractForm.submit()}
+      onCancel={() => setContractEditorOpen(false)}
+      destroyOnHidden
+    >
+      <Form<ContractFormValues>
+        form={contractForm}
+        layout="vertical"
+        onFinish={(values) => void saveContract(values)}
+      >
+        <Form.Item
+          name="legalEntityId"
+          label={t('contracts.form.legalEntity')}
+          rules={[{ required: true, message: t('contracts.validation.legalEntity') }]}
+        >
+          <Select
+            showSearch
+            optionFilterProp="label"
+            options={legalEntities.map((item) => ({
+              value: item.id,
+              label: `${item.name} (${item.numberingPrefix})`,
+            }))}
+          />
+        </Form.Item>
+        <Form.Item
+          name="number"
+          label={t('contracts.form.number')}
+          rules={[{ required: true, whitespace: true, message: t('contracts.validation.number') }]}
+        >
+          <Input maxLength={100} />
+        </Form.Item>
+        <Form.Item
+          name="signedAt"
+          label={t('contracts.form.signedAt')}
+          rules={[{ required: true, message: t('contracts.validation.signedAt') }]}
+        >
+          <DatePicker className="full-width" format="DD.MM.YYYY" />
+        </Form.Item>
+        <Form.Item name="indefinite" valuePropName="checked">
+          <Checkbox>{t('contracts.form.indefinite')}</Checkbox>
+        </Form.Item>
+        <Form.Item
+          name="validUntil"
+          label={t('contracts.form.validUntil')}
+          dependencies={['signedAt', 'indefinite']}
+          rules={[({ getFieldValue }) => ({
+            validator: (_, value: Dayjs | undefined) => {
+              if (getFieldValue('indefinite')) return Promise.resolve();
+              if (!value) return Promise.reject(new Error(t('contracts.validation.validUntil')));
+              const signedAt = getFieldValue('signedAt') as Dayjs | undefined;
+              if (signedAt && value.isBefore(signedAt, 'day')) {
+                return Promise.reject(new Error(t('contracts.validation.dateRange')));
+              }
+              return Promise.resolve();
+            },
+          })]}
+        >
+          <DatePicker className="full-width" format="DD.MM.YYYY" disabled={indefinite} />
+        </Form.Item>
+        <Form.Item name="subject" label={t('contracts.form.subject')}>
+          <Input.TextArea maxLength={300} autoSize={{ minRows: 2, maxRows: 4 }} />
+        </Form.Item>
+        <Form.Item name="notes" label={t('contracts.form.notes')}>
+          <Input.TextArea maxLength={1000} autoSize={{ minRows: 2, maxRows: 5 }} />
+        </Form.Item>
+      </Form>
+    </Modal>
+
+    <Modal
+      open={Boolean(terminatingContract)}
+      title={t('contracts.form.terminationTitle')}
+      okText={t('contracts.actions.terminate')}
+      cancelText={t('common.cancel')}
+      confirmLoading={contractSaving}
+      onOk={() => terminationForm.submit()}
+      onCancel={() => setTerminatingContract(undefined)}
+      destroyOnHidden
+    >
+      <Form<ContractTerminationFormValues>
+        form={terminationForm}
+        layout="vertical"
+        onFinish={(values) => void terminateContract(values)}
+      >
+        <Form.Item
+          name="terminatedAt"
+          label={t('contracts.form.terminatedAt')}
+          rules={[{ required: true, message: t('contracts.validation.terminatedAt') }]}
+        >
+          <DatePicker className="full-width" format="DD.MM.YYYY" />
+        </Form.Item>
+      </Form>
+    </Modal>
   </>;
 }
 

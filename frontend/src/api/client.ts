@@ -20,7 +20,9 @@ export async function apiRequest<T>(
   const token = getToken();
   const headers = new Headers(options.headers);
   headers.set('Accept', 'application/json');
-  if (options.body) headers.set('Content-Type', 'application/json');
+  if (options.body && !(options.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
+  }
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
   const response = await fetch(`/api${path}`, { ...options, headers });

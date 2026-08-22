@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ContractQueryDto } from './dto/contract-query.dto';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
-import { daysUntilExpiry, resolveContractStatus } from './contract-rules';
+import { daysUntilExpiry, isValidContractPeriod, resolveContractStatus } from './contract-rules';
 
 const contractInclude = {
   contractor: { select: { id: true, name: true } },
@@ -51,7 +51,7 @@ export class ContractsService {
     await this.ensureRefs(dto.contractorId, dto.legalEntityId);
     const signedAt = this.parseDate(dto.signedAt, 'Дата договора');
     const validUntil = dto.validUntil ? this.parseDate(dto.validUntil, 'Срок действия') : null;
-    if (validUntil && validUntil.getTime() < signedAt.getTime()) {
+    if (!isValidContractPeriod(signedAt, validUntil)) {
       throw new BadRequestException('Срок действия раньше даты договора');
     }
     const row = await this.prisma.contract.create({
@@ -82,13 +82,22 @@ export class ContractsService {
       await this.ensureRefs(current.contractorId, dto.legalEntityId);
       data.legalEntityId = dto.legalEntityId;
     }
-    if (dto.signedAt !== undefined) data.signedAt = this.parseDate(dto.signedAt, 'Дата договора');
+    const signedAt = dto.signedAt !== undefined
+      ? this.parseDate(dto.signedAt, 'Дата договора')
+      : current.signedAt;
+    const validUntil = dto.validUntil !== undefined
+      ? dto.validUntil
+        ? this.parseDate(dto.validUntil, 'Срок действия')
+        : null
+      : current.validUntil;
+    if (
+      (dto.signedAt !== undefined || dto.validUntil !== undefined)
+      && !isValidContractPeriod(signedAt, validUntil)
+    ) {
+      throw new BadRequestException('Срок действия раньше даты договора');
+    }
+    if (dto.signedAt !== undefined) data.signedAt = signedAt;
     if (dto.validUntil !== undefined) {
-      const validUntil = dto.validUntil ? this.parseDate(dto.validUntil, 'Срок действия') : null;
-      const signedAt = (data.signedAt as Date | undefined) ?? current.signedAt;
-      if (validUntil && validUntil.getTime() < signedAt.getTime()) {
-        throw new BadRequestException('Срок действия раньше даты договора');
-      }
       data.validUntil = validUntil;
       // Срок продлили — предупреждение об истечении должно прийти заново.
       data.expiryNotifiedAt = null;

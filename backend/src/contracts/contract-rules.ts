@@ -8,6 +8,10 @@ export interface ContractDates {
   terminatedAt: Date | null;
 }
 
+export function isValidContractPeriod(signedAt: Date, validUntil: Date | null): boolean {
+  return !validUntil || validUntil.getTime() >= signedAt.getTime();
+}
+
 /**
  * Статус договора. Расторжение задаётся вручную и перебивает всё остальное;
  * «истёк» вычисляется из даты окончания, поэтому не требует ручного обновления

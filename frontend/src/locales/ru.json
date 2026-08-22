@@ -240,6 +240,98 @@
       "primaryAccount": "Для документов"
     }
   },
+  "attachments": {
+    "title": "Вложения",
+    "upload": "Загрузить файл",
+    "limit": "Максимальный размер — {{max}} МБ. Разрешённые расширения: {{extensions}}",
+    "limitLoading": "Загрузка ограничений…",
+    "descriptionPlaceholder": "Описание файла (необязательно)",
+    "empty": "Файлы не загружены",
+    "download": "Скачать",
+    "delete": "Удалить",
+    "uploadedBy": "Загрузил(а) {{name}}, {{date}}",
+    "size": {
+      "bytes": "{{value}} Б",
+      "kilobytes": "{{value}} КБ",
+      "megabytes": "{{value}} МБ"
+    },
+    "validation": {
+      "extension": "Такой тип файла загрузить нельзя. Разрешены: {{extensions}}",
+      "size": "Файл больше {{max}} МБ — уменьшите его размер"
+    },
+    "confirm": {
+      "deleteTitle": "Удалить файл?",
+      "deleteText": "Файл «{{name}}» будет удалён"
+    },
+    "messages": {
+      "uploaded": "Файл загружен",
+      "deleted": "Файл удалён"
+    }
+  },
+  "contracts": {
+    "title": "Договоры",
+    "add": "Добавить договор",
+    "empty": "Договоры не добавлены",
+    "columns": {
+      "number": "Номер",
+      "legalEntity": "Юрлицо",
+      "signedAt": "Дата договора",
+      "validUntil": "Срок действия",
+      "subject": "Предмет",
+      "status": "Статус",
+      "actions": "Действия"
+    },
+    "statuses": {
+      "ACTIVE": "Действует",
+      "EXPIRED": "Истёк",
+      "TERMINATED": "Расторгнут"
+    },
+    "expiry": {
+      "perpetual": "Бессрочный",
+      "daysShort": "{{count}} дн.",
+      "hint": "До окончания срока осталось {{count}} дн."
+    },
+    "actions": {
+      "edit": "Изменить",
+      "terminate": "Расторгнуть",
+      "undoTermination": "Снять расторжение",
+      "delete": "Удалить"
+    },
+    "form": {
+      "createTitle": "Новый договор",
+      "editTitle": "Редактирование договора",
+      "terminationTitle": "Расторжение договора",
+      "number": "Номер договора",
+      "legalEntity": "Юрлицо",
+      "signedAt": "Дата договора",
+      "validUntil": "Срок действия",
+      "indefinite": "Бессрочный",
+      "subject": "Предмет договора",
+      "notes": "Примечание",
+      "terminatedAt": "Дата расторжения"
+    },
+    "validation": {
+      "number": "Укажите номер договора",
+      "legalEntity": "Выберите юрлицо",
+      "signedAt": "Укажите дату договора",
+      "validUntil": "Укажите срок действия или отметьте «Бессрочный»",
+      "dateRange": "Срок действия не может быть раньше даты договора",
+      "terminatedAt": "Укажите дату расторжения"
+    },
+    "confirm": {
+      "deleteTitle": "Удалить договор?",
+      "deleteText": "Договор № {{number}} будет удалён",
+      "undoTerminationTitle": "Снять расторжение?",
+      "undoTerminationText": "Договор № {{number}} снова будет иметь статус по сроку действия"
+    },
+    "messages": {
+      "created": "Договор добавлен",
+      "updated": "Договор изменён",
+      "terminated": "Договор расторгнут",
+      "terminationUndone": "Расторжение снято",
+      "deleted": "Договор удалён"
+    }
+  },
   "deals": {
     "title": "Сделки",
     "subtitle": "Заявки клиентов и этапы работы по ним",

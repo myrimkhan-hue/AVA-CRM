@@ -94,6 +94,62 @@ export interface ExchangeRateRecord {
   createdBy: { id: string; fullName: string } | null;
 }
 
+export type AttachmentEntityType =
+  | 'DEAL'
+  | 'TRANSPORTATION'
+  | 'CONTRACTOR'
+  | 'INVOICE'
+  | 'PAYMENT_REQUEST'
+  | 'CONTRACT';
+
+export interface AttachmentRecord {
+  id: string;
+  entityType: AttachmentEntityType;
+  entityId: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  description: string | null;
+  uploadedAt: string;
+  uploadedBy: { id: string; fullName: string };
+}
+
+export interface AttachmentLimits {
+  maxUploadMb: number;
+  allowedExtensions: string[];
+}
+
+export type ContractStatus = 'ACTIVE' | 'EXPIRED' | 'TERMINATED';
+
+export interface ContractRecord {
+  id: string;
+  contractorId: string;
+  legalEntityId: string;
+  number: string;
+  signedAt: string;
+  validUntil: string | null;
+  status: ContractStatus;
+  terminatedAt: string | null;
+  subject: string | null;
+  notes: string | null;
+  expiryNotifiedAt: string | null;
+  createdById: string;
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  contractor: { id: string; name: string };
+  legalEntity: { id: string; name: string; numberingPrefix: string };
+  createdBy: { id: string; fullName: string };
+  daysUntilExpiry: number | null;
+  attachmentEntityType: 'CONTRACT';
+}
+
+export interface LegalEntityReference {
+  id: string;
+  name: string;
+  numberingPrefix: string;
+}
+
 export interface FetchNbrkResult {
   requestedDate: string;
   publishedDate: string | null;

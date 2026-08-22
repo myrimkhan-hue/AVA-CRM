@@ -16,6 +16,7 @@ import { AuthUser } from '../auth/auth-user.type';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { AttachmentQueryDto } from './dto/attachment-query.dto';
 import { UploadAttachmentDto } from './dto/upload-attachment.dto';
+import { ALLOWED_EXTENSIONS } from './attachment-rules';
 import { AttachmentsService, UploadedFile as UploadedFileType } from './attachments.service';
 
 @Controller('attachments')
@@ -25,7 +26,10 @@ export class AttachmentsController {
   /** Ограничения загрузки — чтобы интерфейс показывал их до выбора файла. */
   @Get('limits')
   limits() {
-    return { maxUploadMb: this.attachmentsService.maxUploadMb };
+    return {
+      maxUploadMb: this.attachmentsService.maxUploadMb,
+      allowedExtensions: ALLOWED_EXTENSIONS,
+    };
   }
 
   @Get()
