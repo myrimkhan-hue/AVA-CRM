@@ -1,6 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { GeneratedDocumentType, Prisma } from '@prisma/client';
+import { AuthUser } from '../auth/auth-user.type';
 import { PrismaService } from '../prisma/prisma.service';
+import { generatedDocumentVisibilityWhere } from './document-policy';
+import { DocumentQueryDto } from './dto/document-query.dto';
+import { GenerateTransportRequestDto } from './dto/generate-transport-request.dto';
 import { DocxValues, fillDocx } from './lib/fill-docx';
 
 const DASH = '—';
@@ -65,8 +74,11 @@ export class DocumentsService {
     number: string;
     dealId?: string;
     transportationId?: string;
+    transportationLegId?: string;
+    invoiceId?: string;
     contractorId?: string;
     legalEntityId?: string;
+    generationData?: Prisma.InputJsonValue;
     userId: string;
   }) {
     return this.prisma.generatedDocument.create({
@@ -75,11 +87,124 @@ export class DocumentsService {
         number: params.number,
         dealId: params.dealId,
         transportationId: params.transportationId,
+        transportationLegId: params.transportationLegId,
+        invoiceId: params.invoiceId,
         contractorId: params.contractorId,
         legalEntityId: params.legalEntityId,
+        generationData: params.generationData,
         generatedByUserId: params.userId,
       },
     });
+  }
+
+  async findAll(query: DocumentQueryDto, user: AuthUser) {
+    const generatedAt = this.generatedAtFilter(query.dateFrom, query.dateTo);
+    const documents = await this.prisma.generatedDocument.findMany({
+      where: {
+        AND: [
+          generatedDocumentVisibilityWhere(user),
+          {
+            type: query.type,
+            generatedAt,
+            legalEntityId: query.legalEntityId,
+            contractorId: query.contractorId,
+            generatedByUserId: query.generatedByUserId,
+            number: query.search?.trim()
+              ? { contains: query.search.trim(), mode: 'insensitive' }
+              : undefined,
+          },
+        ],
+      },
+      include: {
+        generatedBy: { select: { id: true, fullName: true } },
+        legalEntity: { select: { id: true, name: true } },
+        contractor: { select: { id: true, name: true } },
+        deal: { select: { id: true, number: true } },
+        transportation: { select: { id: true, number: true } },
+        invoice: { select: { id: true, number: true, transportationId: true } },
+      },
+      orderBy: { generatedAt: 'desc' },
+    });
+
+    return documents.map((document) => ({
+      id: document.id,
+      type: document.type,
+      number: document.number,
+      generatedAt: document.generatedAt,
+      generatedBy: document.generatedBy,
+      legalEntity: document.legalEntity,
+      contractor: document.contractor,
+      source: this.sourceResponse(document),
+    }));
+  }
+
+  async findForDownload(id: string, user: AuthUser) {
+    const document = await this.prisma.generatedDocument.findUnique({ where: { id } });
+    if (!document) throw new NotFoundException('Запись журнала документов не найдена');
+
+    this.assertDownloadRole(document.type, Boolean(document.dealId), user);
+    await this.assertSourceAvailable(document);
+
+    if (!user.roles.some((role) => ['ADMIN', 'DIRECTOR'].includes(role))) {
+      const visible = await this.prisma.generatedDocument.findFirst({
+        where: { AND: [{ id }, generatedDocumentVisibilityWhere(user)] },
+        select: { id: true },
+      });
+      if (!visible) throw new ForbiddenException('Нет доступа к карточке-источнику документа');
+    }
+
+    return document;
+  }
+
+  requireContractorId(value: string | null): string {
+    if (!value) {
+      throw new BadRequestException('В записи журнала не сохранён контрагент договора');
+    }
+    return value;
+  }
+
+  requireLegalEntityId(value: string | null): string {
+    if (!value) {
+      throw new BadRequestException('В записи журнала не сохранено юрлицо документа');
+    }
+    return value;
+  }
+
+  requireTransportationId(value: string | null): string {
+    if (!value) {
+      throw new BadRequestException('В записи журнала не сохранена перевозка документа');
+    }
+    return value;
+  }
+
+  requireTransportationLegId(value: string | null): string {
+    if (!value) {
+      throw new BadRequestException(
+        'Для этой записи журнала не сохранён участок перевозки — скачайте заявку из карточки перевозки',
+      );
+    }
+    return value;
+  }
+
+  requireInvoiceId(value: string | null): string {
+    if (!value) {
+      throw new BadRequestException(
+        'Для этой записи журнала не сохранена ссылка на счёт — скачайте счёт из карточки перевозки',
+      );
+    }
+    return value;
+  }
+
+  requestGenerationData(value: Prisma.JsonValue | null): GenerateTransportRequestDto {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    const data = value as Record<string, Prisma.JsonValue>;
+    return {
+      paymentMethod: typeof data.paymentMethod === 'string' ? data.paymentMethod : undefined,
+      paymentConditions:
+        typeof data.paymentConditions === 'string' ? data.paymentConditions : undefined,
+      documents: typeof data.documents === 'string' ? data.documents : undefined,
+      notes: typeof data.notes === 'string' ? data.notes : undefined,
+    };
   }
 
   async history(params: { dealId?: string; transportationId?: string }) {
@@ -91,6 +216,148 @@ export class DocumentsService {
       include: { generatedBy: { select: { id: true, fullName: true } } },
       orderBy: { generatedAt: 'desc' },
     });
+  }
+
+  private sourceResponse(document: {
+    type: GeneratedDocumentType;
+    number: string;
+    dealId: string | null;
+    transportationId: string | null;
+    invoiceId: string | null;
+    deal: { id: string; number: string } | null;
+    transportation: { id: string; number: string } | null;
+    invoice: { id: string; number: string; transportationId: string } | null;
+  }) {
+    if (document.type === GeneratedDocumentType.CONTRACT && document.dealId) {
+      return {
+        type: 'DEAL' as const,
+        id: document.dealId,
+        number: document.deal?.number ?? null,
+      };
+    }
+    if (
+      document.type === GeneratedDocumentType.TRANSPORT_REQUEST
+      && document.transportationId
+    ) {
+      return {
+        type: 'TRANSPORTATION' as const,
+        id: document.transportationId,
+        number: document.transportation?.number ?? null,
+      };
+    }
+    if (document.type === GeneratedDocumentType.INVOICE && document.invoiceId) {
+      return {
+        type: 'INVOICE' as const,
+        id: document.invoiceId,
+        number: document.invoice?.number ?? document.number,
+        transportationId: document.invoice?.transportationId ?? document.transportationId,
+      };
+    }
+    return null;
+  }
+
+  private generatedAtFilter(
+    dateFrom?: string,
+    dateTo?: string,
+  ): Prisma.DateTimeFilter | undefined {
+    if (!dateFrom && !dateTo) return undefined;
+    return {
+      gte: dateFrom ? this.dateBoundary(dateFrom, false) : undefined,
+      lte: dateTo ? this.dateBoundary(dateTo, true) : undefined,
+    };
+  }
+
+  private dateBoundary(value: string, endOfDay: boolean): Date {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return new Date(`${value}T${endOfDay ? '23:59:59.999' : '00:00:00.000'}Z`);
+    }
+    return new Date(value);
+  }
+
+  private assertDownloadRole(
+    type: GeneratedDocumentType,
+    hasDealSource: boolean,
+    user: AuthUser,
+  ): void {
+    const rolesByType: Record<GeneratedDocumentType, string[]> = {
+      [GeneratedDocumentType.CONTRACT]: hasDealSource
+        ? ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER']
+        : ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'LOGIST'],
+      [GeneratedDocumentType.TRANSPORT_REQUEST]: [
+        'ADMIN',
+        'DIRECTOR',
+        'DEPARTMENT_HEAD',
+        'MANAGER',
+        'LOGIST',
+      ],
+      [GeneratedDocumentType.INVOICE]: [
+        'ADMIN',
+        'DIRECTOR',
+        'DEPARTMENT_HEAD',
+        'MANAGER',
+        'FINANCIER',
+      ],
+    };
+    if (!user.roles.some((role) => rolesByType[type].includes(role))) {
+      throw new ForbiddenException('Недостаточно прав для повторного скачивания документа');
+    }
+  }
+
+  private async assertSourceAvailable(document: {
+    type: GeneratedDocumentType;
+    dealId: string | null;
+    transportationId: string | null;
+    invoiceId: string | null;
+    contractorId: string | null;
+  }): Promise<void> {
+    let source: { deletedAt: Date | null } | null = null;
+    if (document.type === GeneratedDocumentType.CONTRACT && document.dealId) {
+      source = await this.prisma.deal.findUnique({
+        where: { id: document.dealId },
+        select: { deletedAt: true },
+      });
+    } else if (
+      document.type === GeneratedDocumentType.TRANSPORT_REQUEST
+      && document.transportationId
+    ) {
+      const transportation = await this.prisma.transportation.findUnique({
+        where: { id: document.transportationId },
+        select: { deletedAt: true, deal: { select: { deletedAt: true } } },
+      });
+      source = transportation && !transportation.deal.deletedAt ? transportation : null;
+    } else if (document.type === GeneratedDocumentType.INVOICE && document.invoiceId) {
+      source = await this.prisma.invoice.findUnique({
+        where: { id: document.invoiceId },
+        select: { deletedAt: true },
+      });
+    } else if (document.type === GeneratedDocumentType.CONTRACT && document.contractorId) {
+      source = await this.prisma.contractor.findUnique({
+        where: { id: document.contractorId },
+        select: { deletedAt: true },
+      });
+    }
+
+    if (source?.deletedAt || (!source && this.hasExpectedSource(document))) {
+      throw new BadRequestException(
+        'Карточка-источник документа удалена — повторное скачивание невозможно',
+      );
+    }
+  }
+
+  private hasExpectedSource(document: {
+    type: GeneratedDocumentType;
+    dealId: string | null;
+    transportationId: string | null;
+    invoiceId: string | null;
+    contractorId: string | null;
+  }): boolean {
+    if (document.type === GeneratedDocumentType.CONTRACT) {
+      return Boolean(document.dealId || document.contractorId);
+    }
+    if (document.type === GeneratedDocumentType.TRANSPORT_REQUEST) {
+      return Boolean(document.transportationId);
+    }
+    return Boolean(document.invoiceId);
   }
 
   /** Последний сгенерированный договор с этим контрагентом от этого юрлица (для заголовка заявки — "Приложение к договору"). */

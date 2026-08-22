@@ -28,6 +28,7 @@
     "leads": "Лиды",
     "deals": "Сделки",
     "invoices": "Счета",
+    "documents": "Документы",
     "paymentRequests": "Заявки на оплату",
     "reports": "Отчёты",
     "motivation": "Мотивация",
@@ -1087,6 +1088,48 @@
     }
   },
   "documents": {
+    "registry": {
+      "title": "Документы",
+      "subtitle": "Журнал сформированных договоров, заявок и счетов",
+      "empty": "Сформированных документов по выбранным условиям нет",
+      "filters": {
+        "search": "Поиск по номеру документа",
+        "type": "Тип документа",
+        "dateFrom": "Дата с",
+        "dateTo": "Дата по",
+        "legalEntity": "Юрлицо",
+        "contractor": "Контрагент",
+        "generatedBy": "Кто сформировал"
+      },
+      "columns": {
+        "number": "Номер",
+        "type": "Тип",
+        "generatedAt": "Дата формирования",
+        "generatedBy": "Кто сформировал",
+        "legalEntity": "Юрлицо",
+        "contractor": "Контрагент",
+        "source": "Источник",
+        "actions": "Действия"
+      },
+      "types": {
+        "CONTRACT": "Договор",
+        "TRANSPORT_REQUEST": "Транспортная заявка",
+        "INVOICE": "Счёт"
+      },
+      "sources": {
+        "DEAL": "Сделка",
+        "TRANSPORTATION": "Перевозка",
+        "INVOICE": "Счёт"
+      },
+      "actions": {
+        "download": "Скачать заново",
+        "downloadUnavailable": "Для этого типа документа недостаточно прав",
+        "clearFilters": "Сбросить"
+      },
+      "messages": {
+        "downloaded": "Документ сформирован заново"
+      }
+    },
     "contract": {
       "action": "Сгенерировать договор",
       "modalTitle": "Реквизиты для договора",

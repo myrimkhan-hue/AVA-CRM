@@ -14,7 +14,11 @@ export class InvoicePdfService {
     private readonly documentsService: DocumentsService,
   ) {}
 
-  async generate(invoiceId: string, user: AuthUser): Promise<{ buffer: Buffer; filename: string }> {
+  async generate(
+    invoiceId: string,
+    user: AuthUser,
+    existingNumber?: string,
+  ): Promise<{ buffer: Buffer; filename: string }> {
     const invoice = await this.invoicesService.findOne(invoiceId, user);
 
     const [issuer, buyer, latestContract] = await Promise.all([
@@ -24,7 +28,7 @@ export class InvoicePdfService {
     ]);
 
     const html = buildInvoiceHtml({
-      number: invoice.number,
+      number: existingNumber ?? invoice.number,
       issueDate: new Date(invoice.issueDate),
       currencyCode: invoice.currency.code,
       issuer,
@@ -44,16 +48,20 @@ export class InvoicePdfService {
 
     const buffer = await htmlToPdf(html);
 
-    await this.documentsService.logGeneration({
-      type: GeneratedDocumentType.INVOICE,
-      number: invoice.number,
-      transportationId: invoice.transportationId,
-      contractorId: invoice.clientId,
-      legalEntityId: invoice.legalEntityId,
-      userId: user.id,
-    });
+    const number = existingNumber ?? invoice.number;
+    if (!existingNumber) {
+      await this.documentsService.logGeneration({
+        type: GeneratedDocumentType.INVOICE,
+        number,
+        invoiceId: invoice.id,
+        transportationId: invoice.transportationId,
+        contractorId: invoice.clientId,
+        legalEntityId: invoice.legalEntityId,
+        userId: user.id,
+      });
+    }
 
-    const filename = `Счёт_${invoice.number.replace(/\//g, '-')}_${safeName(buyer.name)}.pdf`;
+    const filename = `Счёт_${number.replace(/\//g, '-')}_${safeName(buyer.name)}.pdf`;
     return { buffer, filename };
   }
 }

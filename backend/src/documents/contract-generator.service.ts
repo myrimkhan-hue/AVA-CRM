@@ -20,6 +20,7 @@ export class ContractGeneratorService {
     dealId: string,
     overrides: PartyRequisitesOverrideDto | undefined,
     user: AuthUser,
+    existingNumber?: string,
   ): Promise<{ buffer: Buffer; filename: string }> {
     const deal = await this.dealsService.findOne(dealId, user);
     if (overrides) await this.documentsService.applyContractorOverrides(deal.clientId, overrides);
@@ -35,6 +36,7 @@ export class ContractGeneratorService {
       otherParty: client,
       dealId,
       userId: user.id,
+      existingNumber,
     });
   }
 
@@ -44,6 +46,7 @@ export class ContractGeneratorService {
     legalEntityId: string,
     overrides: PartyRequisitesOverrideDto | undefined,
     user: AuthUser,
+    existingNumber?: string,
   ): Promise<{ buffer: Buffer; filename: string }> {
     if (overrides) await this.documentsService.applyContractorOverrides(contractorId, overrides);
 
@@ -57,6 +60,7 @@ export class ContractGeneratorService {
       ourParty: legalEntity,
       otherParty: contractor,
       userId: user.id,
+      existingNumber,
     });
   }
 
@@ -66,13 +70,15 @@ export class ContractGeneratorService {
     otherParty: PartyInfo;
     dealId?: string;
     userId: string;
+    existingNumber?: string;
   }): Promise<{ buffer: Buffer; filename: string }> {
     const customer = params.ourRole === 'customer' ? params.ourParty : params.otherParty;
     const executor = params.ourRole === 'executor' ? params.ourParty : params.otherParty;
 
     const today = new Date();
     const baseNumber = buildContractNumberBase(params.ourParty.numberingPrefix, params.ourRole, today);
-    const number = await this.documentsService.nextDocumentNumber(baseNumber);
+    const number = params.existingNumber
+      ?? await this.documentsService.nextDocumentNumber(baseNumber);
     const dateStr = formatDateRu(today);
 
     const buffer = await this.documentsService.fillTemplate(TEMPLATE_PATHS.CONTRACT, {
@@ -104,14 +110,16 @@ export class ContractGeneratorService {
       ИСПОЛНИТЕЛЬ_EMAIL: executor.email,
     });
 
-    await this.documentsService.logGeneration({
-      type: GeneratedDocumentType.CONTRACT,
-      number,
-      dealId: params.dealId,
-      contractorId: params.otherParty.id,
-      legalEntityId: params.ourParty.id,
-      userId: params.userId,
-    });
+    if (!params.existingNumber) {
+      await this.documentsService.logGeneration({
+        type: GeneratedDocumentType.CONTRACT,
+        number,
+        dealId: params.dealId,
+        contractorId: params.otherParty.id,
+        legalEntityId: params.ourParty.id,
+        userId: params.userId,
+      });
+    }
 
     const filename = `Договор_${number.replace(/\//g, '-')}_${safeName(params.otherParty.name)}.docx`;
     return { buffer, filename };

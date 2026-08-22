@@ -432,31 +432,32 @@ model Transportation {
 }
 
 model TransportationLeg {
-  id                        String           @id @default(cuid())
-  transportationId          String           @map("transportation_id")
-  orderIndex                Int              @map("order_index")
-  fromPoint                 String           @map("from_point")
-  toPoint                   String           @map("to_point")
+  id                        String              @id @default(cuid())
+  transportationId          String              @map("transportation_id")
+  orderIndex                Int                 @map("order_index")
+  fromPoint                 String              @map("from_point")
+  toPoint                   String              @map("to_point")
   mode                      LegTransportMode
-  subcontractorId           String?          @map("subcontractor_id")
-  subcontractorRate         Decimal?         @map("subcontractor_rate") @db.Decimal(18, 2)
-  subcontractorRateCurrency String?          @map("subcontractor_rate_currency") @db.VarChar(3)
-  plannedStartDate          DateTime?        @map("planned_start_date") @db.Date
-  plannedEndDate            DateTime?        @map("planned_end_date") @db.Date
-  actualStartDate           DateTime?        @map("actual_start_date") @db.Date
-  actualEndDate             DateTime?        @map("actual_end_date") @db.Date
-  vehicleNumber             String?          @map("vehicle_number")
-  trailerNumber             String?          @map("trailer_number")
-  status                    LegStatus        @default(WAITING)
-  driverFullName            String?          @map("driver_full_name")
-  driverPhone               String?          @map("driver_phone")
-  driverIin                 String?          @map("driver_iin")
-  driverLicenseNumber       String?          @map("driver_license_number")
-  driverLicenseDate         DateTime?        @map("driver_license_date") @db.Date
-  driverLicenseIssuer       String?          @map("driver_license_issuer")
-  transportation            Transportation   @relation(fields: [transportationId], references: [id], onDelete: Cascade)
-  subcontractor             Contractor?      @relation("TransportationLegSubcontractor", fields: [subcontractorId], references: [id])
+  subcontractorId           String?             @map("subcontractor_id")
+  subcontractorRate         Decimal?            @map("subcontractor_rate") @db.Decimal(18, 2)
+  subcontractorRateCurrency String?             @map("subcontractor_rate_currency") @db.VarChar(3)
+  plannedStartDate          DateTime?           @map("planned_start_date") @db.Date
+  plannedEndDate            DateTime?           @map("planned_end_date") @db.Date
+  actualStartDate           DateTime?           @map("actual_start_date") @db.Date
+  actualEndDate             DateTime?           @map("actual_end_date") @db.Date
+  vehicleNumber             String?             @map("vehicle_number")
+  trailerNumber             String?             @map("trailer_number")
+  status                    LegStatus           @default(WAITING)
+  driverFullName            String?             @map("driver_full_name")
+  driverPhone               String?             @map("driver_phone")
+  driverIin                 String?             @map("driver_iin")
+  driverLicenseNumber       String?             @map("driver_license_number")
+  driverLicenseDate         DateTime?           @map("driver_license_date") @db.Date
+  driverLicenseIssuer       String?             @map("driver_license_issuer")
+  transportation            Transportation      @relation(fields: [transportationId], references: [id], onDelete: Cascade)
+  subcontractor             Contractor?         @relation("TransportationLegSubcontractor", fields: [subcontractorId], references: [id])
   paymentRequests           PaymentRequest[]
+  generatedDocuments        GeneratedDocument[]
 
   @@unique([transportationId, orderIndex])
   @@index([subcontractorId])
@@ -503,27 +504,28 @@ model InvoiceNumberSequence {
 }
 
 model Invoice {
-  id               String           @id @default(cuid())
-  number           String           @unique
-  transportationId String           @map("transportation_id")
-  legalEntityId    String           @map("legal_entity_id")
-  clientId         String           @map("client_id")
-  currencyCode     String           @map("currency_code") @db.VarChar(3)
-  issueDate        DateTime         @map("issue_date") @db.Date
-  dueDate          DateTime         @map("due_date") @db.Date
-  status           InvoiceStatus    @default(ISSUED)
-  isIntragroup     Boolean          @default(false) @map("is_intragroup")
-  notes            String?
-  deletedAt        DateTime?        @map("deleted_at")
-  createdAt        DateTime         @default(now()) @map("created_at")
-  updatedAt        DateTime         @updatedAt @map("updated_at")
-  transportation   Transportation   @relation(fields: [transportationId], references: [id], onDelete: Restrict)
-  legalEntity      LegalEntity      @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
-  client           Contractor       @relation(fields: [clientId], references: [id], onDelete: Restrict)
-  currency         Currency         @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
-  lines            InvoiceLine[]
-  payments         InvoicePayment[]
-  reimbursementFor PaymentRequest?
+  id                 String              @id @default(cuid())
+  number             String              @unique
+  transportationId   String              @map("transportation_id")
+  legalEntityId      String              @map("legal_entity_id")
+  clientId           String              @map("client_id")
+  currencyCode       String              @map("currency_code") @db.VarChar(3)
+  issueDate          DateTime            @map("issue_date") @db.Date
+  dueDate            DateTime            @map("due_date") @db.Date
+  status             InvoiceStatus       @default(ISSUED)
+  isIntragroup       Boolean             @default(false) @map("is_intragroup")
+  notes              String?
+  deletedAt          DateTime?           @map("deleted_at")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  transportation     Transportation      @relation(fields: [transportationId], references: [id], onDelete: Restrict)
+  legalEntity        LegalEntity         @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
+  client             Contractor          @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  currency           Currency            @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  lines              InvoiceLine[]
+  payments           InvoicePayment[]
+  reimbursementFor   PaymentRequest?
+  generatedDocuments GeneratedDocument[]
 
   @@index([clientId])
   @@index([legalEntityId])
@@ -697,24 +699,35 @@ model DocumentNumberCounter {
 // перевозки при каждом скачивании (тот же принцип, что в исходном
 // contract-generator). Здесь — только лёгкий журнал "кто/когда/какой номер".
 model GeneratedDocument {
-  id                String                @id @default(cuid())
-  type              GeneratedDocumentType
-  number            String
-  dealId            String?               @map("deal_id")
-  transportationId  String?               @map("transportation_id")
-  contractorId      String?               @map("contractor_id")
-  legalEntityId     String?               @map("legal_entity_id")
-  generatedByUserId String                @map("generated_by_user_id")
-  generatedAt       DateTime              @default(now()) @map("generated_at")
-  deal              Deal?                 @relation(fields: [dealId], references: [id], onDelete: SetNull)
-  transportation    Transportation?       @relation(fields: [transportationId], references: [id], onDelete: SetNull)
-  contractor        Contractor?           @relation(fields: [contractorId], references: [id], onDelete: SetNull)
-  legalEntity       LegalEntity?          @relation(fields: [legalEntityId], references: [id], onDelete: SetNull)
-  generatedBy       User                  @relation("GeneratedDocumentGeneratedBy", fields: [generatedByUserId], references: [id], onDelete: Restrict)
+  id                  String                @id @default(cuid())
+  type                GeneratedDocumentType
+  number              String
+  dealId              String?               @map("deal_id")
+  transportationId    String?               @map("transportation_id")
+  transportationLegId String?               @map("transportation_leg_id")
+  invoiceId           String?               @map("invoice_id")
+  contractorId        String?               @map("contractor_id")
+  legalEntityId       String?               @map("legal_entity_id")
+  generatedByUserId   String                @map("generated_by_user_id")
+  generationData      Json?                 @map("generation_data")
+  generatedAt         DateTime              @default(now()) @map("generated_at")
+  deal                Deal?                 @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  transportation      Transportation?       @relation(fields: [transportationId], references: [id], onDelete: SetNull)
+  transportationLeg   TransportationLeg?    @relation(fields: [transportationLegId], references: [id], onDelete: SetNull)
+  invoice             Invoice?              @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  contractor          Contractor?           @relation(fields: [contractorId], references: [id], onDelete: SetNull)
+  legalEntity         LegalEntity?          @relation(fields: [legalEntityId], references: [id], onDelete: SetNull)
+  generatedBy         User                  @relation("GeneratedDocumentGeneratedBy", fields: [generatedByUserId], references: [id], onDelete: Restrict)
 
   @@index([dealId])
   @@index([transportationId])
+  @@index([transportationLegId])
+  @@index([invoiceId])
   @@index([contractorId])
+  @@index([legalEntityId])
+  @@index([generatedByUserId])
+  @@index([type])
+  @@index([generatedAt])
   @@map("generated_documents")
 }
 

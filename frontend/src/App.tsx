@@ -26,6 +26,8 @@ import { PayablesPage } from './pages/PayablesPage';
 import { MotivationLayout } from './components/MotivationLayout';
 import { MyMotivationPage } from './pages/MyMotivationPage';
 import { MotivationReportPage } from './pages/MotivationReportPage';
+import { DocumentsPage } from './pages/DocumentsPage';
+import { DOCUMENT_ACCESS_ROLES } from './documents/access';
 
 const INVOICE_ROLES = [
   'ADMIN',
@@ -65,6 +67,15 @@ function InvoicesRoute() {
   return <InvoicesPage />;
 }
 
+function DocumentsRoute() {
+  const { user } = useAuth();
+  const canAccess = Boolean(
+    user?.roles.some((role) => DOCUMENT_ACCESS_ROLES.includes(role)),
+  );
+  if (!canAccess) return <Navigate to="/transportations" replace />;
+  return <DocumentsPage />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -80,6 +91,7 @@ export default function App() {
           <Route path="deals" element={<DealsRoute />} />
           <Route path="deals/:id" element={<DealDetailRoute />} />
           <Route path="invoices" element={<InvoicesRoute />} />
+          <Route path="documents" element={<DocumentsRoute />} />
           <Route path="payment-requests" element={<PaymentRequestsPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="settings" element={<SettingsLayout />}>

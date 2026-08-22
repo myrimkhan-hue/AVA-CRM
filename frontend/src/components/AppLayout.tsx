@@ -6,6 +6,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../assets/ava-logo.svg';
 import { useAuth } from '../auth/AuthContext';
 import { NotificationBell } from './NotificationBell';
+import { DOCUMENT_ACCESS_ROLES } from '../documents/access';
 
 const { Header, Content } = Layout;
 
@@ -34,6 +35,9 @@ export function AppLayout() {
       'FINANCIER',
     ].includes(role)),
   );
+  const canAccessDocuments = Boolean(
+    user?.roles.some((role) => DOCUMENT_ACCESS_ROLES.includes(role)),
+  );
 
   const navigation = useMemo(
     () => [
@@ -43,6 +47,9 @@ export function AppLayout() {
       ...(!isLogistOnly ? [{ path: '/deals', label: t('nav.deals') }] : []),
       ...(canAccessInvoices
         ? [{ path: '/invoices', label: t('nav.invoices') }]
+        : []),
+      ...(canAccessDocuments
+        ? [{ path: '/documents', label: t('nav.documents') }]
         : []),
       {
         path: '/payment-requests',
@@ -58,7 +65,7 @@ export function AppLayout() {
         }]
         : []),
     ],
-    [canAccessInvoices, canAccessLeads, canManageLegalEntities, canViewReports, isAdmin, isLogistOnly, t],
+    [canAccessDocuments, canAccessInvoices, canAccessLeads, canManageLegalEntities, canViewReports, isAdmin, isLogistOnly, t],
   );
 
   const initials = useMemo(

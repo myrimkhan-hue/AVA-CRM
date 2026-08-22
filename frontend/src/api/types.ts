@@ -119,6 +119,32 @@ export interface AttachmentLimits {
   allowedExtensions: string[];
 }
 
+export type GeneratedDocumentType =
+  | 'CONTRACT'
+  | 'TRANSPORT_REQUEST'
+  | 'INVOICE';
+
+export type GeneratedDocumentSource =
+  | { type: 'DEAL'; id: string; number: string | null }
+  | { type: 'TRANSPORTATION'; id: string; number: string | null }
+  | {
+      type: 'INVOICE';
+      id: string;
+      number: string | null;
+      transportationId: string | null;
+    };
+
+export interface GeneratedDocumentRecord {
+  id: string;
+  type: GeneratedDocumentType;
+  number: string;
+  generatedAt: string;
+  generatedBy: { id: string; fullName: string };
+  legalEntity: { id: string; name: string } | null;
+  contractor: { id: string; name: string } | null;
+  source: GeneratedDocumentSource | null;
+}
+
 export type ContractStatus = 'ACTIVE' | 'EXPIRED' | 'TERMINATED';
 
 export interface ContractRecord {

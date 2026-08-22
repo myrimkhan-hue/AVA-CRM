@@ -25,6 +25,7 @@ export class RequestGeneratorService {
     legId: string,
     dto: GenerateTransportRequestDto,
     user: AuthUser,
+    existingNumber?: string,
   ): Promise<{ buffer: Buffer; filename: string }> {
     const transportation = await this.prisma.transportation.findFirst({
       where: {
@@ -91,7 +92,8 @@ export class RequestGeneratorService {
     const today = new Date();
     const dateStr = formatDateRu(today);
     const baseNumber = buildZayavkaNumberBase(legalEntity.numberingPrefix, today);
-    const number = await this.documentsService.nextDocumentNumber(baseNumber);
+    const number = existingNumber
+      ?? await this.documentsService.nextDocumentNumber(baseNumber);
 
     const latestContract = await this.documentsService.findLatestContract(carrier.id, legalEntity.id);
     const title = latestContract
@@ -169,14 +171,23 @@ export class RequestGeneratorService {
       ПРИМЕЧАНИЕ: dto.notes ?? DASH,
     });
 
-    await this.documentsService.logGeneration({
-      type: GeneratedDocumentType.TRANSPORT_REQUEST,
-      number,
-      transportationId: transportation.id,
-      contractorId: carrier.id,
-      legalEntityId: legalEntity.id,
-      userId: user.id,
-    });
+    if (!existingNumber) {
+      await this.documentsService.logGeneration({
+        type: GeneratedDocumentType.TRANSPORT_REQUEST,
+        number,
+        transportationId: transportation.id,
+        transportationLegId: leg.id,
+        contractorId: carrier.id,
+        legalEntityId: legalEntity.id,
+        generationData: {
+          paymentMethod: dto.paymentMethod ?? null,
+          paymentConditions: dto.paymentConditions ?? null,
+          documents: dto.documents ?? null,
+          notes: dto.notes ?? null,
+        },
+        userId: user.id,
+      });
+    }
 
     const filename = `Заявка_${number.replace(/\//g, '-')}_${safeName(carrier.name)}.docx`;
     return { buffer, filename };

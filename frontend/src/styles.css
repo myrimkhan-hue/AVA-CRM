@@ -311,6 +311,12 @@ button, input { font: inherit; }
 .invoice-totals .ant-descriptions-item-label { width: 190px; }
 .payment-request-list-page { width: min(100%, 1400px); margin: 0 auto; }
 .payment-request-list-page .ant-table-tbody > tr { cursor: pointer; }
+.documents-list-page { width: min(100%, 1400px); margin: 0 auto; }
+.documents-list-page .ant-table-tbody > tr.clickable-row { cursor: pointer; }
+.documents-filter-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.documents-search-filter { width: min(100%, 310px); }
+.documents-select-filter { width: 220px; }
+.documents-period-filter { width: 280px; }
 .leg-payment-requests { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e3e8ef; }
 .leg-payment-requests-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .payment-request-amount { flex: 1; }
