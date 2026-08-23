@@ -38,6 +38,7 @@ button, input { font: inherit; }
 .user-menu { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-left: auto; padding-left: 12px; }
 .user-initials { display: grid; flex-shrink: 0; width: 34px; height: 34px; place-items: center; color: #fff; background: #1b2430; border-radius: 50%; font-size: 12px; font-weight: 700; }
 .user-name { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-button { display: flex; align-items: center; gap: 10px; height: 44px; padding: 4px !important; }
 .drawer-navigation { display: flex; flex-direction: column; gap: 2px; }
 .drawer-navigation-link { position: relative; padding: 12px 14px; color: #66707d; text-align: left; background: transparent; border: 0; border-radius: 8px; cursor: pointer; font-size: 15px; }
 .drawer-navigation-link:hover { color: #1b2430; background: #f6f7f9; }
@@ -400,6 +401,8 @@ button, input { font: inherit; }
 .whatsapp-unmatched-info span { color: #66707d; font-size: 12.5px; }
 .whatsapp-templates-page { width: min(100%, 900px); margin: 0 auto; }
 .document-templates-page { width: min(100%, 1200px); margin: 0 auto; }
+.document-payment-texts-page { width: min(100%, 1200px); margin: 0 auto; }
+.profile-page { width: min(100%, 650px); margin: 0 auto; }
 .document-template-regeneration-alert, .document-template-section { margin-bottom: 14px; }
 .document-template-active { margin-bottom: 14px; }
 .document-template-current-actions { margin: 14px 0; }

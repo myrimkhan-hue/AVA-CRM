@@ -28,6 +28,8 @@ import { MyMotivationPage } from './pages/MyMotivationPage';
 import { MotivationReportPage } from './pages/MotivationReportPage';
 import { DocumentsPage } from './pages/DocumentsPage';
 import { DocumentTemplatesPage } from './pages/DocumentTemplatesPage';
+import { DocumentPaymentTextsPage } from './pages/DocumentPaymentTextsPage';
+import { MyProfilePage } from './pages/MyProfilePage';
 import { DOCUMENT_ACCESS_ROLES } from './documents/access';
 
 const INVOICE_ROLES = [
@@ -95,6 +97,7 @@ export default function App() {
           <Route path="documents" element={<DocumentsRoute />} />
           <Route path="payment-requests" element={<PaymentRequestsPage />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="profile" element={<MyProfilePage />} />
           <Route path="settings" element={<SettingsLayout />}>
             <Route index element={<Navigate to="legal-entities" replace />} />
             <Route path="legal-entities" element={<LegalEntitiesPage />} />
@@ -102,6 +105,7 @@ export default function App() {
             <Route path="motivation" element={<MotivationSettingsPage />} />
             <Route path="whatsapp-templates" element={<WhatsappTemplatesPage />} />
             <Route path="document-templates" element={<DocumentTemplatesPage />} />
+            <Route path="document-payment-texts" element={<DocumentPaymentTextsPage />} />
           </Route>
           <Route path="reports" element={<ReportsLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />

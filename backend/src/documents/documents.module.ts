@@ -9,6 +9,8 @@ import { ContractsController } from './contracts.controller';
 import { DocumentsController } from './documents.controller';
 import { DocumentTemplatesController } from './document-templates.controller';
 import { DocumentTemplatesService } from './document-templates.service';
+import { DocumentPaymentTextsController } from './document-payment-texts.controller';
+import { DocumentPaymentTextsService } from './document-payment-texts.service';
 import { DocumentsService } from './documents.service';
 import { InvoicePdfService } from './invoice-pdf.service';
 import { InvoicesPdfController } from './invoices-pdf.controller';
@@ -32,6 +34,7 @@ import { RequestsController } from './requests.controller';
   ],
   controllers: [
     DocumentTemplatesController,
+    DocumentPaymentTextsController,
     DocumentsController,
     ContractsController,
     RequestsController,
@@ -40,6 +43,7 @@ import { RequestsController } from './requests.controller';
   providers: [
     DocumentsService,
     DocumentTemplatesService,
+    DocumentPaymentTextsService,
     ContractGeneratorService,
     RequestGeneratorService,
     InvoicePdfService,

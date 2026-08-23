@@ -20,6 +20,14 @@ export class CreateUserDto {
   phone?: string;
 
   @IsOptional()
+  @IsString({ message: 'Имя для документов должно быть строкой' })
+  documentName?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Телефон для документов должен быть строкой' })
+  documentPhone?: string;
+
+  @IsOptional()
   @IsString({ message: 'Некорректный отдел' })
   departmentId?: string;
 

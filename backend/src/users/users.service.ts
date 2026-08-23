@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateDocumentContactDto } from './dto/update-document-contact.dto';
 
 const userInclude = {
   department: true,
@@ -22,6 +23,8 @@ export interface UserResponse {
   fullName: string;
   email: string;
   phone: string | null;
+  documentName: string | null;
+  documentPhone: string | null;
   departmentId: string | null;
   department: { id: string; name: string } | null;
   roles: string[];
@@ -59,6 +62,8 @@ export class UsersService {
             fullName: dto.fullName.trim(),
             email,
             phone: dto.phone?.trim() || null,
+            documentName: dto.documentName?.trim() || null,
+            documentPhone: dto.documentPhone?.trim() || null,
             departmentId: dto.departmentId || null,
             passwordHash,
             roles: { create: roles.map((role) => ({ roleId: role.id })) },
@@ -69,6 +74,8 @@ export class UsersService {
           fullName: { old: null, new: created.fullName },
           email: { old: null, new: created.email },
           phone: { old: null, new: created.phone },
+          documentName: { old: null, new: created.documentName },
+          documentPhone: { old: null, new: created.documentPhone },
           departmentId: { old: null, new: created.departmentId },
           roles: { old: [], new: roleCodes },
           password: { old: null, new: '***' },
@@ -96,6 +103,12 @@ export class UsersService {
     if (dto.fullName !== undefined) data.fullName = dto.fullName.trim();
     if (dto.email !== undefined) data.email = dto.email.trim().toLowerCase();
     if (dto.phone !== undefined) data.phone = dto.phone?.trim() || null;
+    if (dto.documentName !== undefined) {
+      data.documentName = dto.documentName?.trim() || null;
+    }
+    if (dto.documentPhone !== undefined) {
+      data.documentPhone = dto.documentPhone?.trim() || null;
+    }
     if (dto.motivationRatePercent !== undefined) {
       data.motivationRatePercent =
         dto.motivationRatePercent === null
@@ -175,6 +188,52 @@ export class UsersService {
     return this.toResponse(user);
   }
 
+  async getOwnDocumentContact(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        fullName: true,
+        phone: true,
+        documentName: true,
+        documentPhone: true,
+      },
+    });
+    if (!user) throw new NotFoundException('Пользователь не найден');
+    return user;
+  }
+
+  async updateOwnDocumentContact(
+    id: string,
+    dto: UpdateDocumentContactDto,
+  ) {
+    const current = await this.getOwnDocumentContact(id);
+    const documentName = dto.documentName === undefined
+      ? current.documentName
+      : dto.documentName?.trim() || null;
+    const documentPhone = dto.documentPhone === undefined
+      ? current.documentPhone
+      : dto.documentPhone?.trim() || null;
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.user.update({
+        where: { id },
+        data: { documentName, documentPhone },
+        select: {
+          id: true,
+          fullName: true,
+          phone: true,
+          documentName: true,
+          documentPhone: true,
+        },
+      });
+      await this.writeAudit(tx, id, id, AuditAction.UPDATE, {
+        documentName: { old: current.documentName, new: documentName },
+        documentPhone: { old: current.documentPhone, new: documentPhone },
+      });
+      return updated;
+    });
+  }
+
   private async getUser(id: string): Promise<UserWithRelations> {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -218,6 +277,16 @@ export class UsersService {
       changes.email = { old: current.email, new: dto.email.trim().toLowerCase() };
     if (dto.phone !== undefined)
       changes.phone = { old: current.phone, new: dto.phone?.trim() || null };
+    if (dto.documentName !== undefined)
+      changes.documentName = {
+        old: current.documentName,
+        new: dto.documentName?.trim() || null,
+      };
+    if (dto.documentPhone !== undefined)
+      changes.documentPhone = {
+        old: current.documentPhone,
+        new: dto.documentPhone?.trim() || null,
+      };
     if (dto.departmentId !== undefined)
       changes.departmentId = { old: current.departmentId, new: dto.departmentId || null };
     if (dto.motivationRatePercent !== undefined)
@@ -261,6 +330,8 @@ export class UsersService {
       fullName: user.fullName,
       email: user.email,
       phone: user.phone,
+      documentName: user.documentName,
+      documentPhone: user.documentPhone,
       departmentId: user.departmentId,
       department: user.department,
       roles: user.roles.map(({ role }) => role.code),

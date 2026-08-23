@@ -143,6 +143,8 @@ model User {
   fullName                   String                      @map("full_name")
   email                      String                      @unique
   phone                      String?
+  documentName               String?                     @map("document_name")
+  documentPhone              String?                     @map("document_phone")
   passwordHash               String                      @map("password_hash")
   departmentId               String?                     @map("department_id")
   isActive                   Boolean                     @default(true) @map("is_active")
@@ -689,6 +691,11 @@ enum DocumentTemplateType {
   TRANSPORT_REQUEST
 }
 
+enum DocumentPaymentTextType {
+  PAYMENT_METHOD
+  PAYMENT_CONDITIONS
+}
+
 // Атомарный счётчик номеров документов. key уже содержит дату
 // (напр. "TT-EX-2407/2026"), поэтому отдельного сброса "раз в день" не нужно —
 // каждый день формирует свой ключ. Второй документ с тем же ключом за день
@@ -717,6 +724,21 @@ model DocumentTemplate {
   @@index([type, uploadedAt])
   @@index([uploadedByUserId])
   @@map("document_templates")
+}
+
+model DocumentPaymentText {
+  id        String                  @id @default(cuid())
+  type      DocumentPaymentTextType
+  shortName String                  @map("short_name")
+  text      String
+  sortOrder Int                     @default(0) @map("sort_order")
+  isDefault Boolean                 @default(false) @map("is_default")
+  isActive  Boolean                 @default(true) @map("is_active")
+  createdAt DateTime                @default(now()) @map("created_at")
+  updatedAt DateTime                @updatedAt @map("updated_at")
+
+  @@index([type, isActive, sortOrder])
+  @@map("document_payment_texts")
 }
 
 // Документы не хранятся файлами — .docx пересобирается из данных сделки/

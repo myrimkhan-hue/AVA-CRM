@@ -120,8 +120,15 @@ export function AppLayout() {
 
           <div className="user-menu">
             <NotificationBell />
-            <span className="user-initials" aria-hidden="true">{initials}</span>
-            <span className="user-name">{user?.fullName}</span>
+            <Button
+              type="text"
+              className="profile-button"
+              aria-label={t('profile.open')}
+              onClick={() => navigate('/profile')}
+            >
+              <span className="user-initials" aria-hidden="true">{initials}</span>
+              <span className="user-name">{user?.fullName}</span>
+            </Button>
             <Button
               type="text"
               className="logout-button"

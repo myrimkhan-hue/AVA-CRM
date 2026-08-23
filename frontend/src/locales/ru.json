@@ -41,7 +41,8 @@
       "currencies": "Валюты и курсы",
       "motivation": "Мотивация",
       "whatsappTemplates": "Шаблоны WhatsApp",
-      "documentTemplates": "Шаблоны документов"
+      "documentTemplates": "Шаблоны документов",
+      "documentPaymentTexts": "Формулировки оплаты"
     }
   },
   "health": {
@@ -1162,6 +1163,9 @@
       "fields": {
         "paymentMethod": "Способ оплаты",
         "paymentConditions": "Условия оплаты",
+        "paymentMethodPreset": "Типовой способ оплаты",
+        "paymentConditionsPreset": "Типовые условия оплаты",
+        "paymentTextPlaceholder": "Выберите формулировку из справочника",
         "documents": "Сопроводительные документы",
         "notes": "Примечание"
       }
@@ -1328,6 +1332,49 @@
       }
     }
   },
+  "documentPaymentTexts": {
+    "title": "Формулировки оплаты",
+    "subtitle": "Библиотека типовых способов и условий оплаты для транспортных заявок",
+    "empty": "Формулировок пока нет",
+    "types": {
+      "PAYMENT_METHOD": "Способ оплаты",
+      "PAYMENT_CONDITIONS": "Условия оплаты"
+    },
+    "actions": {
+      "add": "Добавить формулировку",
+      "edit": "Изменить"
+    },
+    "columns": {
+      "type": "Вид",
+      "shortName": "Короткое название",
+      "text": "Текст",
+      "sortOrder": "Порядок",
+      "status": "Статус",
+      "actions": "Действия"
+    },
+    "status": {
+      "active": "Активна",
+      "inactive": "Неактивна",
+      "default": "По умолчанию"
+    },
+    "form": {
+      "createTitle": "Новая формулировка",
+      "editTitle": "Редактирование формулировки",
+      "type": "Вид формулировки",
+      "typeRequired": "Выберите вид формулировки",
+      "shortName": "Короткое название для списка",
+      "shortNameRequired": "Укажите короткое название",
+      "text": "Полный текст",
+      "textRequired": "Укажите текст формулировки",
+      "sortOrder": "Порядок сортировки",
+      "isDefault": "Подставлять по умолчанию",
+      "isActive": "Активна"
+    },
+    "messages": {
+      "created": "Формулировка создана",
+      "updated": "Формулировка обновлена"
+    }
+  },
   "motivation": {
     "tabs": {
       "my": "Моя мотивация",
@@ -1477,6 +1524,10 @@
       "fullName": "ФИО",
       "email": "Email",
       "phone": "Телефон",
+      "documentName": "Имя для документов",
+      "documentNameHint": "Если не заполнено, используется полное ФИО сотрудника",
+      "documentPhone": "Телефон для документов",
+      "documentPhoneHint": "Если не заполнено, используется обычный телефон сотрудника",
       "department": "Отдел",
       "roles": "Роли",
       "status": "Статус",
@@ -1523,6 +1574,16 @@
       "deactivated": "Пользователь деактивирован",
       "activated": "Пользователь активирован"
     }
+  },
+  "profile": {
+    "open": "Открыть мой профиль",
+    "title": "Мой профиль",
+    "subtitle": "Контактные данные, которые подставляются в документы по вашим перевозкам",
+    "documentName": "Имя для документов",
+    "documentNameHint": "Если оставить пустым, будет использовано: {{name}}",
+    "documentPhone": "Телефон для документов",
+    "documentPhoneHint": "Если оставить пустым, будет использован обычный телефон: {{phone}}",
+    "saved": "Контакт для документов сохранён"
   },
   "notifications": {
     "title": "Уведомления",

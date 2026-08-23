@@ -26,6 +26,14 @@ export class UpdateUserDto {
   phone?: string | null;
 
   @IsOptional()
+  @IsString({ message: 'Имя для документов должно быть строкой' })
+  documentName?: string | null;
+
+  @IsOptional()
+  @IsString({ message: 'Телефон для документов должен быть строкой' })
+  documentPhone?: string | null;
+
+  @IsOptional()
   @IsString({ message: 'Некорректный отдел' })
   departmentId?: string | null;
 

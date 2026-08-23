@@ -1,7 +1,11 @@
-import { App, Form, Input, Modal, Spin } from 'antd';
+import { App, Form, Input, Modal, Select, Spin } from 'antd';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, apiRequest } from '../api/client';
+import type {
+  DocumentPaymentTextOptionsResponse,
+  DocumentPaymentTextRecord,
+} from '../api/types';
 import { mapParsedToFields } from '../documents/parse-requisites';
 import {
   ContractRequisitesFormValues,
@@ -35,13 +39,25 @@ export function GenerateTransportRequestModal({ open, carrierContractorId, onClo
   const [form] = Form.useForm<TransportRequestFormValues>();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [paymentTexts, setPaymentTexts] = useState<DocumentPaymentTextRecord[]>([]);
+  const [paymentMethodTextId, setPaymentMethodTextId] = useState<string>();
+  const [paymentConditionsTextId, setPaymentConditionsTextId] = useState<string>();
 
   useEffect(() => {
     if (!open || !carrierContractorId) return;
     setLoading(true);
     form.resetFields();
-    apiRequest<ContractorRequisites>(`/contractors/${carrierContractorId}`)
-      .then((contractor) => {
+    setPaymentTexts([]);
+    setPaymentMethodTextId(undefined);
+    setPaymentConditionsTextId(undefined);
+    Promise.all([
+      apiRequest<ContractorRequisites>(`/contractors/${carrierContractorId}`),
+      apiRequest<DocumentPaymentTextOptionsResponse>('/document-payment-texts/active'),
+    ])
+      .then(([contractor, options]) => {
+        setPaymentTexts(options.items);
+        setPaymentMethodTextId(options.defaults.PAYMENT_METHOD?.id);
+        setPaymentConditionsTextId(options.defaults.PAYMENT_CONDITIONS?.id);
         form.setFieldsValue({
           legalForm: contractor.legalForm ?? undefined,
           bin: contractor.bin ?? undefined,
@@ -55,6 +71,8 @@ export function GenerateTransportRequestModal({ open, carrierContractorId, onClo
           signBasis: contractor.signBasis ?? undefined,
           phone: contractor.phone ?? undefined,
           email: contractor.email ?? undefined,
+          paymentMethod: options.defaults.PAYMENT_METHOD?.text,
+          paymentConditions: options.defaults.PAYMENT_CONDITIONS?.text,
           documents: 'ТТН',
         });
       })
@@ -65,6 +83,15 @@ export function GenerateTransportRequestModal({ open, carrierContractorId, onClo
       })
       .finally(() => setLoading(false));
   }, [carrierContractorId, form, message, open, t]);
+
+  const selectPaymentText = (
+    id: string | undefined,
+    field: 'paymentMethod' | 'paymentConditions',
+  ) => {
+    if (!id) return;
+    const selected = paymentTexts.find((item) => item.id === id);
+    if (selected) form.setFieldValue(field, selected.text);
+  };
 
   const submit = async (values: TransportRequestFormValues) => {
     setSaving(true);
@@ -103,11 +130,47 @@ export function GenerateTransportRequestModal({ open, carrierContractorId, onClo
             onFinish={(values) => void submit(values)}
           >
             <div className="form-grid two">
-              <Form.Item name="paymentMethod" label={t('documents.request.fields.paymentMethod')}>
-                <Input placeholder="Безналичный расчёт" />
+              <Form.Item label={t('documents.request.fields.paymentMethodPreset')}>
+                <Select
+                  allowClear
+                  value={paymentMethodTextId}
+                  placeholder={t('documents.request.fields.paymentTextPlaceholder')}
+                  options={paymentTexts
+                    .filter((item) => item.type === 'PAYMENT_METHOD')
+                    .map((item) => ({ value: item.id, label: item.shortName }))}
+                  onChange={(id) => {
+                    setPaymentMethodTextId(id);
+                    selectPaymentText(id, 'paymentMethod');
+                  }}
+                />
               </Form.Item>
-              <Form.Item name="paymentConditions" label={t('documents.request.fields.paymentConditions')}>
-                <Input />
+              <Form.Item label={t('documents.request.fields.paymentConditionsPreset')}>
+                <Select
+                  allowClear
+                  value={paymentConditionsTextId}
+                  placeholder={t('documents.request.fields.paymentTextPlaceholder')}
+                  options={paymentTexts
+                    .filter((item) => item.type === 'PAYMENT_CONDITIONS')
+                    .map((item) => ({ value: item.id, label: item.shortName }))}
+                  onChange={(id) => {
+                    setPaymentConditionsTextId(id);
+                    selectPaymentText(id, 'paymentConditions');
+                  }}
+                />
+              </Form.Item>
+              <Form.Item
+                name="paymentMethod"
+                label={t('documents.request.fields.paymentMethod')}
+                className="span-all"
+              >
+                <Input.TextArea rows={3} />
+              </Form.Item>
+              <Form.Item
+                name="paymentConditions"
+                label={t('documents.request.fields.paymentConditions')}
+                className="span-all"
+              >
+                <Input.TextArea rows={3} />
               </Form.Item>
               <Form.Item name="documents" label={t('documents.request.fields.documents')}>
                 <Input />

@@ -10,6 +10,7 @@ import { GenerateTransportRequestDto } from './dto/generate-transport-request.dt
 import { amountToWords, formatAmount } from './lib/amount-to-words';
 import { safeName } from './lib/fill-docx';
 import { buildZayavkaNumberBase, formatDateRu } from './lib/format-date-ru';
+import { documentContact } from './lib/document-contact';
 
 const DASH = '—';
 
@@ -55,7 +56,14 @@ export class RequestGeneratorService {
         deal: {
           select: { legalEntityId: true },
         },
-        logist: { select: { fullName: true, phone: true } },
+        logist: {
+          select: {
+            fullName: true,
+            phone: true,
+            documentName: true,
+            documentPhone: true,
+          },
+        },
         legs: {
           where: { id: legId },
           select: {
@@ -119,6 +127,7 @@ export class RequestGeneratorService {
       leg.driverIin && `ИИН ${leg.driverIin}`,
       leg.driverLicenseNumber && `В/У ${leg.driverLicenseNumber}`,
     ].filter(Boolean).join(', ') || DASH;
+    const managerContact = documentContact(transportation.logist);
 
     const templateValues: Record<
       TransportRequestTemplatePlaceholder,
@@ -139,8 +148,8 @@ export class RequestGeneratorService {
       ЗАКАЗЧИК_СЧЕТ: legalEntity.account,
       ЗАКАЗЧИК_ТЕЛЕФОН: legalEntity.phone,
       ЗАКАЗЧИК_EMAIL: legalEntity.email,
-      ЗАКАЗЧИК_МЕНЕДЖЕР: transportation.logist.fullName,
-      ЗАКАЗЧИК_МЕНЕДЖЕР_ТЕЛ: transportation.logist.phone ?? DASH,
+      ЗАКАЗЧИК_МЕНЕДЖЕР: managerContact.name,
+      ЗАКАЗЧИК_МЕНЕДЖЕР_ТЕЛ: managerContact.phone,
       ГРУЗООТПРАВИТЕЛЬ: transportation.shipperName ?? DASH,
       ГРУЗОПОЛУЧАТЕЛЬ: transportation.consigneeName ?? DASH,
       МАРШРУТ: `${leg.fromPoint} — ${leg.toPoint}`,

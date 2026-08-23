@@ -31,6 +31,8 @@ interface UserFormValues {
   fullName: string;
   email: string;
   phone?: string;
+  documentName?: string;
+  documentPhone?: string;
   departmentId?: string;
   roles: string[];
   password?: string;
@@ -118,6 +120,8 @@ export function UsersPage() {
       fullName: user.fullName,
       email: user.email,
       phone: user.phone ?? undefined,
+      documentName: user.documentName ?? undefined,
+      documentPhone: user.documentPhone ?? undefined,
       departmentId: user.departmentId ?? undefined,
       roles: user.roles,
       motivationRatePercent: user.motivationRatePercent
@@ -277,6 +281,16 @@ export function UsersPage() {
           <Form.Item name="fullName" label={t('users.form.fullName')} rules={[{ required: true, message: t('validation.fullNameRequired') }]}><Input /></Form.Item>
           <Form.Item name="email" label={t('users.form.email')} rules={[{ required: true, message: t('validation.emailRequired') }, { type: 'email', message: t('validation.emailInvalid') }]}><Input /></Form.Item>
           <Form.Item name="phone" label={t('users.form.phone')}><Input /></Form.Item>
+          <Form.Item
+            name="documentName"
+            label={t('users.form.documentName')}
+            extra={t('users.form.documentNameHint')}
+          ><Input /></Form.Item>
+          <Form.Item
+            name="documentPhone"
+            label={t('users.form.documentPhone')}
+            extra={t('users.form.documentPhoneHint')}
+          ><Input /></Form.Item>
           <Form.Item name="departmentId" label={t('users.form.department')}><Select allowClear placeholder={t('users.form.departmentPlaceholder')} options={departments.map((item) => ({ value: item.id, label: item.name }))} /></Form.Item>
           <Form.Item name="roles" label={t('users.form.roles')} rules={[{ required: true, type: 'array', min: 1, message: t('validation.rolesRequired') }]}><Select mode="multiple" placeholder={t('users.form.rolesPlaceholder')} options={roles.map((role) => ({ value: role.code, label: role.name }))} /></Form.Item>
           {editingUser && (

@@ -26,6 +26,8 @@ export interface UserRecord {
   fullName: string;
   email: string;
   phone: string | null;
+  documentName: string | null;
+  documentPhone: string | null;
   departmentId: string | null;
   department: Department | null;
   roles: string[];
@@ -33,6 +35,35 @@ export interface UserRecord {
   motivationRatePercent: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface DocumentContactRecord {
+  id: string;
+  fullName: string;
+  phone: string | null;
+  documentName: string | null;
+  documentPhone: string | null;
+}
+
+export type DocumentPaymentTextType =
+  | 'PAYMENT_METHOD'
+  | 'PAYMENT_CONDITIONS';
+
+export interface DocumentPaymentTextRecord {
+  id: string;
+  type: DocumentPaymentTextType;
+  shortName: string;
+  text: string;
+  sortOrder: number;
+  isDefault: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DocumentPaymentTextOptionsResponse {
+  items: DocumentPaymentTextRecord[];
+  defaults: Record<DocumentPaymentTextType, DocumentPaymentTextRecord | null>;
 }
 
 export type TaxRegime = 'GENERAL' | 'SIMPLIFIED' | 'OTHER';

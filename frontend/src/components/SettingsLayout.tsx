@@ -20,7 +20,9 @@ export function SettingsLayout() {
         ? 'whatsapp-templates'
         : location.pathname.includes('/settings/document-templates')
           ? 'document-templates'
-          : 'legal-entities';
+          : location.pathname.includes('/settings/document-payment-texts')
+            ? 'document-payment-texts'
+            : 'legal-entities';
 
   if (!canManage) return <Navigate to="/" replace />;
 
@@ -49,6 +51,9 @@ export function SettingsLayout() {
           }, {
             key: 'document-templates',
             label: t('settings.tabs.documentTemplates'),
+          }, {
+            key: 'document-payment-texts',
+            label: t('settings.tabs.documentPaymentTexts'),
           }] : []),
         ]}
       />
