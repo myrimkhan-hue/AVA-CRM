@@ -23,7 +23,7 @@ import type {
   GeneratedDocumentType,
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
-import { DOCUMENT_DOWNLOAD_ROLES } from '../documents/access';
+import { canDownloadDocument } from '../documents/access';
 
 const DOCUMENT_TYPES: GeneratedDocumentType[] = [
   'CONTRACT',
@@ -158,16 +158,7 @@ export function DocumentsPage() {
   }, [message, showError, t]);
 
   const canDownload = useCallback((document: GeneratedDocumentRecord) => {
-    const roles = document.type === 'INVOICE'
-      ? DOCUMENT_DOWNLOAD_ROLES.INVOICE
-      : document.type === 'TRANSPORT_REQUEST'
-        ? DOCUMENT_DOWNLOAD_ROLES.TRANSPORT_REQUEST
-        : document.source === null
-          ? DOCUMENT_DOWNLOAD_ROLES.CONTRACT_WITHOUT_DEAL
-          : DOCUMENT_DOWNLOAD_ROLES.CONTRACT;
-    return Boolean(
-      user?.roles.some((role) => (roles as readonly string[]).includes(role)),
-    );
+    return canDownloadDocument(document, user?.roles ?? []);
   }, [user?.roles]);
 
   const resetFilters = () => {

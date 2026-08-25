@@ -23,6 +23,14 @@ export class DocumentQueryDto {
   contractorId?: string;
 
   @IsOptional()
+  @IsString({ message: 'dealId должен быть строкой' })
+  dealId?: string;
+
+  @IsOptional()
+  @IsString({ message: 'transportationId должен быть строкой' })
+  transportationId?: string;
+
+  @IsOptional()
   @IsString({ message: 'generatedByUserId должен быть строкой' })
   generatedByUserId?: string;
 

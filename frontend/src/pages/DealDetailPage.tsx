@@ -27,6 +27,8 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiDownload, ApiError, apiRequest, saveBlob } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { AttachmentsCard } from '../components/AttachmentsCard';
+import { DocumentsHistoryCard } from '../components/DocumentsHistoryCard';
 import {
   ContractRequisitesFormValues,
   GenerateContractModal,
@@ -85,6 +87,7 @@ export function DealDetailPage() {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [contractOpen, setContractOpen] = useState(false);
+  const [documentsToken, setDocumentsToken] = useState(0);
   const [loadFailed, setLoadFailed] = useState(false);
   const selectedReason = Form.useWatch('rejectReason', rejectForm);
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
@@ -160,6 +163,7 @@ export function DealDetailPage() {
       body: JSON.stringify({ overrides }),
     });
     saveBlob(blob, filename);
+    setDocumentsToken((value) => value + 1);
     void message.success(t('documents.contract.generated'));
   };
 
@@ -311,6 +315,9 @@ export function DealDetailPage() {
             { key: 'department', label: t('deals.details.department'), children: deal.department?.name || t('common.dash') },
           ]} />
         </Card>
+
+        <DocumentsHistoryCard className="transport-card" dealId={deal.id} refreshToken={documentsToken} />
+        <AttachmentsCard className="transport-card" entityType="DEAL" entityId={deal.id} />
 
         <Card className="transport-card" title={t('deals.detail.sections.timeline')}>
           <div className="deal-timeline">

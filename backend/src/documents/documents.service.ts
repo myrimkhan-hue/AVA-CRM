@@ -103,6 +103,8 @@ export class DocumentsService {
             generatedAt,
             legalEntityId: query.legalEntityId,
             contractorId: query.contractorId,
+            dealId: query.dealId,
+            transportationId: query.transportationId,
             generatedByUserId: query.generatedByUserId,
             number: query.search?.trim()
               ? { contains: query.search.trim(), mode: 'insensitive' }
@@ -200,17 +202,6 @@ export class DocumentsService {
       documents: typeof data.documents === 'string' ? data.documents : undefined,
       notes: typeof data.notes === 'string' ? data.notes : undefined,
     };
-  }
-
-  async history(params: { dealId?: string; transportationId?: string }) {
-    return this.prisma.generatedDocument.findMany({
-      where: {
-        dealId: params.dealId,
-        transportationId: params.transportationId,
-      },
-      include: { generatedBy: { select: { id: true, fullName: true } } },
-      orderBy: { generatedAt: 'desc' },
-    });
   }
 
   private sourceResponse(document: {

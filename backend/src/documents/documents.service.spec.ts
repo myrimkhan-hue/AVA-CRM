@@ -34,6 +34,7 @@ function journalRecord(overrides: Record<string, unknown> = {}) {
 
 describe('Права доступа: повторное скачивание из журнала документов', () => {
   const generatedDocument = {
+    findMany: jest.fn(),
     findUnique: jest.fn(),
     findFirst: jest.fn(),
   };
@@ -54,6 +55,19 @@ describe('Права доступа: повторное скачивание и�
     jest.clearAllMocks();
     deal.findUnique.mockResolvedValue({ deletedAt: null });
     contractor.findUnique.mockResolvedValue({ deletedAt: null });
+    generatedDocument.findMany.mockResolvedValue([]);
+  });
+
+  it.each([
+    ['dealId', 'deal-1'],
+    ['transportationId', 'transportation-1'],
+  ] as const)('добавляет фильтр %s в условия журнала', async (field, value) => {
+    await service.findAll({ [field]: value }, user(['ADMIN']));
+
+    const findManyParams = generatedDocument.findMany.mock.calls[0][0];
+    expect(findManyParams.where.AND[1]).toEqual(
+      expect.objectContaining({ [field]: value }),
+    );
   });
 
   it('разрешает менеджеру скачать документ видимой сделки', async () => {

@@ -32,6 +32,7 @@ interface AttachmentsCardProps {
   entityId: string;
   title?: ReactNode;
   canUpload?: boolean;
+  className?: string;
 }
 
 function formatFileSize(bytes: number, t: TFunction): string {
@@ -52,6 +53,7 @@ export function AttachmentsCard({
   entityId,
   title,
   canUpload = true,
+  className,
 }: AttachmentsCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -167,7 +169,7 @@ export function AttachmentsCard({
   }).format(new Date(value));
 
   return (
-    <Card title={title ?? t('attachments.title')} size="small">
+    <Card className={className} title={title ?? t('attachments.title')} size="small">
       {canUpload && (
         <Space direction="vertical" className="full-width" size="small">
           <Typography.Text type="secondary">

@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiDownload, apiRequest, saveBlob } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { AttachmentsCard } from '../components/AttachmentsCard';
+import { DocumentsHistoryCard } from '../components/DocumentsHistoryCard';
 import { GenerateTransportRequestModal, TransportRequestFormValues } from '../components/GenerateTransportRequestModal';
 import { MarginCard } from '../components/MarginCard';
 import { MoneyInput } from '../components/MoneyInput';
@@ -29,6 +31,7 @@ export function TransportationDetailPage() {
   const [editOpen, setEditOpen] = useState(false); const [legOpen, setLegOpen] = useState(false); const [editingLeg, setEditingLeg] = useState<Leg>(); const [statusDate, setStatusDate] = useState<{ status: TransportationStatus; date: Dayjs; notifyWhatsapp: boolean; whatsappTemplateId?: string }>();
   const [carriers, setCarriers] = useState<Ref[]>([]); const [editForm] = Form.useForm<EditValues>(); const [legForm] = Form.useForm<LegValues>();
   const [requestLeg, setRequestLeg] = useState<Leg>();
+  const [documentsToken, setDocumentsToken] = useState(0);
   const [whatsappTemplates, setWhatsappTemplates] = useState<{ id: string; title: string }[]>([]);
   const showError = useCallback((error: unknown) => void message.error(errorText(error, t('errors.connection'))), [message, t]);
   const load = useCallback(async () => { if (!id) return; setLoading(true); try { const [record, events] = await Promise.all([apiRequest<Transportation>(`/transportations/${id}`), apiRequest<Event[]>(`/transportations/${id}/history`)]); setItem(record); setHistory(events.reverse()); } catch (error) { showError(error); } finally { setLoading(false); } }, [id, showError]);
@@ -44,6 +47,7 @@ export function TransportationDetailPage() {
       body: JSON.stringify({ paymentMethod, paymentConditions, documents, notes, overrides }),
     });
     saveBlob(blob, filename);
+    setDocumentsToken((value) => value + 1);
     void message.success(t('documents.request.generated'));
   };
   const statusIndex = item ? TRANSPORTATION_STATUSES.indexOf(item.status) : 0; const nextStatus = TRANSPORTATION_STATUSES[statusIndex + 1];
@@ -99,6 +103,8 @@ export function TransportationDetailPage() {
     </div><aside className="detail-side">{hasClientRate ? <Card className="transport-card" title={t('transportationDetail.clientRate')}>{money(item.clientRate, item.clientRateCurrency, t('common.dash'))}</Card> : <Card className="locked-rate"><LockOutlined />{t('transportationDetail.rateHidden')}</Card>}
       {hasClientRate && <MarginCard endpoint={`/transportations/${item.id}/margin`} />}
       <Card className="transport-card" title={t('transportationDetail.sections.info')}><Descriptions column={1} size="small" items={[[t('transportationWizard.fields.deal'),item.deal.number],[t('transportationWizard.fields.client'),item.deal.client.name],[t('transportationWizard.fields.legalEntity'),item.deal.legalEntity.name],[t('transportationWizard.fields.logist'),item.logist.fullName],[t('transportationDetail.created'),formatDate(item.createdAt)],[t('transportationWizard.fields.plannedDelivery'),formatDate(item.plannedDeliveryDate)],[t('transportationDetail.actualDelivery'),formatDate(item.actualDeliveryDate)],[t('transportationDetail.unloadingFact'),formatDate(item.unloadingEventDate)]].map(([label, children], index) => ({ key: index, label, children }))} /><Typography.Paragraph type="secondary" className="motivation-note">{t('transportationDetail.motivation')}</Typography.Paragraph></Card>
+      <DocumentsHistoryCard className="transport-card" transportationId={item.id} refreshToken={documentsToken} />
+      <AttachmentsCard className="transport-card" entityType="TRANSPORTATION" entityId={item.id} />
       <Card className="transport-card" title={t('transportationDetail.sections.history')}><div className="history-list">{history.map((event) => <div key={event.id} className={event.fromStatus && TRANSPORTATION_STATUSES.indexOf(event.toStatus) < TRANSPORTATION_STATUSES.indexOf(event.fromStatus) ? 'rollback-event' : ''}><b>{event.fromStatus && TRANSPORTATION_STATUSES.indexOf(event.toStatus) < TRANSPORTATION_STATUSES.indexOf(event.fromStatus) ? t('transportationDetail.history.rollback', { from: t(`transportations.statuses.${event.fromStatus}`), to: t(`transportations.statuses.${event.toStatus}`) }) : t(`transportations.statuses.${event.toStatus}`)}</b><small>{event.setBy.fullName} · {formatDate(event.setAt, true)}</small>{event.eventDate && <small>{t('transportationDetail.history.eventDate', { date: formatDate(event.eventDate) })}</small>}</div>)}</div></Card></aside></div>
     <Modal open={Boolean(statusDate)} title={statusDate && t(`transportationDetail.status.dateTitles.${statusDate.status}`)} onCancel={() => setStatusDate(undefined)} onOk={() => void confirmStatusDate()} okButtonProps={{ disabled: Boolean(statusDate?.notifyWhatsapp && !statusDate.whatsappTemplateId) }}>
       <Typography.Paragraph type="secondary">{statusDate && t(`transportationDetail.status.dateHints.${statusDate.status}`)}</Typography.Paragraph>
