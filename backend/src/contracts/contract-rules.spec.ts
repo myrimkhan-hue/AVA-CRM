@@ -1,8 +1,10 @@
 import { ContractStatus } from '@prisma/client';
 import {
   daysUntilExpiry,
+  DEFAULT_EXPIRY_ESCALATION_DAYS,
   DEFAULT_EXPIRY_WARNING_DAYS,
   isValidContractPeriod,
+  needsExpiryEscalation,
   needsExpiryWarning,
   resolveContractStatus,
 } from './contract-rules';
@@ -107,5 +109,60 @@ describe('Предупреждение об истечении договора'
   it('учитывает настроенный срок предупреждения, а не только 30 дней', () => {
     expect(needsExpiryWarning({ ...base, validUntil: d('2026-08-20') }, today, 7)).toBe(false);
     expect(needsExpiryWarning({ ...base, validUntil: d('2026-08-03') }, today, 7)).toBe(true);
+  });
+});
+
+describe('Эскалация истечения договора руководителям', () => {
+  const base = {
+    terminatedAt: null,
+    expiryEscalatedAt: null,
+    expiryNotifiedAt: d('2026-07-25'),
+  };
+
+  it('по умолчанию эскалирует ровно за 7 дней', () => {
+    expect(DEFAULT_EXPIRY_ESCALATION_DAYS).toBe(7);
+    expect(needsExpiryEscalation({ ...base, validUntil: d('2026-08-06') }, today)).toBe(true);
+  });
+
+  it('не эскалирует за 8 дней', () => {
+    expect(needsExpiryEscalation({ ...base, validUntil: d('2026-08-07') }, today)).toBe(false);
+  });
+
+  it('эскалирует в последний день действия договора', () => {
+    expect(needsExpiryEscalation({ ...base, validUntil: d('2026-07-30') }, today)).toBe(true);
+  });
+
+  it('не эскалирует уже истёкший вчера договор', () => {
+    expect(needsExpiryEscalation({ ...base, validUntil: d('2026-07-29') }, today)).toBe(false);
+  });
+
+  it('не эскалирует расторгнутый договор', () => {
+    expect(needsExpiryEscalation({
+      ...base,
+      validUntil: d('2026-08-06'),
+      terminatedAt: d('2026-07-01'),
+    }, today)).toBe(false);
+  });
+
+  it('не эскалирует бессрочный договор', () => {
+    expect(needsExpiryEscalation({ ...base, validUntil: null }, today)).toBe(false);
+  });
+
+  it('не эскалирует повторно, если руководителей уже уведомляли', () => {
+    expect(needsExpiryEscalation({
+      ...base,
+      validUntil: d('2026-08-06'),
+      expiryEscalatedAt: d('2026-07-29'),
+    }, today)).toBe(false);
+  });
+
+  it('не эскалирует, пока менеджера ещё не предупреждали', () => {
+    // Договор завели позже, чем за 7 дней до окончания: сначала должен узнать
+    // менеджер, руководители — не раньше следующего дня.
+    expect(needsExpiryEscalation({
+      ...base,
+      validUntil: d('2026-08-06'),
+      expiryNotifiedAt: null,
+    }, today)).toBe(false);
   });
 });

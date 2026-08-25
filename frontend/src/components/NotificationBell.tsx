@@ -26,6 +26,7 @@ const ENTITY_ROUTES: Record<string, (id: string) => string> = {
   Transportation: (id) => `/transportations/${id}`,
   PaymentRequest: () => '/payment-requests',
   Lead: (id) => `/leads?open=${id}`,
+  Contractor: (id) => `/contractors?open=${id}`,
 };
 
 export function NotificationBell() {

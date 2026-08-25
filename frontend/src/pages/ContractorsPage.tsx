@@ -39,7 +39,7 @@ import type { ColumnsType } from 'antd/es/table';
 import dayjs, { type Dayjs } from 'dayjs';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
 import type {
   ContractRecord,
@@ -218,6 +218,7 @@ export function ContractorsPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { message, modal } = App.useApp();
   const [form] = Form.useForm<ContractorFormValues>();
   const [contractors, setContractors] = useState<Contractor[]>([]);
@@ -352,6 +353,41 @@ export function ContractorsPage() {
   const filteredContractors = useMemo(() => contractors.filter(
     (item) => typeFilter === 'ALL' || item.types.includes(typeFilter),
   ), [contractors, typeFilter]);
+
+  const openContractor = useCallback(async (id: string): Promise<boolean> => {
+    setSearchInput('');
+    setSearch('');
+    setTypeFilter('ALL');
+    setViewMode('cards');
+    try {
+      const contractor = await apiRequest<Contractor>(`/contractors/${id}`);
+      setContractors((current) => {
+        const existing = current.some((item) => item.id === contractor.id);
+        return existing
+          ? current.map((item) => item.id === contractor.id ? contractor : item)
+          : [...current, contractor].sort((left, right) => left.name.localeCompare(right.name, 'ru'));
+      });
+      setSelectedId(contractor.id);
+      return true;
+    } catch (error: unknown) {
+      showError(error);
+      return false;
+    }
+  }, [showError]);
+
+  // Открыть карточку контрагента по ссылке из уведомления только при первой загрузке страницы.
+  useEffect(() => {
+    const openId = searchParams.get('open');
+    if (openId) {
+      void openContractor(openId).then((opened) => {
+        if (!opened) return;
+        const next = new URLSearchParams(searchParams);
+        next.delete('open');
+        setSearchParams(next, { replace: true });
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!filteredContractors.some((item) => item.id === selectedId)) {

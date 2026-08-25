@@ -101,6 +101,7 @@ export class ContractsService {
       data.validUntil = validUntil;
       // Срок продлили — предупреждение об истечении должно прийти заново.
       data.expiryNotifiedAt = null;
+      data.expiryEscalatedAt = null;
     }
     if (dto.terminatedAt !== undefined) {
       data.terminatedAt = dto.terminatedAt ? this.parseDate(dto.terminatedAt, 'Дата расторжения') : null;

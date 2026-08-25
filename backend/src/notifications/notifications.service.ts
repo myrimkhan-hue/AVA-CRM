@@ -2,6 +2,12 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { DealStage, InvoiceStatus, NotificationType } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
+import {
+  DEFAULT_EXPIRY_WARNING_DAYS,
+  daysUntilExpiry,
+  needsExpiryEscalation,
+  needsExpiryWarning,
+} from '../contracts/contract-rules';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
 import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto';
@@ -145,6 +151,9 @@ export class NotificationsService {
     await this.checkStalledDeals().catch((error: unknown) =>
       this.logger.error('Ошибка проверки зависших сделок', error),
     );
+    await this.checkExpiringContracts().catch((error: unknown) =>
+      this.logger.error('Ошибка проверки истекающих договоров', error),
+    );
   }
 
   private async checkOverdueTransportations(): Promise<void> {
@@ -222,9 +231,113 @@ export class NotificationsService {
     }
   }
 
+  private async checkExpiringContracts(): Promise<void> {
+    const today = this.today();
+    const expiryWindowEnd = new Date(today);
+    expiryWindowEnd.setUTCDate(expiryWindowEnd.getUTCDate() + DEFAULT_EXPIRY_WARNING_DAYS);
+    const contracts = await this.prisma.contract.findMany({
+      where: {
+        deletedAt: null,
+        terminatedAt: null,
+        validUntil: { gte: today, lte: expiryWindowEnd },
+      },
+      select: {
+        id: true,
+        number: true,
+        validUntil: true,
+        terminatedAt: true,
+        expiryNotifiedAt: true,
+        expiryEscalatedAt: true,
+        contractorId: true,
+        contractor: { select: { name: true } },
+        createdById: true,
+      },
+    });
+
+    const warningContractorIds = [...new Set(
+      contracts
+        .filter((contract) => needsExpiryWarning(contract, today))
+        .map((contract) => contract.contractorId),
+    )];
+    const deals = warningContractorIds.length
+      ? await this.prisma.deal.findMany({
+          where: {
+            deletedAt: null,
+            clientId: { in: warningContractorIds },
+          },
+          distinct: ['clientId'],
+          orderBy: [{ clientId: 'asc' }, { createdAt: 'desc' }],
+          select: { clientId: true, responsibleId: true },
+        })
+      : [];
+    const managerByContractor = new Map<string, string>();
+    for (const deal of deals) {
+      if (!managerByContractor.has(deal.clientId)) {
+        managerByContractor.set(deal.clientId, deal.responsibleId);
+      }
+    }
+
+    const hasEscalations = contracts.some((contract) => needsExpiryEscalation(contract, today));
+    const leaders = hasEscalations
+      ? await this.prisma.user.findMany({
+          where: {
+            isActive: true,
+            roles: {
+              some: { role: { code: { in: ['DIRECTOR', 'DEPARTMENT_HEAD'] } } },
+            },
+          },
+          select: { id: true },
+        })
+      : [];
+
+    for (const contract of contracts) {
+      const expiryDate = this.formatDate(contract.validUntil!);
+      const daysLeft = daysUntilExpiry(contract, today)!;
+
+      if (needsExpiryWarning(contract, today)) {
+        const managerId = managerByContractor.get(contract.contractorId) ?? contract.createdById;
+        await this.notify(
+          managerId,
+          NotificationType.CONTRACT_EXPIRING,
+          'Договор скоро истекает',
+          `Договор №${contract.number} с контрагентом «${contract.contractor.name}» истекает через ${daysLeft} дн. Дата окончания: ${expiryDate}.`,
+          'Contractor',
+          contract.contractorId,
+        );
+        await this.prisma.contract.update({
+          where: { id: contract.id },
+          data: { expiryNotifiedAt: new Date() },
+        });
+      }
+
+      if (needsExpiryEscalation(contract, today)) {
+        for (const leader of leaders) {
+          await this.notify(
+            leader.id,
+            NotificationType.CONTRACT_EXPIRING,
+            'Договор всё ещё не продлён',
+            `Договор №${contract.number} с контрагентом «${contract.contractor.name}» всё ещё не продлён и истекает через ${daysLeft} дн. Дата окончания: ${expiryDate}.`,
+            'Contractor',
+            contract.contractorId,
+          );
+        }
+        await this.prisma.contract.update({
+          where: { id: contract.id },
+          data: { expiryEscalatedAt: new Date() },
+        });
+      }
+    }
+  }
+
   private today(): Date {
     const now = new Date();
     return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  }
+
+  private formatDate(date: Date): string {
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    return `${day}.${month}.${date.getUTCFullYear()}`;
   }
 
   private async isEnabled(userId: string, type: NotificationType): Promise<boolean> {
