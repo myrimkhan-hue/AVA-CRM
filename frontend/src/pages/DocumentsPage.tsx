@@ -29,12 +29,14 @@ const DOCUMENT_TYPES: GeneratedDocumentType[] = [
   'CONTRACT',
   'TRANSPORT_REQUEST',
   'INVOICE',
+  'ACT',
 ];
 
 const TYPE_COLORS: Record<GeneratedDocumentType, string> = {
   CONTRACT: 'blue',
   TRANSPORT_REQUEST: 'gold',
   INVOICE: 'green',
+  ACT: 'purple',
 };
 
 type Period = [Dayjs | null, Dayjs | null] | null;

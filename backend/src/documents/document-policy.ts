@@ -55,6 +55,23 @@ export function generatedDocumentVisibilityWhere(
           is: { AND: [{ deletedAt: null }, invoiceVisibilityWhere(user)] },
         },
       },
+      {
+        type: GeneratedDocumentType.ACT,
+        OR: [
+          {
+            invoiceId: { not: null },
+            invoice: {
+              is: { AND: [{ deletedAt: null }, invoiceVisibilityWhere(user)] },
+            },
+          },
+          {
+            invoiceId: null,
+            deal: {
+              is: { AND: [{ deletedAt: null }, dealVisibilityWhere(user)] },
+            },
+          },
+        ],
+      },
     ],
   };
 }

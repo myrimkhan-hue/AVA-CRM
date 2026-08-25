@@ -14,6 +14,8 @@ import { DocumentPaymentTextsService } from './document-payment-texts.service';
 import { DocumentsService } from './documents.service';
 import { InvoiceGeneratorService } from './invoice-generator.service';
 import { InvoicesDocumentsController } from './invoices-documents.controller';
+import { ActGeneratorService } from './act-generator.service';
+import { ActsDocumentsController } from './acts-documents.controller';
 import { RequestGeneratorService } from './request-generator.service';
 import { RequestsController } from './requests.controller';
 
@@ -39,6 +41,7 @@ import { RequestsController } from './requests.controller';
     ContractsController,
     RequestsController,
     InvoicesDocumentsController,
+    ActsDocumentsController,
   ],
   providers: [
     DocumentsService,
@@ -47,6 +50,7 @@ import { RequestsController } from './requests.controller';
     ContractGeneratorService,
     RequestGeneratorService,
     InvoiceGeneratorService,
+    ActGeneratorService,
   ],
   exports: [DocumentsService, DocumentTemplatesService],
 })

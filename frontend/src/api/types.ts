@@ -155,7 +155,8 @@ export interface AttachmentLimits {
 export type GeneratedDocumentType =
   | 'CONTRACT'
   | 'TRANSPORT_REQUEST'
-  | 'INVOICE';
+  | 'INVOICE'
+  | 'ACT';
 
 export type GeneratedDocumentSource =
   | { type: 'DEAL'; id: string; number: string | null }
@@ -178,7 +179,7 @@ export interface GeneratedDocumentRecord {
   source: GeneratedDocumentSource | null;
 }
 
-export type DocumentTemplateType = 'CONTRACT' | 'TRANSPORT_REQUEST' | 'INVOICE';
+export type DocumentTemplateType = 'CONTRACT' | 'TRANSPORT_REQUEST' | 'INVOICE' | 'ACT';
 
 export interface DocumentTemplateRecord {
   id: string;

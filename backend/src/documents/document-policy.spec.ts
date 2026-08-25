@@ -48,6 +48,19 @@ describe('Права доступа: журнал сгенерированных
           type: GeneratedDocumentType.INVOICE,
           invoice: { is: { AND: [{ deletedAt: null }, {}] } },
         },
+        {
+          type: GeneratedDocumentType.ACT,
+          OR: [
+            {
+              invoiceId: { not: null },
+              invoice: { is: { AND: [{ deletedAt: null }, {}] } },
+            },
+            {
+              invoiceId: null,
+              deal: { is: { AND: [{ deletedAt: null }, {}] } },
+            },
+          ],
+        },
       ],
     });
   });
@@ -97,6 +110,37 @@ describe('Права доступа: журнал сгенерированных
                 ],
               },
             },
+          },
+          {
+            type: GeneratedDocumentType.ACT,
+            OR: [
+              {
+                invoiceId: { not: null },
+                invoice: {
+                  is: {
+                    AND: [
+                      { deletedAt: null },
+                      {
+                        transportation: {
+                          is: { OR: [{ deal: { responsibleId: 'manager' } }] },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+              {
+                invoiceId: null,
+                deal: {
+                  is: {
+                    AND: [
+                      { deletedAt: null },
+                      { OR: [{ responsibleId: 'manager' }] },
+                    ],
+                  },
+                },
+              },
+            ],
           },
         ],
       });
@@ -164,6 +208,42 @@ describe('Права доступа: журнал сгенерированных
             },
           },
         },
+        {
+          type: GeneratedDocumentType.ACT,
+          OR: [
+            {
+              invoiceId: { not: null },
+              invoice: {
+                is: {
+                  AND: [
+                    { deletedAt: null },
+                    {
+                      transportation: {
+                        is: { OR: [{ deal: { departmentId: DEPARTMENT_ID } }] },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+            {
+              invoiceId: null,
+              deal: {
+                is: {
+                  AND: [
+                    { deletedAt: null },
+                    {
+                      OR: [
+                        { departmentId: DEPARTMENT_ID },
+                        { responsibleId: 'head' },
+                      ],
+                    },
+                  ],
+                },
+              },
+            },
+          ],
+        },
       ],
     });
   });
@@ -201,6 +281,23 @@ describe('Права доступа: журнал сгенерированных
           invoice: {
             is: { AND: [{ deletedAt: null }, { id: { in: [] } }] },
           },
+        },
+        {
+          type: GeneratedDocumentType.ACT,
+          OR: [
+            {
+              invoiceId: { not: null },
+              invoice: {
+                is: { AND: [{ deletedAt: null }, { id: { in: [] } }] },
+              },
+            },
+            {
+              invoiceId: null,
+              deal: {
+                is: { AND: [{ deletedAt: null }, { id: { in: [] } }] },
+              },
+            },
+          ],
         },
       ],
     });

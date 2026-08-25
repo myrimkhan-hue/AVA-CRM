@@ -111,6 +111,48 @@ export const INVOICE_TEMPLATE_PLACEHOLDERS = [
   'ПОСТАВЩИК_ПОДПИСАНТ_КРАТКО',
 ] as const;
 
+export const ACT_TEMPLATE_PLACEHOLDERS = [
+  'НОМЕР_АКТА',
+  'ДАТА_АКТА',
+  'ИСПОЛНИТЕЛЬ_НАЗВАНИЕ',
+  'ИСПОЛНИТЕЛЬ_БИН',
+  'ИСПОЛНИТЕЛЬ_АДРЕС',
+  'ИСПОЛНИТЕЛЬ_СЧЕТ',
+  'ИСПОЛНИТЕЛЬ_БАНК',
+  'ИСПОЛНИТЕЛЬ_БИК',
+  'ИСПОЛНИТЕЛЬ_ДОЛЖНОСТЬ',
+  'ИСПОЛНИТЕЛЬ_ПОДПИСАНТ',
+  'ИСПОЛНИТЕЛЬ_ПОДПИСАНТ_КРАТКО',
+  'ИСПОЛНИТЕЛЬ_ОСНОВАНИЕ',
+  'ИСПОЛНИТЕЛЬ_ТЕЛЕФОН',
+  'ИСПОЛНИТЕЛЬ_EMAIL',
+  'ЗАКАЗЧИК_НАЗВАНИЕ',
+  'ЗАКАЗЧИК_БИН',
+  'ЗАКАЗЧИК_АДРЕС',
+  'ЗАКАЗЧИК_СЧЕТ',
+  'ЗАКАЗЧИК_БАНК',
+  'ЗАКАЗЧИК_БИК',
+  'ЗАКАЗЧИК_ДОЛЖНОСТЬ',
+  'ЗАКАЗЧИК_ПОДПИСАНТ',
+  'ЗАКАЗЧИК_ПОДПИСАНТ_КРАТКО',
+  'ЗАКАЗЧИК_ОСНОВАНИЕ',
+  'ЗАКАЗЧИК_ТЕЛЕФОН',
+  'ЗАКАЗЧИК_EMAIL',
+  'ДОГОВОР',
+  'СТРОКА_УСЛУГИ',
+  'УСЛУГА_НОМЕР',
+  'УСЛУГА_НАЗВАНИЕ',
+  'УСЛУГА_КОЛИЧЕСТВО',
+  'УСЛУГА_ЕДИНИЦА',
+  'УСЛУГА_ЦЕНА',
+  'УСЛУГА_СУММА',
+  'ВАЛЮТА',
+  'ИТОГО',
+  'НДС_СТРОКА',
+  'КОЛИЧЕСТВО_НАИМЕНОВАНИЙ',
+  'ВСЕГО_ПРОПИСЬЮ',
+] as const;
+
 export const CONTRACT_TEMPLATE_REQUIRED_PLACEHOLDERS = [
   'НОМЕР_ДОГОВОРА',
   'ДАТА_ДОГОВОРА',
@@ -211,16 +253,36 @@ export const INVOICE_TEMPLATE_REQUIRED_PLACEHOLDERS = [
   'ВАЛЮТА',
 ] as const;
 
+/**
+ * Обязательны только признаки самого акта: номер и дата, обе стороны, оказанная
+ * услуга и итог. Остальные реквизиты и подписи владелец может убрать из бланка.
+ */
+export const ACT_TEMPLATE_REQUIRED_PLACEHOLDERS = [
+  'НОМЕР_АКТА',
+  'ДАТА_АКТА',
+  'ИСПОЛНИТЕЛЬ_НАЗВАНИЕ',
+  'ИСПОЛНИТЕЛЬ_БИН',
+  'ЗАКАЗЧИК_НАЗВАНИЕ',
+  'ЗАКАЗЧИК_БИН',
+  'СТРОКА_УСЛУГИ',
+  'УСЛУГА_НАЗВАНИЕ',
+  'УСЛУГА_СУММА',
+  'ИТОГО',
+  'ВАЛЮТА',
+] as const;
+
 export const DOCUMENT_TEMPLATE_PLACEHOLDERS = {
   [DocumentTemplateType.CONTRACT]: CONTRACT_TEMPLATE_PLACEHOLDERS,
   [DocumentTemplateType.TRANSPORT_REQUEST]: TRANSPORT_REQUEST_TEMPLATE_PLACEHOLDERS,
   [DocumentTemplateType.INVOICE]: INVOICE_TEMPLATE_PLACEHOLDERS,
+  [DocumentTemplateType.ACT]: ACT_TEMPLATE_PLACEHOLDERS,
 } as const;
 
 export const DOCUMENT_TEMPLATE_REQUIRED_PLACEHOLDERS = {
   [DocumentTemplateType.CONTRACT]: CONTRACT_TEMPLATE_REQUIRED_PLACEHOLDERS,
   [DocumentTemplateType.TRANSPORT_REQUEST]: TRANSPORT_REQUEST_TEMPLATE_REQUIRED_PLACEHOLDERS,
   [DocumentTemplateType.INVOICE]: INVOICE_TEMPLATE_REQUIRED_PLACEHOLDERS,
+  [DocumentTemplateType.ACT]: ACT_TEMPLATE_REQUIRED_PLACEHOLDERS,
 } as const;
 
 export type ContractTemplatePlaceholder =
@@ -231,3 +293,6 @@ export type TransportRequestTemplatePlaceholder =
 
 export type InvoiceTemplatePlaceholder =
   (typeof INVOICE_TEMPLATE_PLACEHOLDERS)[number];
+
+export type ActTemplatePlaceholder =
+  (typeof ACT_TEMPLATE_PLACEHOLDERS)[number];

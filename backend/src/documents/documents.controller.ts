@@ -9,6 +9,7 @@ import { DocumentQueryDto } from './dto/document-query.dto';
 import { DocumentsService } from './documents.service';
 import { InvoiceGeneratorService } from './invoice-generator.service';
 import { RequestGeneratorService } from './request-generator.service';
+import { ActGeneratorService } from './act-generator.service';
 
 @Controller('documents')
 @Roles('ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'LOGIST', 'FINANCIER')
@@ -18,6 +19,7 @@ export class DocumentsController {
     private readonly contractGeneratorService: ContractGeneratorService,
     private readonly requestGeneratorService: RequestGeneratorService,
     private readonly invoiceGeneratorService: InvoiceGeneratorService,
+    private readonly actGeneratorService: ActGeneratorService,
   ) {}
 
   @Get()
@@ -76,6 +78,24 @@ export class DocumentsController {
           user,
           document.number,
         );
+        result = {
+          ...generated,
+          contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        };
+        break;
+      }
+      case GeneratedDocumentType.ACT: {
+        const generated = document.invoiceId
+          ? await this.actGeneratorService.generateForInvoice(
+              document.invoiceId,
+              user,
+              document.number,
+            )
+          : await this.actGeneratorService.generateForDeal(
+              this.documentsService.requireDealId(document.dealId),
+              user,
+              document.number,
+            );
         result = {
           ...generated,
           contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

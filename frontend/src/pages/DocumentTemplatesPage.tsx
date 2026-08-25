@@ -40,6 +40,7 @@ const TEMPLATE_TYPES: DocumentTemplateType[] = [
   'CONTRACT',
   'TRANSPORT_REQUEST',
   'INVOICE',
+  'ACT',
 ];
 
 interface UploadValues {

@@ -60,8 +60,10 @@ interface PaymentValues {
 
 export function TransportationInvoiceCard({
   transportationId,
+  onDocumentGenerated,
 }: {
   transportationId: string;
+  onDocumentGenerated?: () => void;
 }) {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
@@ -300,7 +302,23 @@ export function TransportationInvoiceCard({
         { method: 'POST' },
       );
       saveBlob(blob, filename);
+      onDocumentGenerated?.();
       void message.success(t('documents.invoice.generated'));
+    } catch (error) {
+      showError(error);
+    }
+  };
+
+  const downloadAct = async () => {
+    if (!invoice) return;
+    try {
+      const { blob, filename } = await apiDownload(
+        `/documents/acts/invoice/${invoice.id}`,
+        { method: 'POST' },
+      );
+      saveBlob(blob, filename);
+      onDocumentGenerated?.();
+      void message.success(t('documents.act.generated'));
     } catch (error) {
       showError(error);
     }
@@ -498,9 +516,14 @@ export function TransportationInvoiceCard({
         </Space>
         <Space wrap>
           {mayDownloadInvoice && (
-            <Button icon={<DownloadOutlined />} onClick={() => void downloadInvoice()}>
-              {t('documents.invoice.action')}
-            </Button>
+            <>
+              <Button icon={<DownloadOutlined />} onClick={() => void downloadInvoice()}>
+                {t('documents.invoice.action')}
+              </Button>
+              <Button icon={<DownloadOutlined />} onClick={() => void downloadAct()}>
+                {t('documents.act.invoiceAction')}
+              </Button>
+            </>
           )}
           {!invoice.deletedAt && (
             <Button icon={<EditOutlined />} onClick={openHeader}>

@@ -45,3 +45,8 @@ export function buildContractNumberBase(prefix: string, ourRole: 'customer' | 'e
 export function buildZayavkaNumberBase(prefix: string, today: Date = new Date()): string {
   return `${prefix}-Z-${ddmm(today)}/${today.getUTCFullYear()}`;
 }
+
+/** Номер акта: <ПРЕФИКС>-AKT-DDMM/YYYY, где дата — дата оказания услуги. */
+export function buildActNumberBase(prefix: string, date: Date): string {
+  return `${prefix}-AKT-${ddmm(date)}/${date.getUTCFullYear()}`;
+}

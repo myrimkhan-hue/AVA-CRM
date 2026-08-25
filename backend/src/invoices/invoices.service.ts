@@ -30,6 +30,7 @@ const invoiceInclude = {
       number: true,
       originPoint: true,
       destinationPoint: true,
+      unloadingEventDate: true,
       deal: {
         select: {
           id: true,
@@ -109,6 +110,25 @@ export class InvoicesService {
       user.roles.includes('ADMIN'),
     );
     return this.toResponse(invoice);
+  }
+
+  async findForDeal(dealId: string, user: AuthUser) {
+    const invoices = await this.prisma.invoice.findMany({
+      where: {
+        AND: [
+          this.visibilityWhere(user),
+          {
+            deletedAt: null,
+            transportation: {
+              dealId,
+            },
+          },
+        ],
+      },
+      include: invoiceInclude,
+      orderBy: [{ issueDate: 'asc' }, { createdAt: 'asc' }],
+    });
+    return invoices.map((invoice) => this.toResponse(invoice));
   }
 
   async createContext(query: InvoiceContextQueryDto, user: AuthUser) {

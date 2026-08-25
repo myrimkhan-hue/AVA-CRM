@@ -26,14 +26,15 @@ export const DOCUMENT_DOWNLOAD_ROLES = {
     'LOGIST',
   ],
   INVOICE: ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'FINANCIER'],
+  ACT: ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'FINANCIER'],
 } as const;
 
 export function canDownloadDocument(
   document: Pick<GeneratedDocumentRecord, 'type' | 'source'>,
   userRoles: readonly string[],
 ): boolean {
-  const allowedRoles = document.type === 'INVOICE'
-    ? DOCUMENT_DOWNLOAD_ROLES.INVOICE
+  const allowedRoles = document.type === 'INVOICE' || document.type === 'ACT'
+    ? DOCUMENT_DOWNLOAD_ROLES[document.type]
     : document.type === 'TRANSPORT_REQUEST'
       ? DOCUMENT_DOWNLOAD_ROLES.TRANSPORT_REQUEST
       : document.source === null

@@ -198,6 +198,15 @@ export class DocumentsService {
     return value;
   }
 
+  requireDealId(value: string | null): string {
+    if (!value) {
+      throw new BadRequestException(
+        'Для этой записи журнала не сохранена ссылка на сделку — скачайте акт из карточки сделки',
+      );
+    }
+    return value;
+  }
+
   requestGenerationData(value: Prisma.JsonValue | null): GenerateTransportRequestDto {
     if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
     const data = value as Record<string, Prisma.JsonValue>;
@@ -245,6 +254,21 @@ export class DocumentsService {
         transportationId: document.invoice?.transportationId ?? document.transportationId,
       };
     }
+    if (document.type === GeneratedDocumentType.ACT && document.invoiceId) {
+      return {
+        type: 'INVOICE' as const,
+        id: document.invoiceId,
+        number: document.invoice?.number ?? null,
+        transportationId: document.invoice?.transportationId ?? document.transportationId,
+      };
+    }
+    if (document.type === GeneratedDocumentType.ACT && document.dealId) {
+      return {
+        type: 'DEAL' as const,
+        id: document.dealId,
+        number: document.deal?.number ?? null,
+      };
+    }
     return null;
   }
 
@@ -289,6 +313,13 @@ export class DocumentsService {
         'MANAGER',
         'FINANCIER',
       ],
+      [GeneratedDocumentType.ACT]: [
+        'ADMIN',
+        'DIRECTOR',
+        'DEPARTMENT_HEAD',
+        'MANAGER',
+        'FINANCIER',
+      ],
     };
     if (!user.roles.some((role) => rolesByType[type].includes(role))) {
       throw new ForbiddenException('Недостаточно прав для повторного скачивания документа');
@@ -322,6 +353,16 @@ export class DocumentsService {
         where: { id: document.invoiceId },
         select: { deletedAt: true },
       });
+    } else if (document.type === GeneratedDocumentType.ACT && document.invoiceId) {
+      source = await this.prisma.invoice.findUnique({
+        where: { id: document.invoiceId },
+        select: { deletedAt: true },
+      });
+    } else if (document.type === GeneratedDocumentType.ACT && document.dealId) {
+      source = await this.prisma.deal.findUnique({
+        where: { id: document.dealId },
+        select: { deletedAt: true },
+      });
     } else if (document.type === GeneratedDocumentType.CONTRACT && document.contractorId) {
       source = await this.prisma.contractor.findUnique({
         where: { id: document.contractorId },
@@ -348,6 +389,9 @@ export class DocumentsService {
     }
     if (document.type === GeneratedDocumentType.TRANSPORT_REQUEST) {
       return Boolean(document.transportationId);
+    }
+    if (document.type === GeneratedDocumentType.ACT) {
+      return Boolean(document.invoiceId || document.dealId);
     }
     return Boolean(document.invoiceId);
   }

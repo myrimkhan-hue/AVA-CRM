@@ -687,12 +687,14 @@ enum GeneratedDocumentType {
   CONTRACT
   TRANSPORT_REQUEST
   INVOICE
+  ACT
 }
 
 enum DocumentTemplateType {
   CONTRACT
   TRANSPORT_REQUEST
   INVOICE
+  ACT
 }
 
 enum DocumentPaymentTextType {

@@ -63,6 +63,7 @@ describe('fillDocx', () => {
     DocumentTemplateType.CONTRACT,
     DocumentTemplateType.TRANSPORT_REQUEST,
     DocumentTemplateType.INVOICE,
+    DocumentTemplateType.ACT,
   ])('replaces every known token used by the built-in %s template', async (type) => {
     const knownPlaceholders = DOCUMENT_TEMPLATE_PLACEHOLDERS[type];
     const values = Object.fromEntries(

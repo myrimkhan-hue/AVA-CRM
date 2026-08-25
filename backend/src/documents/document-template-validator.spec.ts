@@ -128,6 +128,7 @@ describe('Проверка Word-шаблонов', () => {
     DocumentTemplateType.CONTRACT,
     DocumentTemplateType.TRANSPORT_REQUEST,
     DocumentTemplateType.INVOICE,
+    DocumentTemplateType.ACT,
   ])('встроенный шаблон %s проходит собственную проверку', async (type) => {
     const buffer = await readFile(BUILTIN_TEMPLATE_PATHS[type]);
     const result = await validateDocumentTemplate(buffer, type);

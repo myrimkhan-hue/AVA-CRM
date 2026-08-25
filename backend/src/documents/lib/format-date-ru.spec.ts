@@ -1,4 +1,5 @@
 import {
+  buildActNumberBase,
   buildContractNumberBase,
   buildZayavkaNumberBase,
   formatDateRu,
@@ -43,5 +44,12 @@ describe('buildZayavkaNumberBase', () => {
   it('builds PREFIX-Z-DDMM/YYYY', () => {
     const today = new Date(Date.UTC(2026, 6, 24));
     expect(buildZayavkaNumberBase('TT', today)).toBe('TT-Z-2407/2026');
+  });
+});
+
+describe('buildActNumberBase', () => {
+  it('builds PREFIX-AKT-DDMM/YYYY from the act date', () => {
+    const actDate = new Date(Date.UTC(2026, 7, 25));
+    expect(buildActNumberBase('AVA', actDate)).toBe('AVA-AKT-2508/2026');
   });
 });

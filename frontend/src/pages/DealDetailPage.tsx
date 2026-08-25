@@ -92,6 +92,7 @@ export function DealDetailPage() {
   const selectedReason = Form.useWatch('rejectReason', rejectForm);
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
   const mayEditDeals = Boolean(user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'].includes(role)));
+  const mayDownloadAct = Boolean(user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'FINANCIER'].includes(role)));
 
   const showError = useCallback((error: unknown) => {
     void message.error(error instanceof ApiError ? error.message || t('errors.request') : t('errors.connection'));
@@ -165,6 +166,21 @@ export function DealDetailPage() {
     saveBlob(blob, filename);
     setDocumentsToken((value) => value + 1);
     void message.success(t('documents.contract.generated'));
+  };
+
+  const downloadAct = async () => {
+    if (!deal) return;
+    try {
+      const { blob, filename } = await apiDownload(
+        `/documents/acts/deal/${deal.id}`,
+        { method: 'POST' },
+      );
+      saveBlob(blob, filename);
+      setDocumentsToken((value) => value + 1);
+      void message.success(t('documents.act.generated'));
+    } catch (error) {
+      showError(error);
+    }
   };
 
   const saveNotes = async (values: NotesValues) => {
@@ -251,6 +267,7 @@ export function DealDetailPage() {
       </Space>
       <Space wrap>
         {mayEditDeals && activeDeal && <Button icon={<FileTextOutlined />} onClick={() => setContractOpen(true)}>{t('documents.contract.action')}</Button>}
+        {mayDownloadAct && activeDeal && <Button icon={<FileTextOutlined />} onClick={() => void downloadAct()}>{t('documents.act.dealAction')}</Button>}
         {mayEditDeals && activeDeal && <Button danger icon={<StopOutlined />} onClick={openReject}>{t('deals.detail.actions.reject')}</Button>}
         {mayEditDeals && activeDeal && <Button icon={<EditOutlined />} onClick={openNotes}>{t('deals.detail.actions.edit')}</Button>}
         {isAdmin && activeDeal && <Button danger type="text" icon={<DeleteOutlined />} onClick={removeDeal}>{t('deals.actions.delete')}</Button>}
