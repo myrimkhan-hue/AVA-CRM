@@ -233,6 +233,8 @@ model LegalEntity {
   bankName               String?                 @map("bank_name")
   bankAccount            String?                 @map("bank_account")
   bankBik                String?                 @map("bank_bik")
+  kbe                    String?                 @map("kbe")
+  paymentPurposeCode     String?                 @map("payment_purpose_code")
   signerPosition         String?                 @map("signer_position")
   signerFullName         String?                 @map("signer_full_name")
   signerShortName        String?                 @map("signer_short_name")
@@ -690,6 +692,7 @@ enum GeneratedDocumentType {
 enum DocumentTemplateType {
   CONTRACT
   TRANSPORT_REQUEST
+  INVOICE
 }
 
 enum DocumentPaymentTextType {

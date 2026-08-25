@@ -81,6 +81,8 @@ export interface LegalEntityRecord {
   bankName: string | null;
   bankAccount: string | null;
   bankBik: string | null;
+  kbe: string | null;
+  paymentPurposeCode: string | null;
   signerPosition: string | null;
   signerFullName: string | null;
   signerShortName: string | null;
@@ -176,7 +178,7 @@ export interface GeneratedDocumentRecord {
   source: GeneratedDocumentSource | null;
 }
 
-export type DocumentTemplateType = 'CONTRACT' | 'TRANSPORT_REQUEST';
+export type DocumentTemplateType = 'CONTRACT' | 'TRANSPORT_REQUEST' | 'INVOICE';
 
 export interface DocumentTemplateRecord {
   id: string;

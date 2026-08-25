@@ -36,7 +36,11 @@ import type {
 } from '../api/types';
 import { useAuth } from '../auth/AuthContext';
 
-const TEMPLATE_TYPES: DocumentTemplateType[] = ['CONTRACT', 'TRANSPORT_REQUEST'];
+const TEMPLATE_TYPES: DocumentTemplateType[] = [
+  'CONTRACT',
+  'TRANSPORT_REQUEST',
+  'INVOICE',
+];
 
 interface UploadValues {
   type: DocumentTemplateType;

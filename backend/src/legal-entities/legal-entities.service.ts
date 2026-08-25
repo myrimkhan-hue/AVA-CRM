@@ -37,6 +37,8 @@ export class LegalEntitiesService {
       bankName: dto.bankName?.trim() || null,
       bankAccount: dto.bankAccount?.trim() || null,
       bankBik: dto.bankBik?.trim() || null,
+      kbe: dto.kbe?.trim() || null,
+      paymentPurposeCode: dto.paymentPurposeCode?.trim() || null,
       signerPosition: dto.signerPosition?.trim() || null,
       signerFullName: dto.signerFullName?.trim() || null,
       signerShortName: dto.signerShortName?.trim() || null,
@@ -111,7 +113,7 @@ export class LegalEntitiesService {
       changes.isActive = { old: current.isActive, new: dto.isActive };
     }
     const documentFields = [
-      'legalForm', 'bankName', 'bankAccount', 'bankBik',
+      'legalForm', 'bankName', 'bankAccount', 'bankBik', 'kbe', 'paymentPurposeCode',
       'signerPosition', 'signerFullName', 'signerShortName',
       'signBasis', 'talonNumber', 'phone', 'email',
     ] as const;

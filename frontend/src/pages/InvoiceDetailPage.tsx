@@ -80,7 +80,7 @@ export function TransportationInvoiceCard({
   const [editingLine, setEditingLine] = useState<InvoiceLine>();
   const selectedHasVat = Form.useWatch('hasVat', lineForm);
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
-  const mayDownloadPdf = Boolean(user?.roles.some((role) =>
+  const mayDownloadInvoice = Boolean(user?.roles.some((role) =>
     ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'FINANCIER'].includes(role)));
 
   const showError = useCallback((error: unknown) => {
@@ -292,7 +292,7 @@ export function TransportationInvoiceCard({
     }
   };
 
-  const downloadPdf = async () => {
+  const downloadInvoice = async () => {
     if (!invoice) return;
     try {
       const { blob, filename } = await apiDownload(
@@ -497,8 +497,8 @@ export function TransportationInvoiceCard({
           )}
         </Space>
         <Space wrap>
-          {mayDownloadPdf && (
-            <Button icon={<DownloadOutlined />} onClick={() => void downloadPdf()}>
+          {mayDownloadInvoice && (
+            <Button icon={<DownloadOutlined />} onClick={() => void downloadInvoice()}>
               {t('documents.invoice.action')}
             </Button>
           )}

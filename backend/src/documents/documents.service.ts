@@ -30,6 +30,12 @@ export interface PartyInfo {
   email: string;
 }
 
+export interface LegalEntityPartyInfo extends PartyInfo {
+  numberingPrefix: string;
+  kbe: string;
+  paymentPurposeCode: string;
+}
+
 export interface PartyRequisitesOverride {
   legalForm?: string;
   bin?: string;
@@ -358,7 +364,7 @@ export class DocumentsService {
     });
   }
 
-  async getLegalEntityParty(id: string): Promise<PartyInfo & { numberingPrefix: string }> {
+  async getLegalEntityParty(id: string): Promise<LegalEntityPartyInfo> {
     const legalEntity = await this.prisma.legalEntity.findUnique({ where: { id } });
     if (!legalEntity) throw new NotFoundException('Юрлицо не найдено');
     return {
@@ -370,6 +376,8 @@ export class DocumentsService {
       account: legalEntity.bankAccount ?? DASH,
       bank: legalEntity.bankName ?? DASH,
       bik: legalEntity.bankBik ?? DASH,
+      kbe: legalEntity.kbe ?? DASH,
+      paymentPurposeCode: legalEntity.paymentPurposeCode ?? DASH,
       position: legalEntity.signerPosition ?? DASH,
       signerFull: legalEntity.signerFullName ?? DASH,
       signerShort: legalEntity.signerShortName ?? DASH,

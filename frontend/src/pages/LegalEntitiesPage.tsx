@@ -68,6 +68,8 @@ interface LegalEntityFormValues {
   bankName?: string;
   bankAccount?: string;
   bankBik?: string;
+  kbe?: string;
+  paymentPurposeCode?: string;
   signerPosition?: string;
   signerFullName?: string;
   signerShortName?: string;
@@ -174,6 +176,8 @@ export function LegalEntitiesPage() {
       bankName: selected.bankName ?? undefined,
       bankAccount: selected.bankAccount ?? undefined,
       bankBik: selected.bankBik ?? undefined,
+      kbe: selected.kbe ?? undefined,
+      paymentPurposeCode: selected.paymentPurposeCode ?? undefined,
       signerPosition: selected.signerPosition ?? undefined,
       signerFullName: selected.signerFullName ?? undefined,
       signerShortName: selected.signerShortName ?? undefined,
@@ -423,6 +427,15 @@ export function LegalEntitiesPage() {
                 <Input />
               </Form.Item>
               <Form.Item name="bankBik" label={t('legalEntities.form.bankBik')}>
+                <Input />
+              </Form.Item>
+              <Form.Item name="kbe" label={t('legalEntities.form.kbe')}>
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="paymentPurposeCode"
+                label={t('legalEntities.form.paymentPurposeCode')}
+              >
                 <Input />
               </Form.Item>
               <Form.Item name="phone" label={t('legalEntities.form.phone')}>

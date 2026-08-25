@@ -80,6 +80,37 @@ export const TRANSPORT_REQUEST_TEMPLATE_PLACEHOLDERS = [
   'ПРИМЕЧАНИЕ',
 ] as const;
 
+export const INVOICE_TEMPLATE_PLACEHOLDERS = [
+  'НОМЕР_СЧЕТА',
+  'ДАТА_СЧЕТА',
+  'ПОСТАВЩИК_НАЗВАНИЕ',
+  'ПОСТАВЩИК_БИН',
+  'ПОСТАВЩИК_СЧЕТ',
+  'ПОСТАВЩИК_БАНК',
+  'ПОСТАВЩИК_БИК',
+  'ПОСТАВЩИК_КБЕ',
+  'ПОСТАВЩИК_КНП',
+  'ПОСТАВЩИК_АДРЕС',
+  'ПОКУПАТЕЛЬ_НАЗВАНИЕ',
+  'ПОКУПАТЕЛЬ_БИН',
+  'ПОКУПАТЕЛЬ_АДРЕС',
+  'ПОКУПАТЕЛЬ_ТЕЛЕФОН',
+  'ДОГОВОР',
+  'СТРОКА_УСЛУГИ',
+  'УСЛУГА_НОМЕР',
+  'УСЛУГА_НАЗВАНИЕ',
+  'УСЛУГА_КОЛИЧЕСТВО',
+  'УСЛУГА_ЕДИНИЦА',
+  'УСЛУГА_ЦЕНА',
+  'УСЛУГА_СУММА',
+  'ВАЛЮТА',
+  'ИТОГО',
+  'НДС_СТРОКА',
+  'КОЛИЧЕСТВО_НАИМЕНОВАНИЙ',
+  'ВСЕГО_К_ОПЛАТЕ_ПРОПИСЬЮ',
+  'ПОСТАВЩИК_ПОДПИСАНТ_КРАТКО',
+] as const;
+
 export const CONTRACT_TEMPLATE_REQUIRED_PLACEHOLDERS = [
   'НОМЕР_ДОГОВОРА',
   'ДАТА_ДОГОВОРА',
@@ -157,14 +188,39 @@ export const TRANSPORT_REQUEST_TEMPLATE_REQUIRED_PLACEHOLDERS = [
   'ИСП_КР',
 ] as const;
 
+/**
+ * Обязательны только те метки, без которых счёт перестаёт быть счётом: по кому,
+ * кому, за что и куда платить. Всё остальное (Кбе, КНП, адреса, телефон, ссылка на
+ * договор, сумма прописью, колонки количества и цены) владелец вправе убрать из
+ * своего бланка — при загрузке такой шаблон должен приниматься, а не отклоняться.
+ */
+export const INVOICE_TEMPLATE_REQUIRED_PLACEHOLDERS = [
+  'НОМЕР_СЧЕТА',
+  'ДАТА_СЧЕТА',
+  'ПОСТАВЩИК_НАЗВАНИЕ',
+  'ПОСТАВЩИК_БИН',
+  'ПОСТАВЩИК_СЧЕТ',
+  'ПОСТАВЩИК_БАНК',
+  'ПОСТАВЩИК_БИК',
+  'ПОКУПАТЕЛЬ_НАЗВАНИЕ',
+  'ПОКУПАТЕЛЬ_БИН',
+  'СТРОКА_УСЛУГИ',
+  'УСЛУГА_НАЗВАНИЕ',
+  'УСЛУГА_СУММА',
+  'ИТОГО',
+  'ВАЛЮТА',
+] as const;
+
 export const DOCUMENT_TEMPLATE_PLACEHOLDERS = {
   [DocumentTemplateType.CONTRACT]: CONTRACT_TEMPLATE_PLACEHOLDERS,
   [DocumentTemplateType.TRANSPORT_REQUEST]: TRANSPORT_REQUEST_TEMPLATE_PLACEHOLDERS,
+  [DocumentTemplateType.INVOICE]: INVOICE_TEMPLATE_PLACEHOLDERS,
 } as const;
 
 export const DOCUMENT_TEMPLATE_REQUIRED_PLACEHOLDERS = {
   [DocumentTemplateType.CONTRACT]: CONTRACT_TEMPLATE_REQUIRED_PLACEHOLDERS,
   [DocumentTemplateType.TRANSPORT_REQUEST]: TRANSPORT_REQUEST_TEMPLATE_REQUIRED_PLACEHOLDERS,
+  [DocumentTemplateType.INVOICE]: INVOICE_TEMPLATE_REQUIRED_PLACEHOLDERS,
 } as const;
 
 export type ContractTemplatePlaceholder =
@@ -172,3 +228,6 @@ export type ContractTemplatePlaceholder =
 
 export type TransportRequestTemplatePlaceholder =
   (typeof TRANSPORT_REQUEST_TEMPLATE_PLACEHOLDERS)[number];
+
+export type InvoiceTemplatePlaceholder =
+  (typeof INVOICE_TEMPLATE_PLACEHOLDERS)[number];

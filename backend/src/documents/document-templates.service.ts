@@ -26,7 +26,7 @@ import {
 } from './document-template.constants';
 import { validateDocumentTemplate } from './document-template-validator';
 import { BUILTIN_TEMPLATE_PATHS } from './documents.constants';
-import { DocxValues, fillDocx } from './lib/fill-docx';
+import { DocxRows, DocxValues, fillDocx } from './lib/fill-docx';
 
 const templateSelect = {
   id: true,
@@ -180,7 +180,11 @@ export class DocumentTemplatesService {
     return { ok: true };
   }
 
-  async fillTemplate(type: DocumentTemplateType, values: DocxValues): Promise<Buffer> {
+  async fillTemplate(
+    type: DocumentTemplateType,
+    values: DocxValues,
+    rows?: DocxRows,
+  ): Promise<Buffer> {
     const active = await this.prisma.documentTemplate.findFirst({
       where: { type, isActive: true },
       select: { storedName: true },
@@ -189,8 +193,14 @@ export class DocumentTemplatesService {
       ? resolveStoredPath(this.templatesDir, active.storedName)
       : BUILTIN_TEMPLATE_PATHS[type];
     try {
-      return await fillDocx(templatePath, values);
-    } catch {
+      return await fillDocx(templatePath, values, rows);
+    } catch (error) {
+      if (
+        error instanceof Error
+        && error.message.startsWith('Вложенная таблица внутри повторяемой строки')
+      ) {
+        throw new InternalServerErrorException(error.message);
+      }
       if (active) {
         throw new InternalServerErrorException(
           'Активный шаблон документа повреждён или отсутствует на диске',

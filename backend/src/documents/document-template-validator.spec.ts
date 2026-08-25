@@ -127,13 +127,19 @@ describe('Проверка Word-шаблонов', () => {
   it.each([
     DocumentTemplateType.CONTRACT,
     DocumentTemplateType.TRANSPORT_REQUEST,
+    DocumentTemplateType.INVOICE,
   ])('встроенный шаблон %s проходит собственную проверку', async (type) => {
     const buffer = await readFile(BUILTIN_TEMPLATE_PATHS[type]);
     const result = await validateDocumentTemplate(buffer, type);
-    const required = DOCUMENT_TEMPLATE_REQUIRED_PLACEHOLDERS[type];
+    const found = new Set<string>(result.placeholders);
 
-    expect(result.placeholders).toHaveLength(required.length);
-    expect(new Set(result.placeholders)).toEqual(new Set(required));
+    // Каждая объявленная обязательной метка действительно есть во встроенном бланке:
+    // иначе владелец скачал бы образец, поправил формулировку и получил отказ при
+    // загрузке обратно — ровно тот сценарий, ради которого шаблоны и делались.
+    for (const placeholder of DOCUMENT_TEMPLATE_REQUIRED_PLACEHOLDERS[type]) {
+      expect(found).toContain(placeholder);
+    }
+    // И ни одной метки, которой нет в справочнике этого типа.
     expect(result.unknownPlaceholders).toEqual([]);
   });
 });

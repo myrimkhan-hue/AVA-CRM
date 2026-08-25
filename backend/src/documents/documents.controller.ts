@@ -7,7 +7,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { ContractGeneratorService } from './contract-generator.service';
 import { DocumentQueryDto } from './dto/document-query.dto';
 import { DocumentsService } from './documents.service';
-import { InvoicePdfService } from './invoice-pdf.service';
+import { InvoiceGeneratorService } from './invoice-generator.service';
 import { RequestGeneratorService } from './request-generator.service';
 
 @Controller('documents')
@@ -17,7 +17,7 @@ export class DocumentsController {
     private readonly documentsService: DocumentsService,
     private readonly contractGeneratorService: ContractGeneratorService,
     private readonly requestGeneratorService: RequestGeneratorService,
-    private readonly invoicePdfService: InvoicePdfService,
+    private readonly invoiceGeneratorService: InvoiceGeneratorService,
   ) {}
 
   @Get()
@@ -71,12 +71,15 @@ export class DocumentsController {
         break;
       }
       case GeneratedDocumentType.INVOICE: {
-        const generated = await this.invoicePdfService.generate(
+        const generated = await this.invoiceGeneratorService.generate(
           this.documentsService.requireInvoiceId(document.invoiceId),
           user,
           document.number,
         );
-        result = { ...generated, contentType: 'application/pdf' };
+        result = {
+          ...generated,
+          contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        };
         break;
       }
     }

@@ -46,6 +46,14 @@ export class UpdateLegalEntityDto {
   bankBik?: string | null;
 
   @IsOptional()
+  @IsString({ message: 'Кбе должен быть строкой' })
+  kbe?: string | null;
+
+  @IsOptional()
+  @IsString({ message: 'Код назначения платежа должен быть строкой' })
+  paymentPurposeCode?: string | null;
+
+  @IsOptional()
   @IsString({ message: 'Должность подписанта должна быть строкой' })
   signerPosition?: string | null;
 

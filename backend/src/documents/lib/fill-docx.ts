@@ -4,6 +4,7 @@ import JSZip = require('jszip');
 // DOCX открывается как zip, а метки заменяются прямо в XML документа.
 // Диапазон видимого текста позволяет одинаково обрабатывать цельные метки
 // и метки, которые Word разорвал на несколько элементов <w:t>.
+// Метка, разорванная между несколькими абзацами <w:p>, не распознаётся.
 
 function escapeXml(value: string): string {
   return value
@@ -14,6 +15,7 @@ function escapeXml(value: string): string {
 }
 
 export type DocxValues = Record<string, string | number | null | undefined>;
+export type DocxRows = Record<string, DocxValues[]>;
 
 interface PlaceholderRange {
   key: string;
@@ -94,22 +96,102 @@ export function replaceDocxPlaceholders(xml: string, values: DocxValues): string
   return result;
 }
 
+const REPEATED_ROW_PLACEHOLDER = /^СТРОКА_/;
+
+function repeatedRowPlaceholders(xml: string, rows: DocxRows): PlaceholderRange[] {
+  return placeholderRanges(xml).filter(
+    (item) => REPEATED_ROW_PLACEHOLDER.test(item.key)
+      && Object.prototype.hasOwnProperty.call(rows, item.key),
+  );
+}
+
+function assertNoNestedTablesInRepeatedRows(xml: string, rows: DocxRows): void {
+  const rowTagPattern = /<\/?w:tr\b[^>]*>/g;
+
+  for (const placeholder of repeatedRowPlaceholders(xml, rows)) {
+    const openRows: number[] = [];
+    rowTagPattern.lastIndex = 0;
+    for (const match of xml.matchAll(rowTagPattern)) {
+      if (match.index >= placeholder.start) break;
+      if (match[0].startsWith('</')) {
+        openRows.pop();
+      } else {
+        openRows.push(match.index);
+      }
+    }
+
+    const rowStart = openRows.at(-1);
+    if (rowStart === undefined) continue;
+
+    let depth = 0;
+    let rowEnd: number | undefined;
+    rowTagPattern.lastIndex = rowStart;
+    for (const match of xml.matchAll(rowTagPattern)) {
+      if (match[0].startsWith('</')) {
+        depth -= 1;
+        if (depth === 0) {
+          rowEnd = match.index + match[0].length;
+          break;
+        }
+      } else {
+        depth += 1;
+      }
+    }
+
+    const rowXml = rowEnd === undefined ? xml.slice(rowStart) : xml.slice(rowStart, rowEnd);
+    if (openRows.length > 1 || /<w:tbl\b[^>]*>/.test(rowXml)) {
+      throw new Error(
+        'Вложенная таблица внутри повторяемой строки не поддерживается. '
+        + `Уберите таблицу из строки с меткой {${placeholder.key}}.`,
+      );
+    }
+  }
+}
+
+function expandDocxTableRows(xml: string, rows: DocxRows): string {
+  // Строки таблиц разбираются регулярным выражением. Вложенная таблица нарушает
+  // границы <w:tr>, поэтому выше она выявляется заранее и приводит к понятной ошибке.
+  assertNoNestedTablesInRepeatedRows(xml, rows);
+  const rowPattern = /<w:tr(?:\s[^>]*)?>[\s\S]*?<\/w:tr>/g;
+
+  return xml.replace(rowPattern, (rowXml) => {
+    const rowPlaceholder = findDocxPlaceholders(rowXml).find(
+      (key) => REPEATED_ROW_PLACEHOLDER.test(key)
+        && Object.prototype.hasOwnProperty.call(rows, key),
+    );
+    if (!rowPlaceholder) return rowXml;
+
+    return rows[rowPlaceholder]
+      .map((itemValues) => replaceDocxPlaceholders(rowXml, {
+        ...itemValues,
+        [rowPlaceholder]: '',
+      }))
+      .join('');
+  });
+}
+
 export async function fillDocxBuffer(
   templateBuffer: Buffer,
   values: DocxValues,
+  rows?: DocxRows,
 ): Promise<Buffer> {
   const zip = await JSZip.loadAsync(templateBuffer);
   const documentFile = zip.file('word/document.xml');
   if (!documentFile) throw new Error('В шаблоне не найден word/document.xml');
   const xml = await documentFile.async('string');
-  zip.file('word/document.xml', replaceDocxPlaceholders(xml, values));
+  const expandedXml = rows ? expandDocxTableRows(xml, rows) : xml;
+  zip.file('word/document.xml', replaceDocxPlaceholders(expandedXml, values));
   return zip.generateAsync({ type: 'nodebuffer' });
 }
 
 /** Заполняет .docx-шаблон, подставляя {КЛЮЧ} -> значение. Возвращает Buffer готового файла. */
-export async function fillDocx(templatePath: string, values: DocxValues): Promise<Buffer> {
+export async function fillDocx(
+  templatePath: string,
+  values: DocxValues,
+  rows?: DocxRows,
+): Promise<Buffer> {
   const templateBuffer = await readFile(templatePath);
-  return fillDocxBuffer(templateBuffer, values);
+  return fillDocxBuffer(templateBuffer, values, rows);
 }
 
 /** Безопасное имя файла из названия контрагента: только буквы/цифры/дефис/пробел, пробелы -> _, максимум 40 символов. */
