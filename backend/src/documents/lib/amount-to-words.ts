@@ -60,16 +60,35 @@ export function amountToWords(value: number): string {
   return result.trim();
 }
 
-/** Сумма цифрами с разделителями пробелом: 1000000 -> "1 000 000" */
+/** Сумма цифрами с разделителями пробелом, без копеек: 1000000 -> "1 000 000" */
 export function formatAmount(value: number): string {
   const n = Math.trunc(value);
   const sign = n < 0 ? '-' : '';
   return sign + Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
-/** "Шестьсот тридцать тысяч тенге 00 тиын" — сумма прописью с тиынами (только для KZT). */
-export function amountToWordsWithTiyin(value: number): string {
+/**
+ * Денежная сумма для документов: всегда две цифры после запятой — "630 000,00",
+ * "23 448,28". В отличие от formatAmount копейки не отбрасываются: в счёте и акте
+ * они попадают в итог и в сумму НДС, а расхождение с ними на стороне клиента —
+ * это расхождение платежа.
+ */
+export function formatMoney(value: number): string {
+  const rounded = Math.round(Math.abs(value) * 100) / 100;
+  const whole = Math.trunc(rounded);
+  const cents = Math.round((rounded - whole) * 100);
+  const sign = value < 0 ? '-' : '';
+  const wholeText = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return `${sign}${wholeText},${String(cents).padStart(2, '0')}`;
+}
+
+/**
+ * "Шестьсот тридцать тысяч тенге 00 тиын" — сумма прописью с тиынами (только для KZT).
+ * Написание валюты задаётся вызывающим: в счёте по образцу владельца используется
+ * казахское «теңге», в остальных документах — русское «тенге».
+ */
+export function amountToWordsWithTiyin(value: number, currencyWord = 'тенге'): string {
   const whole = Math.trunc(value);
   const tiyin = Math.round((Math.abs(value) - Math.abs(whole)) * 100);
-  return `${amountToWords(whole)} тенге ${String(tiyin).padStart(2, '0')} тиын`;
+  return `${amountToWords(whole)} ${currencyWord} ${String(tiyin).padStart(2, '0')} тиын`;
 }

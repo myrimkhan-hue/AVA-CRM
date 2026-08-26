@@ -4,11 +4,20 @@ import { AuthUser } from '../auth/auth-user.type';
 import { InvoicesService } from '../invoices/invoices.service';
 import { DocumentTemplatesService } from './document-templates.service';
 import { DocumentsService } from './documents.service';
-import { amountToWordsWithTiyin, formatAmount } from './lib/amount-to-words';
+import { amountToWordsWithTiyin, formatMoney } from './lib/amount-to-words';
 import { DocxValues, safeName } from './lib/fill-docx';
 import { formatDateRu, formatDateShort } from './lib/format-date-ru';
 
 const DASH = '—';
+
+/** Количество в позиции счёта: "1,000" — три знака после запятой, как в бланке 1С. */
+function formatQuantity(value: number): string {
+  return value.toFixed(3).replace('.', ',');
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toLocaleUpperCase('ru-RU') + text.slice(1);
+}
 
 @Injectable()
 export class InvoiceGeneratorService {
@@ -34,9 +43,13 @@ export class InvoiceGeneratorService {
     const currency = invoice.currency.code;
     const total = Number(invoice.totals.totalAmount);
     const vat = Number(invoice.totals.vatAmount);
+    // В бланке валюта пишется словом «теңге» рядом с суммой, как в привычном
+    // владельцу счёте из 1С; для остальных валют — код (USD, CNY), словарь названий
+    // валют в системе не ведётся.
+    const currencyWord = currency === 'KZT' ? 'теңге' : currency;
     const totalWords = currency === 'KZT'
-      ? `${formatAmount(total)} (${amountToWordsWithTiyin(total)})`
-      : `${formatAmount(total)} ${currency}`;
+      ? capitalize(amountToWordsWithTiyin(total, currencyWord))
+      : `${formatMoney(total)} ${currency}`;
     const contract = latestContract
       ? `№ ${latestContract.number} от ${formatDateShort(latestContract.generatedAt)}`
       : DASH;
@@ -57,10 +70,10 @@ export class InvoiceGeneratorService {
       ПОКУПАТЕЛЬ_АДРЕС: buyer.address,
       ПОКУПАТЕЛЬ_ТЕЛЕФОН: buyer.phone,
       ДОГОВОР: contract,
-      ВАЛЮТА: currency,
-      ИТОГО: formatAmount(total),
+      ВАЛЮТА: currencyWord,
+      ИТОГО: formatMoney(total),
       НДС_СТРОКА: vat > 0
-        ? `В том числе НДС: ${formatAmount(vat)} ${currency}`
+        ? `В том числе НДС: ${formatMoney(vat)}`
         : 'Без НДС',
       КОЛИЧЕСТВО_НАИМЕНОВАНИЙ: invoice.lines.length,
       ВСЕГО_К_ОПЛАТЕ_ПРОПИСЬЮ: totalWords,
@@ -70,10 +83,10 @@ export class InvoiceGeneratorService {
       СТРОКА_УСЛУГИ: invoice.lines.map((line, index) => ({
         УСЛУГА_НОМЕР: index + 1,
         УСЛУГА_НАЗВАНИЕ: line.serviceName,
-        УСЛУГА_КОЛИЧЕСТВО: line.quantity.toString(),
+        УСЛУГА_КОЛИЧЕСТВО: formatQuantity(Number(line.quantity)),
         УСЛУГА_ЕДИНИЦА: 'усл.',
-        УСЛУГА_ЦЕНА: formatAmount(Number(line.unitPrice)),
-        УСЛУГА_СУММА: formatAmount(Number(line.totalAmount)),
+        УСЛУГА_ЦЕНА: formatMoney(Number(line.unitPrice)),
+        УСЛУГА_СУММА: formatMoney(Number(line.totalAmount)),
       })),
     };
     const buffer = await this.documentTemplatesService.fillTemplate(

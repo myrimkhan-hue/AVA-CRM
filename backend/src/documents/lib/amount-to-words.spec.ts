@@ -1,4 +1,9 @@
-import { amountToWords, amountToWordsWithTiyin, formatAmount } from './amount-to-words';
+import {
+  amountToWords,
+  amountToWordsWithTiyin,
+  formatAmount,
+  formatMoney,
+} from './amount-to-words';
 
 describe('amountToWords', () => {
   it.each([
@@ -33,5 +38,25 @@ describe('formatAmount', () => {
     [1234567, '1 234 567'],
   ])('%i -> %s', (value, expected) => {
     expect(formatAmount(value)).toBe(expected);
+  });
+});
+
+describe('formatMoney', () => {
+  it.each([
+    [0, '0,00'],
+    [1000, '1 000,00'],
+    [630000, '630 000,00'],
+    // Сумма НДС из реального счёта: копейки должны сохраниться, а не отброситься.
+    [23448.28, '23 448,28'],
+    [1234567.5, '1 234 567,50'],
+    [0.05, '0,05'],
+    [-1234.56, '-1 234,56'],
+  ])('%p -> %s', (value, expected) => {
+    expect(formatMoney(value)).toBe(expected);
+  });
+
+  it('округляет третий знак, а не отбрасывает его', () => {
+    expect(formatMoney(10.005)).toBe('10,01');
+    expect(formatMoney(10.004)).toBe('10,00');
   });
 });
