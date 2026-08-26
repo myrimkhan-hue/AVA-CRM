@@ -30,7 +30,11 @@ button, input { font: inherit; }
 .brand { display: flex; align-items: center; gap: 10px; color: #1b2430; font-size: 17px; font-weight: 800; white-space: nowrap; }
 .brand img { width: 36px; height: 36px; flex-shrink: 0; }
 .brand-button { flex-shrink: 0; padding: 0; background: none; border: 0; cursor: pointer; }
-.top-navigation { align-self: stretch; display: flex; gap: 2px; min-width: 0; margin-left: 24px; }
+/* overflow-x: auto — страховка: пункты меню не влезают в узкое окно не «наезжая»
+   на имя пользователя и не растягивая страницу, а прокручиваются внутри шапки.
+   Без неё каждый новый пункт меню ломал вёрстку на ширине от 1280px (ТЗ 5.2). */
+.top-navigation { align-self: stretch; display: flex; gap: 2px; min-width: 0; margin-left: 24px; overflow-x: auto; scrollbar-width: none; }
+.top-navigation::-webkit-scrollbar { display: none; }
 .top-navigation-link { position: relative; padding: 0 10px; color: #66707d; background: transparent; border: 0; cursor: pointer; white-space: nowrap; }
 .nav-burger { display: none; margin-right: 8px; }
 .top-navigation-link:hover, .top-navigation-link.active { color: #1b2430; }
@@ -312,6 +316,15 @@ button, input { font: inherit; }
 .invoice-totals .ant-descriptions-item-label { width: 190px; }
 .payment-request-list-page { width: min(100%, 1400px); margin: 0 auto; }
 .payment-request-list-page .ant-table-tbody > tr { cursor: pointer; }
+.operating-expenses-page { width: min(100%, 1500px); margin: 0 auto; }
+.operating-expense-types-page { width: min(100%, 1100px); margin: 0 auto; }
+.operating-expenses-filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.operating-expenses-filters > .ant-input,
+.operating-expenses-filters > .ant-select { width: 190px; }
+.operating-expense-amount { width: calc(100% - 120px); }
+.operating-expense-currency { width: 120px; }
+.operating-expenses-table .ant-table-tbody > tr.overdue-row > td { background: #fff7f6; }
+.operating-expenses-table .ant-table-tbody > tr.overdue-row:hover > td { background: #ffefed !important; }
 .documents-list-page { width: min(100%, 1400px); margin: 0 auto; }
 .documents-list-page .ant-table-tbody > tr.clickable-row { cursor: pointer; }
 .documents-filter-toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }

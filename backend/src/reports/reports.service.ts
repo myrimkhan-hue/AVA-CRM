@@ -39,6 +39,21 @@ export interface PayableRow {
   daysOverdue: number;
 }
 
+export interface OperatingExpenseDueRow {
+  operatingExpenseId: string;
+  typeId: string;
+  typeName: string;
+  legalEntityId: string;
+  legalEntityName: string;
+  purpose: string;
+  dueDate: string;
+  amount: string;
+  currencyCode: string;
+  amountKzt: number;
+  isOverdue: boolean;
+  daysOverdue: number;
+}
+
 export interface CashCalendarPeriod {
   periodStart: string;
   periodEnd: string;
@@ -387,6 +402,50 @@ export class ReportsService {
     return rows;
   }
 
+  async getOperatingExpensesDue(): Promise<OperatingExpenseDueRow[]> {
+    const today = this.today();
+    const expenses = await this.prisma.operatingExpense.findMany({
+      where: { deletedAt: null, paidAt: null },
+      select: {
+        id: true,
+        amount: true,
+        currencyCode: true,
+        dueDate: true,
+        purpose: true,
+        type: { select: { id: true, name: true } },
+        legalEntity: { select: { id: true, name: true } },
+      },
+      orderBy: { dueDate: 'asc' },
+    });
+
+    const rateCache = new Map<string, number>();
+    const rows: OperatingExpenseDueRow[] = [];
+    for (const expense of expenses) {
+      const rate = await this.rateToday(
+        expense.currencyCode,
+        today,
+        rateCache,
+        `операционный расход ${expense.id}`,
+      );
+      const daysOverdue = this.daysOverdue(expense.dueDate, today);
+      rows.push({
+        operatingExpenseId: expense.id,
+        typeId: expense.type.id,
+        typeName: expense.type.name,
+        legalEntityId: expense.legalEntity.id,
+        legalEntityName: expense.legalEntity.name,
+        purpose: expense.purpose,
+        dueDate: this.dateString(expense.dueDate),
+        amount: expense.amount.toString(),
+        currencyCode: expense.currencyCode,
+        amountKzt: this.round2(expense.amount.toNumber() * rate),
+        isOverdue: daysOverdue > 0,
+        daysOverdue,
+      });
+    }
+    return rows;
+  }
+
   async getCashCalendar(query: CashCalendarQueryDto): Promise<CashCalendarResult> {
     const today = this.today();
     const from = query.from ? this.parseDate(query.from) : today;
@@ -396,18 +455,28 @@ export class ReportsService {
     }
     const groupBy = query.groupBy ?? 'day';
 
-    const [receivables, payables] = await Promise.all([this.getReceivables(), this.getPayables()]);
+    const [receivables, payables, operatingExpenses] = await Promise.all([
+      this.getReceivables(),
+      this.getPayables(),
+      this.getOperatingExpensesDue(),
+    ]);
 
     const overdueIncomeKzt = this.round2(
       receivables.filter((row) => row.isOverdue).reduce((sum, row) => sum + row.balanceKzt, 0),
     );
     const overdueExpenseKzt = this.round2(
-      payables.filter((row) => row.isOverdue).reduce((sum, row) => sum + row.amountKzt, 0),
+      [...payables, ...operatingExpenses]
+        .filter((row) => row.isOverdue)
+        .reduce((sum, row) => sum + row.amountKzt, 0),
     );
     const openingBalanceKzt = this.round2(overdueIncomeKzt - overdueExpenseKzt);
 
     const incomeByDate = this.sumByDate(receivables.filter((row) => !row.isOverdue), 'dueDate', 'balanceKzt');
-    const expenseByDate = this.sumByDate(payables.filter((row) => !row.isOverdue), 'dueDate', 'amountKzt');
+    const expenseByDate = this.sumByDate(
+      [...payables, ...operatingExpenses].filter((row) => !row.isOverdue),
+      'dueDate',
+      'amountKzt',
+    );
 
     const buckets = groupBy === 'week' ? this.weekBuckets(from, to) : this.dayBuckets(from, to);
     let runningBalance = openingBalanceKzt;

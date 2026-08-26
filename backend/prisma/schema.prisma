@@ -175,6 +175,8 @@ model User {
   attachments                Attachment[]                @relation("AttachmentUploadedBy")
   createdContracts           Contract[]                  @relation("ContractCreatedBy")
   uploadedDocumentTemplates  DocumentTemplate[]          @relation("DocumentTemplateUploadedBy")
+  createdOperatingExpenses   OperatingExpense[]          @relation("OperatingExpenseCreatedBy")
+  paidOperatingExpenses      OperatingExpense[]          @relation("OperatingExpensePaidBy")
 
   @@map("users")
 }
@@ -253,6 +255,7 @@ model LegalEntity {
   paymentRequestsAsPayer PaymentRequest[]        @relation("PaymentRequestPayerLegalEntity")
   generatedDocuments     GeneratedDocument[]
   contracts              Contract[]
+  operatingExpenses      OperatingExpense[]
 
   @@map("legal_entities")
 }
@@ -276,13 +279,14 @@ model LegalEntityTaxRate {
 }
 
 model Currency {
-  code            String           @id @db.VarChar(3)
-  name            String
-  isBase          Boolean          @default(false) @map("is_base")
-  isActive        Boolean          @default(true) @map("is_active")
-  exchangeRates   ExchangeRate[]
-  invoices        Invoice[]
-  paymentRequests PaymentRequest[]
+  code              String             @id @db.VarChar(3)
+  name              String
+  isBase            Boolean            @default(false) @map("is_base")
+  isActive          Boolean            @default(true) @map("is_active")
+  exchangeRates     ExchangeRate[]
+  invoices          Invoice[]
+  paymentRequests   PaymentRequest[]
+  operatingExpenses OperatingExpense[]
 
   @@map("currencies")
 }
@@ -610,6 +614,52 @@ model PaymentRequest {
   @@index([payerLegalEntityId])
   @@index([dueDate])
   @@map("payment_requests")
+}
+
+model OperatingExpenseType {
+  id        String             @id @default(cuid())
+  name      String
+  sortOrder Int                @default(0) @map("sort_order")
+  isActive  Boolean            @default(true) @map("is_active")
+  deletedAt DateTime?          @map("deleted_at")
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+  expenses  OperatingExpense[]
+
+  @@index([isActive, sortOrder])
+  @@map("operating_expense_types")
+}
+
+model OperatingExpense {
+  id                 String               @id @default(cuid())
+  typeId             String               @map("type_id")
+  legalEntityId      String               @map("legal_entity_id")
+  amount             Decimal              @db.Decimal(18, 2)
+  currencyCode       String               @map("currency_code") @db.VarChar(3)
+  dueDate            DateTime             @map("due_date") @db.Date
+  purpose            String
+  isRecurringMonthly Boolean              @default(false) @map("is_recurring_monthly")
+  paidAt             DateTime?            @map("paid_at") @db.Date
+  paidByUserId       String?              @map("paid_by_user_id")
+  deletedAt          DateTime?            @map("deleted_at")
+  createdByUserId    String               @map("created_by_user_id")
+  recurringSourceId  String?              @map("recurring_source_id")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  type               OperatingExpenseType @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  legalEntity        LegalEntity          @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
+  currency           Currency             @relation(fields: [currencyCode], references: [code], onDelete: Restrict)
+  createdBy          User                 @relation("OperatingExpenseCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  paidBy             User?                @relation("OperatingExpensePaidBy", fields: [paidByUserId], references: [id], onDelete: SetNull)
+  recurringSource    OperatingExpense?    @relation("OperatingExpenseRecurrence", fields: [recurringSourceId], references: [id], onDelete: Restrict)
+  recurringCopies    OperatingExpense[]   @relation("OperatingExpenseRecurrence")
+
+  @@unique([recurringSourceId, dueDate])
+  @@index([dueDate])
+  @@index([typeId])
+  @@index([legalEntityId])
+  @@index([paidAt])
+  @@map("operating_expenses")
 }
 
 model ContractorContact {
@@ -970,7 +1020,7 @@ model Contract {
   subject          String?
   notes            String?
   expiryNotifiedAt DateTime?      @map("expiry_notified_at")
-  expiryEscalatedAt DateTime?     @map("expiry_escalated_at")
+  expiryEscalatedAt DateTime?      @map("expiry_escalated_at")
   createdById      String         @map("created_by_id")
   deletedAt        DateTime?      @map("deleted_at")
   createdAt        DateTime       @default(now()) @map("created_at")

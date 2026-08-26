@@ -14,15 +14,17 @@ export function SettingsLayout() {
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
   const activeKey = location.pathname.includes('/settings/currencies')
     ? 'currencies'
-    : location.pathname.includes('/settings/motivation')
-      ? 'motivation'
-      : location.pathname.includes('/settings/whatsapp-templates')
-        ? 'whatsapp-templates'
-        : location.pathname.includes('/settings/document-templates')
-          ? 'document-templates'
-          : location.pathname.includes('/settings/document-payment-texts')
-            ? 'document-payment-texts'
-            : 'legal-entities';
+    : location.pathname.includes('/settings/operating-expense-types')
+      ? 'operating-expense-types'
+      : location.pathname.includes('/settings/motivation')
+        ? 'motivation'
+        : location.pathname.includes('/settings/whatsapp-templates')
+          ? 'whatsapp-templates'
+          : location.pathname.includes('/settings/document-templates')
+            ? 'document-templates'
+            : location.pathname.includes('/settings/document-payment-texts')
+              ? 'document-payment-texts'
+              : 'legal-entities';
 
   if (!canManage) return <Navigate to="/" replace />;
 
@@ -40,6 +42,10 @@ export function SettingsLayout() {
           {
             key: 'currencies',
             label: t('settings.tabs.currencies'),
+          },
+          {
+            key: 'operating-expense-types',
+            label: t('settings.tabs.operatingExpenseTypes'),
           },
           {
             key: 'motivation',

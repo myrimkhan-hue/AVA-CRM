@@ -31,6 +31,8 @@ import { DocumentTemplatesPage } from './pages/DocumentTemplatesPage';
 import { DocumentPaymentTextsPage } from './pages/DocumentPaymentTextsPage';
 import { MyProfilePage } from './pages/MyProfilePage';
 import { DOCUMENT_ACCESS_ROLES } from './documents/access';
+import { OperatingExpensesPage } from './pages/OperatingExpensesPage';
+import { OperatingExpenseTypesPage } from './pages/OperatingExpenseTypesPage';
 
 const INVOICE_ROLES = [
   'ADMIN',
@@ -41,6 +43,7 @@ const INVOICE_ROLES = [
 ];
 
 const LEAD_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'];
+const OPERATING_EXPENSE_ROLES = ['ADMIN', 'DIRECTOR', 'FINANCIER'];
 
 function DealsRoute() {
   const { user } = useAuth();
@@ -79,6 +82,15 @@ function DocumentsRoute() {
   return <DocumentsPage />;
 }
 
+function OperatingExpensesRoute() {
+  const { user } = useAuth();
+  const canAccess = Boolean(
+    user?.roles.some((role) => OPERATING_EXPENSE_ROLES.includes(role)),
+  );
+  if (!canAccess) return <Navigate to="/transportations" replace />;
+  return <OperatingExpensesPage />;
+}
+
 export default function App() {
   return (
     <Routes>
@@ -96,6 +108,7 @@ export default function App() {
           <Route path="invoices" element={<InvoicesRoute />} />
           <Route path="documents" element={<DocumentsRoute />} />
           <Route path="payment-requests" element={<PaymentRequestsPage />} />
+          <Route path="operating-expenses" element={<OperatingExpensesRoute />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="profile" element={<MyProfilePage />} />
           <Route path="settings" element={<SettingsLayout />}>
@@ -106,6 +119,7 @@ export default function App() {
             <Route path="whatsapp-templates" element={<WhatsappTemplatesPage />} />
             <Route path="document-templates" element={<DocumentTemplatesPage />} />
             <Route path="document-payment-texts" element={<DocumentPaymentTextsPage />} />
+            <Route path="operating-expense-types" element={<OperatingExpenseTypesPage />} />
           </Route>
           <Route path="reports" element={<ReportsLayout />}>
             <Route index element={<Navigate to="dashboard" replace />} />

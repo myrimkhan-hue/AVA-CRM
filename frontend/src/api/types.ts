@@ -244,3 +244,43 @@ export interface FetchNbrkResult {
   skippedManual: number;
   missingCurrencyCodes: string[];
 }
+
+export interface OperatingExpenseTypeRecord {
+  id: string;
+  name: string;
+  sortOrder: number;
+  isActive: boolean;
+  deletedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OperatingExpenseRecord {
+  id: string;
+  typeId: string;
+  legalEntityId: string;
+  amount: string;
+  currencyCode: string;
+  dueDate: string;
+  purpose: string;
+  isRecurringMonthly: boolean;
+  paidAt: string | null;
+  paidByUserId: string | null;
+  deletedAt: string | null;
+  createdByUserId: string;
+  recurringSourceId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  isOverdue: boolean;
+  type: OperatingExpenseTypeRecord;
+  legalEntity: { id: string; name: string };
+  currency: { code: string; name: string; isBase: boolean };
+  createdBy: { id: string; fullName: string };
+  paidBy: { id: string; fullName: string } | null;
+}
+
+export interface OperatingExpenseContext {
+  types: OperatingExpenseTypeRecord[];
+  legalEntities: Array<{ id: string; name: string; numberingPrefix: string }>;
+  currencies: CurrencyRecord[];
+}

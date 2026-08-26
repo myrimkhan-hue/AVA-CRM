@@ -24,6 +24,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { LeadsModule } from './leads/leads.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
+import { OperatingExpensesModule } from './operating-expenses/operating-expenses.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
     WhatsappModule,
     AttachmentsModule,
     ContractsModule,
+    OperatingExpensesModule,
   ],
   controllers: [HealthController],
   providers: [
