@@ -1,0 +1,5 @@
+# Скрипты, которые запускаются внутри Linux-контейнеров, всегда должны иметь LF —
+# иначе Git на Windows (core.autocrlf=true) при checkout превратит их в CRLF,
+# и `#!/bin/sh` внутри образа перестанет запускаться.
+*.sh text eol=lf
+*.envsh text eol=lf

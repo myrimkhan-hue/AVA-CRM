@@ -1,0 +1,34 @@
+#!/bin/sh
+set -eu
+
+case "${NGINX_MODE:-tls}" in
+  tls)
+    selected_template="tls.conf.template"
+    ;;
+  http)
+    selected_template="http.conf.template"
+    ;;
+  acme)
+    selected_template="acme.conf.template"
+    ;;
+  *)
+    echo "ОШИБКА: неизвестный NGINX_MODE=${NGINX_MODE}. Допустимо: tls, http, acme." >&2
+    exit 1
+    ;;
+esac
+
+if [ -z "${DOMAIN:-}" ]; then
+  echo "ОШИБКА: обязательная переменная DOMAIN не задана." >&2
+  exit 1
+fi
+
+if [ "${NGINX_MODE:-tls}" = "tls" ]; then
+  certificate_dir="/etc/letsencrypt/live/${DOMAIN}"
+  if [ ! -s "${certificate_dir}/fullchain.pem" ] || [ ! -s "${certificate_dir}/privkey.pem" ]; then
+    echo "ОШИБКА: сертификат для ${DOMAIN} не найден. Сначала выполните шаг получения Let's Encrypt из deploy/README.md." >&2
+    exit 1
+  fi
+fi
+
+mkdir -p /etc/nginx/templates
+cp "/etc/nginx/config-templates/${selected_template}" /etc/nginx/templates/default.conf.template

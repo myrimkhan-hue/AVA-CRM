@@ -1,0 +1,21 @@
+# syntax=docker/dockerfile:1
+
+FROM node:22-alpine AS build
+
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY backend/package.json ./backend/package.json
+COPY frontend/package.json ./frontend/package.json
+RUN npm ci --workspace @ava-crm/frontend
+
+COPY frontend ./frontend
+RUN npm run build --workspace @ava-crm/frontend
+
+FROM nginx:1.27-alpine AS runtime
+
+COPY --from=build /app/frontend/dist /usr/share/nginx/html
+COPY frontend/nginx/config-templates /etc/nginx/config-templates
+COPY --chmod=755 frontend/nginx/15-select-config.envsh /docker-entrypoint.d/15-select-config.envsh
+COPY --chmod=755 frontend/nginx/40-reload-certificates.sh /docker-entrypoint.d/40-reload-certificates.sh
+
+EXPOSE 80 443

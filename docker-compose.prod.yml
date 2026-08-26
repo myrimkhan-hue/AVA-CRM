@@ -1,0 +1,98 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Задайте POSTGRES_DB в файле .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Задайте POSTGRES_USER в файле .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задайте POSTGRES_PASSWORD в файле .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Порт наружу не публикуется — база доступна только другим контейнерам этого проекта.
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.prod
+      target: runtime
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Задайте POSTGRES_USER в файле .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задайте POSTGRES_PASSWORD в файле .env}
+      POSTGRES_DB: ${POSTGRES_DB:?Задайте POSTGRES_DB в файле .env}
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:?Задайте JWT_SECRET в файле .env}
+      WAZZUP_API_KEY: ${WAZZUP_API_KEY:-}
+      WAZZUP_CHANNEL_ID: ${WAZZUP_CHANNEL_ID:-}
+      WAZZUP_WEBHOOK_SECRET: ${WAZZUP_WEBHOOK_SECRET:-}
+      WEBSITE_LEADS_WEBHOOK_SECRET: ${WEBSITE_LEADS_WEBHOOK_SECRET:-}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}
+    volumes:
+      # Вложения и сгенерированные документы переживают пересборку образа и
+      # попадают в резервную копию вместе с базой — том тот же, что и в dev.
+      - uploads_data:/app/backend/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Порт 3000 наружу не публикуется — весь внешний трафик идёт через nginx (frontend) по /api.
+
+  backend-seed:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.prod
+      target: seed
+    profiles: ["seed"]
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Задайте POSTGRES_USER в файле .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задайте POSTGRES_PASSWORD в файле .env}
+      POSTGRES_DB: ${POSTGRES_DB:?Задайте POSTGRES_DB в файле .env}
+      ADMIN_SEED_EMAIL: ${ADMIN_SEED_EMAIL:-}
+      ADMIN_SEED_PASSWORD: ${ADMIN_SEED_PASSWORD:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Не запускается сам по себе (профиль "seed"), см. deploy/README.md — шаг первого запуска.
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile.prod
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN:?Задайте DOMAIN в файле .env}
+      NGINX_MODE: ${NGINX_MODE:-acme}
+      NGINX_MAX_BODY_SIZE: ${NGINX_MAX_BODY_SIZE:-30m}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certbot_certs:/etc/letsencrypt:ro
+      - certbot_webroot:/var/www/certbot:ro
+    depends_on:
+      - backend
+
+  certbot:
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
+    # В обычной работе только продлевает существующий сертификат раз в 12 часов.
+    # Первый выпуск сертификата — отдельная команда, см. deploy/README.md.
+    entrypoint: >
+      /bin/sh -c "trap exit TERM;
+      while :; do
+        certbot renew --webroot -w /var/www/certbot --quiet;
+        sleep 12h & wait $${!};
+      done"
+
+volumes:
+  postgres_data:
+  uploads_data:
+  certbot_certs:
+  certbot_webroot:
