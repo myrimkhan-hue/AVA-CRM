@@ -76,6 +76,27 @@ services:
     depends_on:
       - backend
 
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Задайте POSTGRES_USER в файле .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задайте POSTGRES_PASSWORD в файле .env}
+      POSTGRES_DB: ${POSTGRES_DB:?Задайте POSTGRES_DB в файле .env}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+    entrypoint: ["/bin/sh", "/deploy/backup.sh"]
+    volumes:
+      - ./deploy/backup/backup.sh:/deploy/backup.sh:ro
+      - uploads_data:/uploads:ro
+      # Бинд-монтирование на хост (не именованный том), чтобы бэкапы были видны
+      # и доступны для копирования вовне сразу в файловой системе сервера.
+      - ./backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Раз в сутки: pg_dump базы + архив вложений в ./backups на хосте,
+    # хранение — BACKUP_RETENTION_DAYS дней (см. deploy/backup/backup.sh).
+
   certbot:
     image: certbot/certbot:latest
     restart: unless-stopped

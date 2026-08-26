@@ -26,8 +26,12 @@ cp deploy/prod.env.example .env
 ## Шаг 2. Первый запуск и получение сертификата
 
 ```
-docker compose -p ava-crm-prod -f docker-compose.prod.yml up -d --build postgres backend frontend
+docker compose -p ava-crm-prod -f docker-compose.prod.yml up -d --build postgres backend frontend backup
 ```
+
+Сервис `backup` с этого момента сам снимает ежедневную резервную копию базы и
+файлов — отдельно ничего запускать не нужно, подробности в разделе
+«Резервная копия» ниже.
 
 На этом шаге nginx (сервис `frontend`) поднимается в режиме `acme` — отдаёт
 заглушку "CRM готовится к первому запуску" и умеет обслуживать проверку от
@@ -97,15 +101,86 @@ docker compose -p ava-crm-prod -f docker-compose.prod.yml up -d --build backend 
 обновлением на боевом сервере стоит сначала снять резервную копию базы
 (шаг ниже).
 
-## Резервная копия
+## Резервная копия (раздел 5.5 ТЗ)
 
-Данные, которые нужно бэкапить: том `postgres_data` (сама база) и том
-`uploads_data` (вложения, шаблоны документов). Пример снятия дампа базы:
+Копирование полностью автоматическое — отдельный сервис `backup` в
+`docker-compose.prod.yml`. Ничего вручную запускать не нужно, если стек
+поднят по шагу 2 выше.
+
+**Что и когда копируется.** Раз в сутки (и сразу при первом запуске /
+каждом передеплое сервиса `backup`) снимается дамп базы (`pg_dump
+--clean --if-exists`, со сжатием) и архив папки вложений/шаблонов
+документов (том `uploads_data`). Файлы кладутся на сам сервер, в папку
+`./backups` рядом с `docker-compose.prod.yml`:
 
 ```
-docker compose -p ava-crm-prod -f docker-compose.prod.yml exec postgres \
-  pg_dump -U ВАШ_POSTGRES_USER ВАША_POSTGRES_DB > backup-$(date +%Y%m%d).sql
+backups/
+  db_20260826_030000.sql.gz
+  uploads_20260826_030000.tar.gz
 ```
+
+Хранятся копии `BACKUP_RETENTION_DAYS` дней (по умолчанию 30, меняется в
+`.env`) — более старые файлы удаляются автоматически при следующем
+запуске копирования.
+
+**Как проверить, что бэкап работает:**
+
+```
+docker compose -p ava-crm-prod -f docker-compose.prod.yml logs backup
+ls -la backups/
+```
+
+В логе должны быть строки `[backup] ... готово`, а в папке `backups/` —
+свежие файлы `db_*.sql.gz` (и `uploads_*.tar.gz`, если в системе есть
+загруженные файлы).
+
+**Важно:** папка `./backups` лежит на том же сервере, что и сама CRM.
+Это защищает от порчи базы или неудачного обновления, но не от отказа
+самого сервера или диска. Рекомендуется периодически (например, раз в
+неделю) вручную скачивать содержимое `backups/` на другой компьютер или
+в облачное хранилище — средствами системы это не делается.
+
+### Восстановление базы данных
+
+1. Остановите backend, чтобы во время восстановления никто не писал в базу:
+   ```
+   docker compose -p ava-crm-prod -f docker-compose.prod.yml stop backend
+   ```
+2. Накатите нужный дамп (подставьте имя файла и переменные из `.env`):
+   ```
+   gunzip -c backups/db_20260826_030000.sql.gz | \
+     docker compose -p ava-crm-prod -f docker-compose.prod.yml exec -T postgres \
+     psql -U ВАШ_POSTGRES_USER -d ВАША_POSTGRES_DB
+   ```
+   Дамп снят с `--clean --if-exists`, поэтому он сам удаляет старые таблицы
+   перед восстановлением — базу заранее очищать не нужно.
+3. Запустите backend обратно:
+   ```
+   docker compose -p ava-crm-prod -f docker-compose.prod.yml start backend
+   ```
+
+### Восстановление файлов (вложения, шаблоны документов)
+
+1. Остановите backend (как в шаге 1 выше), если ещё не остановлен.
+2. Узнайте точное имя тома с файлами (обычно `ava-crm-prod_uploads_data`,
+   но лучше свериться):
+   ```
+   docker volume ls | grep uploads_data
+   ```
+3. Очистите том и распакуйте архив (подставьте имя тома из шага 2 и файла
+   из `backups/`):
+   ```
+   docker run --rm -v ava-crm-prod_uploads_data:/data alpine \
+     sh -c "rm -rf /data/* /data/.[!.]*"
+   docker run --rm \
+     -v ava-crm-prod_uploads_data:/data \
+     -v "$(pwd)/backups:/backup:ro" \
+     alpine sh -c "tar xzf /backup/uploads_20260826_030000.tar.gz -C /data"
+   ```
+4. Запустите backend обратно:
+   ```
+   docker compose -p ava-crm-prod -f docker-compose.prod.yml start backend
+   ```
 
 ## Режимы NGINX_MODE
 

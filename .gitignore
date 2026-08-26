@@ -15,3 +15,6 @@ Thumbs.db
 
 # Загруженные файлы (вложения) — хранятся в томе Docker, не в репозитории
 backend/uploads/
+
+# Резервные копии боевого сервера (docker-compose.prod.yml, сервис backup)
+/backups/
