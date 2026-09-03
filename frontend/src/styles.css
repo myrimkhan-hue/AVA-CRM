@@ -355,7 +355,7 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .money-number{width:100%}.currency-select{width:90px}.optional-collapse{margin-bottom:16px}.wizard-card .ant-card{margin-bottom:14px}
 .wizard-actions{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:16px;margin-top:8px}.create-green{color:var(--on-strong);background:var(--green-fg);border-color:var(--green-fg)}.create-green:hover{background:var(--green-fg)!important;color:var(--on-strong)!important}
 .summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.success-modal{text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}.success-modal>span.anticon{font-size:52px;color:var(--green-fg)}
-.detail-spin{display:block;margin:100px auto}.detail-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}.detail-heading h2.ant-typography{margin:8px 0 18px}.status-card{margin-bottom:14px}.status-scale{display:flex;overflow-x:auto}.status-step{position:relative;flex:1;min-width:115px;text-align:center}.status-line{position:absolute;left:0;right:0;top:14px;height:2px;background:var(--line)}.status-line.done{background:var(--green-fg)}.status-dot{position:relative;z-index:1;display:grid;place-items:center;width:28px;height:28px;margin:auto;background:var(--card);border:2px solid var(--faint);border-radius:50%;font-size:12px}.status-dot.done{color:var(--on-strong);background:var(--green-fg);border-color:var(--green-fg)}.status-dot.current{color:var(--on-strong);background:var(--accent);border-color:var(--accent)}.status-step small{display:block;margin-top:7px}.status-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:14px;padding-top:13px}.status-actions .ant-typography{font-size:12px;margin-left:auto}
+.detail-spin{display:block;margin:100px auto}.status-card{margin-bottom:14px}.status-scale{display:flex;overflow-x:auto}.status-step{position:relative;flex:1;min-width:115px;text-align:center}.status-line{position:absolute;left:0;right:0;top:14px;height:2px;background:var(--line)}.status-line.done{background:var(--green-fg)}.status-dot{position:relative;z-index:1;display:grid;place-items:center;width:28px;height:28px;margin:auto;background:var(--card);border:2px solid var(--faint);border-radius:50%;font-size:12px}.status-dot.done{color:var(--on-strong);background:var(--green-fg);border-color:var(--green-fg)}.status-dot.current{color:var(--on-strong);background:var(--accent);border-color:var(--accent)}.status-step small{display:block;margin-top:7px}.status-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:14px;padding-top:13px}.status-actions .ant-typography{font-size:12px;margin-left:auto}
 .detail-columns{display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:14px}
 
 /* Карточка перевозки: панель-шапка и плечи маршрута таймлайном. */
@@ -427,7 +427,7 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
   .transportations-footer { flex-direction: column; }
   /* minmax(0, 1fr), а не 1fr: иначе колонка не сжимается уже своего содержимого
      и широкие блоки (дорожка стадий, таблицы) выталкивают страницу за экран. */
-  .form-grid.two,.form-grid.three,.summary-grid,.data-grid.two,.data-grid.four,.detail-columns{grid-template-columns:minmax(0,1fr)}.detail-heading{align-items:flex-start;flex-direction:column}.detail-side{order:-1}.route-row{flex-wrap:wrap}.route-row span{width:100%;margin-left:0}
+  .form-grid.two,.form-grid.three,.summary-grid,.data-grid.two,.data-grid.four,.detail-columns{grid-template-columns:minmax(0,1fr)}.detail-side{order:-1}.route-row{flex-wrap:wrap}.route-row span{width:100%;margin-left:0}
 }
 
 @media (max-width: 560px) {
@@ -442,6 +442,19 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 }
 
 .settings-page, .legal-entities-page, .currencies-page { width: min(100%, 1400px); margin: 0 auto; }
+
+/* Настройки: в макете слева панель-меню, а не вкладки сверху. */
+.settings-layout { display: grid; grid-template-columns: 224px minmax(0, 1fr); gap: 14px; align-items: start; }
+.settings-menu { display: flex; flex-direction: column; gap: 4px; padding: 14px; background: var(--card); border-radius: var(--r-panel); box-shadow: 0 2px 14px var(--sh05); }
+.settings-menu-item { padding: 11px 14px; color: var(--text2); text-align: left; background: transparent; border: 0; border-radius: var(--r-control); cursor: pointer; font-size: 12.5px; font-weight: 600; transition: background .14s, color .14s; }
+.settings-menu-item:hover { background: var(--hover); }
+.settings-menu-item.active, .settings-menu-item.active:hover { color: var(--on-strong); background: var(--ink); }
+.settings-content { min-width: 0; }
+
+@media (max-width: 900px) {
+  .settings-layout { grid-template-columns: minmax(0, 1fr); }
+  .settings-menu { flex-direction: row; flex-wrap: wrap; padding: 10px; }
+}
 /* Вкладки отчётов, мотивации и настроек макет рисует чипами, а не
    подчёркнутыми ярлыками Ant Design. Одно правило покрывает все три экрана. */
 .settings-tabs { margin-bottom: 14px; }
@@ -586,8 +599,6 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .dashboard-page .ant-table-tbody > tr { cursor: default; }
 .dashboard-page .reports-toolbar { margin-bottom: 0; }
 .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
-.dashboard-status-list { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.dashboard-status-list li { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .dashboard-subtitle { margin-top: 24px; }
 .dashboard-forecast-tag { margin-left: 8px; vertical-align: middle; }
 .dashboard-period-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }

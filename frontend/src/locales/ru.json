@@ -89,7 +89,8 @@
       "whatsappTemplates": "Шаблоны WhatsApp",
       "documentTemplates": "Шаблоны документов",
       "documentPaymentTexts": "Формулировки оплаты"
-    }
+    },
+    "menuLabel": "Разделы настроек"
   },
   "health": {
     "title": "Состояние системы",

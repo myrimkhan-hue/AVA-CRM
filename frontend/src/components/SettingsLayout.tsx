@@ -1,7 +1,19 @@
-import { Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+
+// Порядок вкладок задан макетом. WhatsApp-шаблоны, шаблоны документов и
+// тексты об оплате доступны только администратору — на сервере эти разделы
+// помечены @Roles('ADMIN'), поэтому остальным пункт даже не показываем.
+const SETTINGS_SECTIONS = [
+  { key: 'legal-entities', labelKey: 'settings.tabs.legalEntities', adminOnly: false },
+  { key: 'currencies', labelKey: 'settings.tabs.currencies', adminOnly: false },
+  { key: 'operating-expense-types', labelKey: 'settings.tabs.operatingExpenseTypes', adminOnly: false },
+  { key: 'motivation', labelKey: 'settings.tabs.motivation', adminOnly: false },
+  { key: 'whatsapp-templates', labelKey: 'settings.tabs.whatsappTemplates', adminOnly: true },
+  { key: 'document-templates', labelKey: 'settings.tabs.documentTemplates', adminOnly: true },
+  { key: 'document-payment-texts', labelKey: 'settings.tabs.documentPaymentTexts', adminOnly: true },
+] as const;
 
 export function SettingsLayout() {
   const { t } = useTranslation();
@@ -12,58 +24,31 @@ export function SettingsLayout() {
     user?.roles.some((role) => role === 'ADMIN' || role === 'FINANCIER'),
   );
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
-  const activeKey = location.pathname.includes('/settings/currencies')
-    ? 'currencies'
-    : location.pathname.includes('/settings/operating-expense-types')
-      ? 'operating-expense-types'
-      : location.pathname.includes('/settings/motivation')
-        ? 'motivation'
-        : location.pathname.includes('/settings/whatsapp-templates')
-          ? 'whatsapp-templates'
-          : location.pathname.includes('/settings/document-templates')
-            ? 'document-templates'
-            : location.pathname.includes('/settings/document-payment-texts')
-              ? 'document-payment-texts'
-              : 'legal-entities';
+
+  const sections = SETTINGS_SECTIONS.filter((section) => isAdmin || !section.adminOnly);
+  const activeKey = sections.find(
+    (section) => location.pathname === `/settings/${section.key}`
+      || location.pathname.startsWith(`/settings/${section.key}/`),
+  )?.key ?? 'legal-entities';
 
   if (!canManage) return <Navigate to="/" replace />;
 
   return (
-    <div className="settings-page">
-      <Tabs
-        className="settings-tabs"
-        activeKey={activeKey}
-        onChange={(key) => navigate(`/settings/${key}`)}
-        items={[
-          {
-            key: 'legal-entities',
-            label: t('settings.tabs.legalEntities'),
-          },
-          {
-            key: 'currencies',
-            label: t('settings.tabs.currencies'),
-          },
-          {
-            key: 'operating-expense-types',
-            label: t('settings.tabs.operatingExpenseTypes'),
-          },
-          {
-            key: 'motivation',
-            label: t('settings.tabs.motivation'),
-          },
-          ...(isAdmin ? [{
-            key: 'whatsapp-templates',
-            label: t('settings.tabs.whatsappTemplates'),
-          }, {
-            key: 'document-templates',
-            label: t('settings.tabs.documentTemplates'),
-          }, {
-            key: 'document-payment-texts',
-            label: t('settings.tabs.documentPaymentTexts'),
-          }] : []),
-        ]}
-      />
-      <Outlet />
+    <div className="settings-page settings-layout">
+      <nav className="settings-menu" aria-label={t('settings.menuLabel')}>
+        {sections.map((section) => (
+          <button
+            type="button"
+            key={section.key}
+            className={`settings-menu-item${activeKey === section.key ? ' active' : ''}`}
+            aria-current={activeKey === section.key ? 'page' : undefined}
+            onClick={() => navigate(`/settings/${section.key}`)}
+          >
+            {t(section.labelKey)}
+          </button>
+        ))}
+      </nav>
+      <div className="settings-content"><Outlet /></div>
     </div>
   );
 }
