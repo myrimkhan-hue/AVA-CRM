@@ -198,16 +198,46 @@ button, input { font: inherit; }
 .transportations-heading .ant-btn-primary { background: var(--accent); box-shadow: none; }
 .transportations-heading .ant-btn-primary:hover { background: var(--accent-h) !important; }
 .status-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-.status-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; color: var(--text2); background: var(--card); border: 1px solid var(--line); border-radius: 999px; cursor: pointer; }
-.status-chip:hover { border-color: var(--faint); }
-.status-chip.active { color: var(--text); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
-.status-chip strong { font-size: 12px; }
+.status-chip { display: inline-flex; align-items: center; gap: 6px; padding: 9px 15px; color: var(--text2); background: var(--card); border: 0; border-radius: var(--r-chip); box-shadow: 0 1px 6px var(--sh05); cursor: pointer; font-size: 12.5px; font-weight: 600; transition: background .14s, box-shadow .14s; }
+.status-chip:hover { color: var(--text); background: var(--hover); }
+.status-chip.active, .status-chip.active:hover { color: var(--on-strong); background: var(--ink); box-shadow: none; }
+.status-chip strong { color: inherit; font-size: 12px; font-variant-numeric: tabular-nums; }
 .transportation-filters { display: grid; grid-template-columns: minmax(280px, 1fr) auto auto auto auto; gap: 10px; align-items: center; margin-bottom: 14px; }
-.transportations-table .ant-table-container { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 2px var(--sh05); }
-.transportations-table .ant-table-thead > tr > th { color: var(--muted); background: transparent; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; }
-.transportations-table .ant-table-tbody > tr { cursor: pointer; }
-.transportations-table .ant-table-tbody > tr.overdue-row > td { background: var(--red-row); }
-.transportations-table .ant-table-tbody > tr.overdue-row:hover > td { background: var(--red-soft) !important; }
+.transportation-overdue-filter { display: inline-flex; min-height: 38px; align-items: center; gap: 8px; padding: 7px 12px; color: var(--red-fg); background: var(--red-soft); border-radius: var(--r-chip); font-size: 12.5px; white-space: nowrap; }
+.transportation-overdue-filter .ant-checkbox-wrapper { color: inherit; }
+.transportation-overdue-filter strong { font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.transportation-deleted-filter { color: var(--text2); font-size: 12.5px; white-space: nowrap; }
+.transportation-card-list { max-width: 100%; padding: 2px 2px 6px; overflow-x: auto; }
+.transportation-card-list-inner { display: flex; min-width: 840px; flex-direction: column; gap: 10px; }
+.transportation-card { display: grid; gap: 12px; align-items: center; padding: 16px 20px; color: var(--text); background: var(--card); border-radius: var(--r-card); box-shadow: 0 2px 14px var(--sh05); cursor: pointer; transition: box-shadow .14s; }
+.transportation-card:hover { box-shadow: 0 4px 20px var(--sh10); }
+.transportation-card:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--faint), 0 4px 20px var(--sh10); }
+.transportation-card.deleted { background: var(--rowhover); }
+.transportation-card-main { display: grid; grid-template-columns: 106px minmax(160px, 1.4fr) minmax(130px, 1fr) 120px minmax(126px, .9fr) 84px; gap: 12px; align-items: center; }
+.transportation-card-number-cell { display: flex; grid-column: 1; min-width: 0; flex-direction: column; align-items: flex-start; gap: 4px; }
+.transportation-card .transportation-number { overflow: hidden; max-width: 100%; font-family: inherit; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
+.transportation-deleted-mark { padding: 2px 7px; color: var(--red-fg); background: var(--red-soft); border-radius: var(--r-status); font-size: 10.5px; font-weight: 600; }
+.transportation-card-route-cell { grid-column: 2; min-width: 0; }
+.transportation-card-route { overflow: hidden; font-size: 13.5px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.transportation-card-route-meta { display: flex; min-width: 0; gap: 5px; margin-top: 3px; overflow: hidden; color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+.transportation-card-route-meta span { overflow: hidden; text-overflow: ellipsis; }
+.transportation-card-client { grid-column: 3; min-width: 0; overflow: hidden; color: var(--text2); font-size: 12.5px; text-overflow: ellipsis; white-space: nowrap; }
+.transportation-card-status { grid-column: 4; min-width: 0; }
+.transportation-card-status .ant-tag { max-width: 100%; margin: 0; overflow: hidden; border-radius: var(--r-status); font-size: 11.5px; font-weight: 600; text-overflow: ellipsis; }
+.transportation-card-date { grid-column: 5; min-width: 0; color: var(--text2); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.transportation-card-date.overdue { color: var(--red-fg); }
+.transportation-card-date small { display: block; margin-top: 3px; color: var(--red-fg); font-size: 10.5px; font-weight: 600; }
+.transportation-card-fact { grid-column: 6; }
+.transportation-card-details { display: flex; flex-wrap: wrap; gap: 7px 18px; padding-top: 11px; border-top: 1px solid var(--line2); }
+.transportation-card-detail { display: inline-flex; align-items: baseline; gap: 4px; color: var(--muted); font-size: 11.5px; }
+.transportation-card-detail strong { color: var(--text2); font-weight: 600; font-variant-numeric: tabular-nums; }
+.transportation-card-skeleton { cursor: default; }
+.transportation-card-skeleton:hover { box-shadow: 0 2px 14px var(--sh05); }
+.transportation-card-skeleton .ant-skeleton-paragraph { margin: 0; }
+.transportation-empty { display: flex; min-height: 190px; align-items: center; justify-content: center; flex-direction: column; gap: 6px; padding: 28px; color: var(--muted); text-align: center; background: var(--card); border-radius: var(--r-card); box-shadow: 0 2px 14px var(--sh05); }
+.transportation-empty strong { color: var(--text); font-size: 14px; }
+.transportation-empty span { font-size: 12px; }
+.transportation-pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 12px; color: var(--text2); font-size: 12.5px; }
 .transportation-number { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
 .table-cell-secondary { margin-top: 2px; color: var(--text3); font-size: 12px; }
 .overdue-note { margin-top: 2px; color: var(--red-fg); font-size: 12px; font-weight: 600; }
@@ -255,6 +285,16 @@ button, input { font: inherit; }
 @media (max-width: 900px) {
   .login-page { grid-template-columns: minmax(0, 1fr); }
   .login-promo { display: none; }
+  .transportation-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .transportation-filters > .ant-input-search { grid-column: 1 / -1; }
+  .transportation-card-list-inner { min-width: 0; }
+  .transportation-card-main { grid-template-areas: "number status" "route route" "client client" "plan fact"; grid-template-columns: minmax(0, 1fr) auto; }
+  .transportation-card-number-cell { grid-area: number; }
+  .transportation-card-route-cell { grid-area: route; }
+  .transportation-card-client { grid-area: client; }
+  .transportation-card-status { grid-area: status; justify-self: end; }
+  .transportation-card-date { grid-area: plan; }
+  .transportation-card-fact { grid-area: fact; justify-self: end; text-align: right; }
 }
 
 @media (max-width: 760px) {
@@ -281,6 +321,8 @@ button, input { font: inherit; }
   .app-header { gap: 8px; padding: 13px 12px; }
   .header-actions { gap: 6px; }
   .header-title-block span { display: none; }
+  .transportation-card { padding: 15px 16px; }
+  .transportation-pagination { align-items: flex-start; flex-direction: column; }
 }
 .deal-number {
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;

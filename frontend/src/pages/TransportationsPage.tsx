@@ -8,13 +8,13 @@ import {
   Button,
   Checkbox,
   Input,
+  Pagination,
   Popover,
-  Table,
+  Skeleton,
   Tag,
   Typography,
   message,
 } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -87,6 +87,8 @@ const DEFAULT_SETTINGS: ColumnSetting[] = COLUMN_KEYS.map((key) => ({
   visible: key === 'num' || !DEFAULT_HIDDEN.has(key),
 }));
 const FINAL_STATUSES = new Set<TransportationStatus>(['DELIVERED', 'CLOSED']);
+const PAGE_SIZE = 20;
+const PRIMARY_KEYS = new Set<ColumnKey>(['num', 'client', 'route', 'transport', 'leg', 'status', 'plan', 'fact']);
 const STATUS_COLORS: Record<TransportationStatus, { background: string; color: string }> = {
   REQUEST_ACCEPTED: { background: 'var(--indigo-soft)', color: 'var(--indigo-fg)' },
   CARGO_PICKED: { background: 'var(--teal-soft)', color: 'var(--teal-fg)' },
@@ -122,6 +124,12 @@ function overdueDays(item: Transportation): number {
   if (actual && actual > plan) return daysBetween(plan, actual);
   const today = todayOnly();
   return !FINAL_STATUSES.has(item.status) && today > plan ? daysBetween(plan, today) : 0;
+}
+
+function currentLeg(item: Transportation): TransportationLeg | undefined {
+  return item.legs.find((leg) => leg.status === 'IN_PROGRESS')
+    ?? item.legs.find((leg) => leg.status === 'WAITING')
+    ?? item.legs.at(-1);
 }
 
 function normalizeSettings(value: unknown): ColumnSetting[] {
@@ -160,6 +168,7 @@ export function TransportationsPage() {
   const [settingsLoaded, setSettingsLoaded] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [draggedKey, setDraggedKey] = useState<ColumnKey>();
+  const [currentPage, setCurrentPage] = useState(1);
   const lastSavedSettings = useRef('');
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
 
@@ -263,38 +272,42 @@ export function TransportationsPage() {
     return result;
   }, [nonStatusFiltered]);
 
-  const allColumns = useMemo<Record<ColumnKey, ColumnsType<Transportation>[number]>>(() => ({
-    num: {
-      title: t('transportations.columns.num'), key: 'num', fixed: 'left', width: 205,
-      render: (_, item) => <div><Typography.Text strong className="transportation-number">{item.number}</Typography.Text><div className="table-cell-secondary">{item.cargoName || t('common.dash')}</div></div>,
-    },
-    client: { title: t('transportations.columns.client'), key: 'client', width: 190, render: (_, item) => item.deal.client.name },
-    route: { title: t('transportations.columns.route'), key: 'route', width: 220, render: (_, item) => t('transportations.values.route', { from: item.originPoint, to: item.destinationPoint }) },
-    transport: { title: t('transportations.columns.transport'), key: 'transport', width: 155, render: (_, item) => t(`transportations.transportModes.${item.transportMode}`) },
-    leg: {
-      title: t('transportations.columns.leg'), key: 'leg', width: 240,
-      render: (_, item) => {
-        const leg = item.legs[0];
-        return leg ? <div>{t('transportations.values.route', { from: leg.fromPoint, to: leg.toPoint })}<div className="table-cell-secondary">{leg.subcontractor?.name || t('common.dash')}</div></div> : t('common.dash');
-      },
-    },
-    status: {
-      title: t('transportations.columns.status'), key: 'status', width: 155,
-      render: (_, item) => <Tag bordered={false} style={STATUS_COLORS[item.status]}>{t(`transportations.statuses.${item.status}`)}</Tag>,
-    },
-    plan: {
-      title: t('transportations.columns.plan'), key: 'plan', width: 150,
-      render: (_, item) => <div>{formatDate(item.plannedDeliveryDate)}{overdueDays(item) > 0 && <div className="overdue-note">{t('transportations.values.overdue', { days: overdueDays(item) })}</div>}</div>,
-    },
-    fact: { title: t('transportations.columns.fact'), key: 'fact', width: 150, render: (_, item) => formatDate(item.actualDeliveryDate ?? item.unloadingEventDate) },
-    manager: { title: t('transportations.columns.manager'), key: 'manager', width: 180, render: (_, item) => item.logist.fullName },
-    vehicle: { title: t('transportations.columns.vehicle'), key: 'vehicle', width: 185, render: (_, item) => item.legs[0]?.vehicleNumber || t('common.dash') },
-    weight: { title: t('transportations.columns.weight'), key: 'weight', width: 120, align: 'right', render: (_, item) => formatNumber(item.weightKg) },
-    volume: { title: t('transportations.columns.volume'), key: 'volume', width: 120, align: 'right', render: (_, item) => formatNumber(item.volumeM3) },
-    legsCount: { title: t('transportations.columns.legsCount'), key: 'legsCount', width: 115, align: 'right', render: (_, item) => item.legs.length },
-  }), [formatDate, formatNumber, t]);
+  const visibleKeys = useMemo(
+    () => new Set(settings.filter((item) => item.visible).map((item) => item.key)),
+    [settings],
+  );
+  const additionalSettings = useMemo(
+    () => settings.filter((item) => item.visible && !PRIMARY_KEYS.has(item.key)),
+    [settings],
+  );
+  const overdueCount = useMemo(
+    () => rows.filter((item) => overdueDays(item) > 0).length,
+    [rows],
+  );
+  const pagedRows = useMemo(() => {
+    const firstIndex = (currentPage - 1) * PAGE_SIZE;
+    return filteredRows.slice(firstIndex, firstIndex + PAGE_SIZE);
+  }, [currentPage, filteredRows]);
 
-  const columns = useMemo(() => settings.filter((item) => item.visible).map((item) => allColumns[item.key]), [allColumns, settings]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, includeDeleted, onlyOverdue, status]);
+
+  useEffect(() => {
+    const lastPage = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+    setCurrentPage((page) => Math.min(page, lastPage));
+  }, [filteredRows.length]);
+
+  const additionalValue = (key: ColumnKey, item: Transportation): string | number => {
+    switch (key) {
+      case 'manager': return item.logist.fullName;
+      case 'vehicle': return item.legs[0]?.vehicleNumber || t('common.dash');
+      case 'weight': return formatNumber(item.weightKg);
+      case 'volume': return formatNumber(item.volumeM3);
+      case 'legsCount': return item.legs.length;
+      default: return t('common.dash');
+    }
+  };
   const resetFilters = () => {
     setSearch(''); setStatus('ALL'); setOnlyOverdue(false); setIncludeDeleted(false);
   };
@@ -318,6 +331,7 @@ export function TransportationsPage() {
       {settings.map((item) => (
         <div
           key={item.key}
+          data-column-key={item.key}
           draggable
           className={`column-setting${draggedKey === item.key ? ' dragging' : ''}`}
           onDragStart={() => setDraggedKey(item.key)}
@@ -352,7 +366,7 @@ export function TransportationsPage() {
 
       <div className="status-chips" role="group" aria-label={t('transportations.filters.status')}>
         {(['ALL', ...Object.keys(STATUS_COLORS)] as Array<TransportationStatus | 'ALL'>).map((value) => (
-          <button key={value} className={`status-chip${status === value ? ' active' : ''}`} onClick={() => setStatus(value)}>
+          <button type="button" key={value} className={`status-chip${status === value ? ' active' : ''}`} onClick={() => setStatus(value)}>
             {status === value && <CheckOutlined />}{t(value === 'ALL' ? 'transportations.statuses.ALL' : `transportations.statuses.${value}`)} <strong>{counts[value]}</strong>
           </button>
         ))}
@@ -360,26 +374,143 @@ export function TransportationsPage() {
 
       <div className="transportation-filters">
         <Input.Search allowClear value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('transportations.filters.search')} />
-        <Checkbox checked={onlyOverdue} onChange={(event) => setOnlyOverdue(event.target.checked)}>{t('transportations.filters.onlyOverdue')}</Checkbox>
-        {isAdmin && <Checkbox checked={includeDeleted} onChange={(event) => setIncludeDeleted(event.target.checked)}>{t('transportations.filters.includeDeleted')}</Checkbox>}
-        {hasFilters && <Button type="text" onClick={resetFilters}>{t('transportations.filters.reset')}</Button>}
+        <span className="transportation-overdue-filter">
+          <Checkbox checked={onlyOverdue} onChange={(event) => setOnlyOverdue(event.target.checked)}>{t('transportations.filters.onlyOverdue')}</Checkbox>
+          <strong>{overdueCount}</strong>
+        </span>
+        {isAdmin && <Checkbox className="transportation-deleted-filter" checked={includeDeleted} onChange={(event) => setIncludeDeleted(event.target.checked)}>{t('transportations.filters.includeDeleted')}</Checkbox>}
+        {hasFilters && <Button type="text" className="transportation-reset-filters" onClick={resetFilters}>{t('transportations.filters.reset')}</Button>}
         <Popover trigger="click" placement="bottomRight" open={settingsOpen} onOpenChange={setSettingsOpen} content={settingsContent}>
-          <Button icon={<SettingOutlined />}>{t('transportations.settings.button')}</Button>
+          <Button className="transportation-settings-button" icon={<SettingOutlined />}>{t('transportations.settings.button')}</Button>
         </Popover>
       </div>
 
-      <Table<Transportation>
-        className="transportations-table"
-        rowKey="id"
-        columns={columns}
-        dataSource={filteredRows}
-        loading={loading}
-        scroll={{ x: 'max-content' }}
-        pagination={{ pageSize: 20, showSizeChanger: false, showTotal: (total) => t('transportations.footer.shown', { shown: total, total: filteredRows.length }) }}
-        locale={{ emptyText: t('transportations.empty') }}
-        rowClassName={(item) => [overdueDays(item) > 0 ? 'overdue-row' : '', item.deletedAt ? 'inactive-row' : ''].filter(Boolean).join(' ')}
-        onRow={(item) => ({ onClick: () => navigate(`/transportations/${item.id}`) })}
-      />
+      {loading ? (
+        <div className="transportation-card-list" aria-label={t('transportations.loading')}>
+          <div className="transportation-card-list-inner">
+            {Array.from({ length: 4 }, (_, index) => (
+              <div className="transportation-card transportation-card-skeleton" key={index}>
+                <Skeleton active title={false} paragraph={{ rows: 2 }} />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : filteredRows.length === 0 ? (
+        <div className="transportation-empty">
+          <strong>{t(hasFilters ? 'transportations.empty.filteredTitle' : 'transportations.empty.initialTitle')}</strong>
+          <span>{t(hasFilters ? 'transportations.empty.filteredDescription' : 'transportations.empty.initialDescription')}</span>
+        </div>
+      ) : (
+        <div className="transportation-card-list">
+          <div className="transportation-card-list-inner">
+            {pagedRows.map((item) => {
+              const leg = currentLeg(item);
+              const daysOverdue = overdueDays(item);
+              const showRouteBlock = visibleKeys.has('route') || visibleKeys.has('transport') || visibleKeys.has('leg');
+
+              return (
+                <article
+                  className={`transportation-card${daysOverdue > 0 ? ' overdue' : ''}${item.deletedAt ? ' deleted' : ''}`}
+                  data-transportation-id={item.id}
+                  data-overdue={daysOverdue > 0}
+                  data-deleted={Boolean(item.deletedAt)}
+                  key={item.id}
+                  role="link"
+                  tabIndex={0}
+                  aria-label={t('transportations.actions.open', { number: item.number })}
+                  onClick={() => navigate(`/transportations/${item.id}`)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      navigate(`/transportations/${item.id}`);
+                    }
+                  }}
+                >
+                  <div className="transportation-card-main">
+                    <div className="transportation-card-number-cell" data-field-key="num">
+                      <span className="transportation-number">{item.number}</span>
+                      {item.deletedAt && <span className="transportation-deleted-mark">{t('transportations.values.deleted')}</span>}
+                    </div>
+
+                    {showRouteBlock && (
+                      <div className="transportation-card-route-cell">
+                        {visibleKeys.has('route') && (
+                          <div className="transportation-card-route" data-field-key="route">
+                            {t('transportations.values.route', { from: item.originPoint, to: item.destinationPoint })}
+                          </div>
+                        )}
+                        {(visibleKeys.has('transport') || visibleKeys.has('leg')) && (
+                          <div className="transportation-card-route-meta">
+                            {visibleKeys.has('transport') && (
+                              <span data-field-key="transport">{t(`transportations.transportModes.${item.transportMode}`)}</span>
+                            )}
+                            {visibleKeys.has('transport') && visibleKeys.has('leg') && <span aria-hidden="true">·</span>}
+                            {visibleKeys.has('leg') && (
+                              <span data-field-key="leg">
+                                {leg
+                                  ? t('transportations.values.route', { from: leg.fromPoint, to: leg.toPoint })
+                                  : t('common.dash')}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {visibleKeys.has('client') && (
+                      <div className="transportation-card-client" data-field-key="client">{item.deal.client.name}</div>
+                    )}
+                    {visibleKeys.has('status') && (
+                      <div className="transportation-card-status" data-field-key="status">
+                        <Tag bordered={false} style={STATUS_COLORS[item.status]}>{t(`transportations.statuses.${item.status}`)}</Tag>
+                      </div>
+                    )}
+                    {visibleKeys.has('plan') && (
+                      <div
+                        className={`transportation-card-date${daysOverdue > 0 ? ' overdue' : ''}`}
+                        data-field-key="plan"
+                        title={t('transportations.columns.plan')}
+                      >
+                        <span>{formatDate(item.plannedDeliveryDate)}</span>
+                        {daysOverdue > 0 && <small>{t('transportations.values.overdue', { days: daysOverdue })}</small>}
+                      </div>
+                    )}
+                    {visibleKeys.has('fact') && (
+                      <div className="transportation-card-date transportation-card-fact" data-field-key="fact" title={t('transportations.columns.fact')}>
+                        {formatDate(item.actualDeliveryDate ?? item.unloadingEventDate)}
+                      </div>
+                    )}
+                  </div>
+
+                  {additionalSettings.length > 0 && (
+                    <div className="transportation-card-details">
+                      {additionalSettings.map(({ key }) => (
+                        <div className="transportation-card-detail" data-field-key={key} key={key}>
+                          <span>{t(`transportations.columns.${key}`)}:</span>
+                          <strong>{additionalValue(key, item)}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {!loading && filteredRows.length > 0 && (
+        <div className="transportation-pagination">
+          <span>{t('transportations.footer.shown', { shown: pagedRows.length, total: filteredRows.length })}</span>
+          <Pagination
+            current={currentPage}
+            pageSize={PAGE_SIZE}
+            total={filteredRows.length}
+            showSizeChanger={false}
+            onChange={setCurrentPage}
+          />
+        </div>
+      )}
       <div className="transportations-footer">
         <span>{t('transportations.footer.summary', { shown: filteredRows.length, total: rows.length, overdue: filteredRows.filter((item) => overdueDays(item) > 0).length })}</span>
         <span>{t('transportations.footer.hint')}</span>
