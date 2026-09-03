@@ -1,5 +1,5 @@
 import { CheckCircleFilled } from '@ant-design/icons';
-import { Alert, App, Button, Card, Checkbox, Collapse, DatePicker, Form, Input, InputNumber, Modal, Radio, Select, Space, Steps, Typography } from 'antd';
+import { Alert, App, Button, Card, Checkbox, Collapse, DatePicker, Form, Input, InputNumber, Modal, Radio, Select, Space, Typography } from 'antd';
 import { Dayjs } from 'dayjs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +22,7 @@ interface Values {
   driverFullName?: string; driverPhone?: string; driverIin?: string; driverLicenseNumber?: string; driverLicenseDate?: Dayjs; driverLicenseIssuer?: string;
 }
 
+const WIZARD_STEPS = ['deal', 'cargo', 'route', 'review'] as const;
 const date = (value?: Dayjs) => value?.format('YYYY-MM-DD');
 
 export function NewTransportationPage() {
@@ -93,9 +94,14 @@ export function NewTransportationPage() {
   ], [canSeeClientRate, selectedDeal, t, user, users, values]);
 
   return <section className="transportation-workspace wizard-page">
-    <Typography.Link onClick={() => navigate('/transportations')}>{t('transportationWizard.back')}</Typography.Link>
-    <Typography.Title level={2}>{t('transportationWizard.title')}</Typography.Title>
-    <Steps current={step} items={['deal','cargo','route','review'].map((key) => ({ title: t(`transportationWizard.steps.${key}`) }))} />
+    <button type="button" className="back-link" onClick={() => navigate('/transportations')}>{t('transportationWizard.back')}</button>
+    <div className="wizard-header-panel">
+      <h1>{t('transportationWizard.title')}</h1>
+      <p>{t('transportationWizard.stepOf', { current: step + 1, total: WIZARD_STEPS.length, name: t(`transportationWizard.steps.${WIZARD_STEPS[step]}`) })}</p>
+      <div className="wizard-progress" role="presentation">
+        {WIZARD_STEPS.map((key, index) => <span key={key} className={index <= step ? 'done' : undefined} />)}
+      </div>
+    </div>
     <Card className="transport-card wizard-card">
       <Form form={form} layout="vertical" initialValues={{ transportMode: 'AUTO', placesUnit: 'паллеты', cargoValueCurrency: 'USD', clientRateCurrency: 'KZT', subcontractorRateCurrency: 'KZT', isDangerous: false, isTempControlled: false }}>
         <div style={{ display: step === 0 ? undefined : 'none' }}><Typography.Title level={4}>{t('transportationWizard.sections.deal')}</Typography.Title>

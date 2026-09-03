@@ -41,12 +41,12 @@ export interface Deal {
 }
 
 export const DEAL_STAGE_COLORS: Record<DealStage, { background: string; color: string }> = {
-  NEW: { background: '#EDF0F4', color: '#66707D' },
-  RATE_CALCULATION: { background: '#E7E9FD', color: '#4F46E5' },
-  RATE_SENT: { background: '#DCEFFB', color: '#0369A1' },
-  AGREED: { background: '#D5F0EC', color: '#0F766E' },
-  IN_PROGRESS: { background: '#FDF0D5', color: '#B45309' },
-  COMPLETED: { background: '#DCF5E4', color: '#15803D' },
-  CLOSED: { background: '#E4F2E8', color: '#166534' },
-  REJECTED: { background: '#FDE7E5', color: '#B91C1C' },
+  NEW: { background: 'var(--card2)', color: 'var(--text3)' },
+  RATE_CALCULATION: { background: 'var(--indigo-soft)', color: 'var(--indigo-fg)' },
+  RATE_SENT: { background: 'var(--blue-soft)', color: 'var(--blue-fg)' },
+  AGREED: { background: 'var(--teal-soft)', color: 'var(--teal-fg)' },
+  IN_PROGRESS: { background: 'var(--amber-soft)', color: 'var(--amber-fg)' },
+  COMPLETED: { background: 'var(--green-soft)', color: 'var(--green-fg)' },
+  CLOSED: { background: 'var(--purple-soft)', color: 'var(--purple-fg)' },
+  REJECTED: { background: 'var(--red-soft)', color: 'var(--red-fg)' },
 };

@@ -20,12 +20,12 @@ export type LeadNotInterestedReason = (typeof LEAD_NOT_INTERESTED_REASONS)[numbe
 export type LeadSource = 'COLD_CALL_IMPORT' | 'WEBSITE';
 
 export const LEAD_STATUS_COLORS: Record<LeadStatus, { background: string; color: string }> = {
-  NEW: { background: '#E7E9FD', color: '#4F46E5' },
-  IN_PROGRESS: { background: '#FDF0D5', color: '#B45309' },
-  CALL_BACK: { background: '#EFE9FD', color: '#7C3AED' },
-  NOT_REACHED: { background: '#EDF0F4', color: '#66707D' },
-  NOT_INTERESTED: { background: '#FDE9E9', color: '#B91C1C' },
-  CONVERTED: { background: '#DCF5E4', color: '#15803D' },
+  NEW: { background: 'var(--indigo-soft)', color: 'var(--indigo-fg)' },
+  IN_PROGRESS: { background: 'var(--amber-soft)', color: 'var(--amber-fg)' },
+  CALL_BACK: { background: 'var(--purple-soft)', color: 'var(--purple-fg)' },
+  NOT_REACHED: { background: 'var(--card2)', color: 'var(--text3)' },
+  NOT_INTERESTED: { background: 'var(--red-soft)', color: 'var(--red-fg)' },
+  CONVERTED: { background: 'var(--green-soft)', color: 'var(--green-fg)' },
 };
 
 export interface LeadReference { id: string; fullName?: string; name?: string; number?: string; fileName?: string; createdAt?: string }

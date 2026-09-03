@@ -5,12 +5,12 @@ export type LegMode = Exclude<TransportMode, 'MULTIMODAL'> | 'BROKER';
 export type LegStatus = 'WAITING' | 'IN_PROGRESS' | 'DONE';
 
 export const STATUS_COLORS: Record<TransportationStatus, { background: string; color: string }> = {
-  REQUEST_ACCEPTED: { background: '#E7E9FD', color: '#4F46E5' },
-  CARGO_PICKED: { background: '#D5F0EC', color: '#0F766E' },
-  IN_TRANSIT: { background: '#FDF0D5', color: '#B45309' },
-  CUSTOMS: { background: '#EFE9FD', color: '#7C3AED' },
-  DELIVERED: { background: '#DCF5E4', color: '#15803D' },
-  CLOSED: { background: '#EDF0F4', color: '#66707D' },
+  REQUEST_ACCEPTED: { background: 'var(--indigo-soft)', color: 'var(--indigo-fg)' },
+  CARGO_PICKED: { background: 'var(--teal-soft)', color: 'var(--teal-fg)' },
+  IN_TRANSIT: { background: 'var(--amber-soft)', color: 'var(--amber-fg)' },
+  CUSTOMS: { background: 'var(--purple-soft)', color: 'var(--purple-fg)' },
+  DELIVERED: { background: 'var(--green-soft)', color: 'var(--green-fg)' },
+  CLOSED: { background: 'var(--card2)', color: 'var(--text3)' },
 };
 
 export const CURRENCIES = ['USD', 'KZT', 'CNY', 'RUB', 'EUR'];

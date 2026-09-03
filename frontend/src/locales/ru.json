@@ -830,7 +830,8 @@
       "number": "Номер: {{number}}",
       "list": "К списку",
       "open": "Открыть карточку"
-    }
+    },
+    "stepOf": "Шаг {{current}} из {{total}} · {{name}}"
   },
   "transportationDetail": {
     "back": "← Активные перевозки",
