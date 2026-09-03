@@ -8,6 +8,7 @@
   },
   "brand": {
     "name": "AVA Solution",
+    "tagline": "Экспедиция · Алматы",
     "subtitle": "CRM для экспедиторской компании",
     "logoAlt": "Логотип AVA Solution"
   },
@@ -27,18 +28,39 @@
   },
   "nav": {
     "main": "Основная навигация",
+    "openMenu": "Открыть меню",
+    "dashboard": "Дашборд",
     "transportations": "Перевозки",
     "contractors": "Контрагенты",
     "leads": "Лиды",
     "deals": "Сделки",
-    "invoices": "Счета",
+    "invoices": "Счета клиентам",
     "documents": "Документы",
     "paymentRequests": "Заявки на оплату",
-    "operatingExpenses": "Расходы",
+    "operatingExpenses": "Операционные расходы",
+    "cashCalendar": "Кассовый календарь",
     "reports": "Отчёты",
     "motivation": "Мотивация",
     "users": "Пользователи",
     "settings": "Настройки"
+  },
+  "header": {
+    "subtitle": "AVA Solution · {{roles}}",
+    "searchPlaceholder": "Номер, клиент, водитель",
+    "newTransportation": "+ Перевозка",
+    "newTransportationCompact": "+",
+    "transportationNew": "Новая перевозка",
+    "transportationDetail": "Карточка перевозки",
+    "dealDetail": "Карточка сделки",
+    "profile": "Профиль"
+  },
+  "roles": {
+    "ADMIN": "Администратор",
+    "DIRECTOR": "Руководитель",
+    "DEPARTMENT_HEAD": "Руководитель отдела",
+    "MANAGER": "Менеджер",
+    "LOGIST": "Логист",
+    "FINANCIER": "Финансист"
   },
   "settings": {
     "tabs": {
@@ -1756,6 +1778,7 @@
     "title": "Уведомления",
     "empty": "Уведомлений нет",
     "markAllRead": "Прочитать все",
+    "openSettings": "Настроить уведомления",
     "settingsTitle": "Какие уведомления присылать",
     "settingsHint": "Отключённые типы не будут появляться в колокольчике",
     "types": {

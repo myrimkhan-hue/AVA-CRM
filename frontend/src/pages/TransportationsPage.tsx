@@ -17,7 +17,7 @@ import {
 import type { ColumnsType } from 'antd/es/table';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 
@@ -146,11 +146,13 @@ export function TransportationsPage() {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const routeSearch = searchParams.get('search') ?? '';
   const [toast, contextHolder] = message.useMessage();
   const [rows, setRows] = useState<Transportation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [search, setSearch] = useState(routeSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(routeSearch.trim());
   const [status, setStatus] = useState<TransportationStatus | 'ALL'>('ALL');
   const [onlyOverdue, setOnlyOverdue] = useState(false);
   const [includeDeleted, setIncludeDeleted] = useState(false);
@@ -164,6 +166,11 @@ export function TransportationsPage() {
   const showError = useCallback((error: unknown) => {
     void toast.error(error instanceof ApiError ? error.message || t('errors.request') : t('errors.connection'));
   }, [t, toast]);
+
+  useEffect(() => {
+    setSearch(routeSearch);
+    setDebouncedSearch(routeSearch.trim());
+  }, [routeSearch]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 400);
