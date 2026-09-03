@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "codex": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "tools\\codex-mcp.cmd"
+      ],
+      "env": {}
+    }
+  }
+}
