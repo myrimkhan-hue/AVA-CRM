@@ -16,15 +16,33 @@
     "logout": "Выйти"
   },
   "login": {
-    "title": "Вход в систему",
-    "help": "Доступ только для авторизованных сотрудников. Сессия завершается после 12 часов неактивности.",
+    "title": "Вход в AVA CRM",
+    "help": "Учётная запись сотрудника AVA Solution",
     "email": "Email",
     "emailPlaceholder": "name@ava-solution.kz",
     "password": "Пароль",
     "passwordPlaceholder": "Введите пароль",
+    "showPassword": "Показать",
+    "hidePassword": "Скрыть",
     "remember": "Запомнить меня",
     "submit": "Войти",
-    "security": "HTTPS · пароли хранятся только в захешированном виде"
+    "forgotPassword": "Забыли пароль? Обратитесь к администратору системы",
+    "roleNote": "Состав доступных разделов зависит от роли сотрудника.",
+    "promoTitle": "Перевозки, сделки и деньги экспедиции в одном окне",
+    "capabilities": {
+      "transportations": {
+        "title": "Перевозки",
+        "description": "Маршруты, статусы и сроки"
+      },
+      "finances": {
+        "title": "Финансы",
+        "description": "Счета, оплаты и маржа"
+      },
+      "documents": {
+        "title": "Документы",
+        "description": "Договоры, заявки и акты"
+      }
+    }
   },
   "nav": {
     "main": "Основная навигация",
