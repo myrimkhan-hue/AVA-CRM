@@ -319,6 +319,37 @@ export function OperatingExpensesPage() {
     return items.map((item) => ({ value: item.code, label: item.code }));
   }, [context?.currencies, editing]);
 
+
+  const summary = useMemo(() => {
+    const buckets: Record<string, { amounts: Record<string, number>; count: number }> = {
+      total: { amounts: {}, count: 0 },
+      paid: { amounts: {}, count: 0 },
+      unpaid: { amounts: {}, count: 0 },
+      overdue: { amounts: {}, count: 0 },
+    };
+    const add = (key: string, code: string, value: number) => {
+      if (!Number.isFinite(value) || value === 0) return;
+      buckets[key].amounts[code] = (buckets[key].amounts[code] ?? 0) + value;
+    };
+    for (const row of rows) {
+      const value = Number(row.amount);
+      const code = row.currencyCode;
+      buckets.total.count += 1;
+      add('total', code, value);
+      const key = row.paidAt ? 'paid' : 'unpaid';
+      buckets[key].count += 1;
+      add(key, code, value);
+      if (!row.paidAt && row.isOverdue) { buckets.overdue.count += 1; add('overdue', code, value); }
+    }
+    const tones: Record<string, string | undefined> = { total: undefined, paid: 'positive', unpaid: undefined, overdue: 'dark' };
+    return (['total', 'paid', 'unpaid', 'overdue'] as const).map((key) => ({
+      key,
+      tone: tones[key],
+      count: buckets[key].count,
+      amounts: Object.entries(buckets[key].amounts).sort((left, right) => right[1] - left[1]),
+    }));
+  }, [rows]);
+
   return (
     <section className="list-page operating-expenses-page">
       <div className="page-heading">
@@ -330,6 +361,21 @@ export function OperatingExpensesPage() {
           {t('operatingExpenses.actions.create')}
         </Button>
       </div>
+
+      <div className="kpi-row">
+        {summary.map((card) => (
+          <div className={`kpi-card${card.tone ? ` ${card.tone}` : ''}`} key={card.key}>
+            <div className="kpi-card-label">{t(`operatingExpenses.summary.${card.key}`)}</div>
+            <div className="kpi-card-value">
+              {card.amounts.length === 0
+                ? t('common.dash')
+                : card.amounts.map(([code, value]) => <div key={code}>{formatMoney(String(value), code)}</div>)}
+            </div>
+            <div className="kpi-card-note">{t('operatingExpenses.summary.count', { count: card.count })}</div>
+          </div>
+        ))}
+      </div>
+      <p className="kpi-caption">{t('operatingExpenses.summary.caption')}</p>
 
       <Card>
         <div className="table-toolbar operating-expenses-filters">

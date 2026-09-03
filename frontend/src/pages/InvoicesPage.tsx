@@ -154,6 +154,46 @@ export function InvoicesPage() {
     },
   ], [formatDate, formatMoney, t]);
 
+
+  const formatAmount = useCallback(
+    (value: number, code: string) => `${new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 2 }).format(value)} ${code}`,
+    [],
+  );
+
+  const summary = useMemo(() => {
+    const buckets: Record<string, { amounts: Record<string, number>; count: number }> = {
+      issued: { amounts: {}, count: 0 },
+      paid: { amounts: {}, count: 0 },
+      awaiting: { amounts: {}, count: 0 },
+      overdue: { amounts: {}, count: 0 },
+    };
+    const add = (key: string, code: string, value: number) => {
+      if (!Number.isFinite(value) || value === 0) return;
+      buckets[key].amounts[code] = (buckets[key].amounts[code] ?? 0) + value;
+    };
+    for (const invoice of invoices) {
+      const code = invoice.currency.code;
+      const total = Number(invoice.totals.totalAmount);
+      const paid = Number(invoice.totals.paidAmount);
+      const balance = Number(invoice.totals.balanceAmount);
+      buckets.issued.count += 1;
+      add('issued', code, total);
+      if (paid > 0) { buckets.paid.count += 1; add('paid', code, paid); }
+      if (balance > 0) {
+        const key = invoice.isOverdue ? 'overdue' : 'awaiting';
+        buckets[key].count += 1;
+        add(key, code, balance);
+      }
+    }
+    const tones: Record<string, string | undefined> = { issued: undefined, paid: 'positive', awaiting: undefined, overdue: 'dark' };
+    return (['issued', 'paid', 'awaiting', 'overdue'] as const).map((key) => ({
+      key,
+      tone: tones[key],
+      count: buckets[key].count,
+      amounts: Object.entries(buckets[key].amounts).sort((left, right) => right[1] - left[1]),
+    }));
+  }, [invoices]);
+
   return (
     <section className="list-page invoice-list-page">
       <div className="page-heading">
@@ -163,6 +203,22 @@ export function InvoicesPage() {
             {t('invoices.subtitle')}
           </Typography.Text>
         </div>
+      </div>
+
+      <div className="kpi-row">
+        {summary.map((card) => (
+          <div className={`kpi-card${card.tone ? ` ${card.tone}` : ''}`} key={card.key}>
+            <div className="kpi-card-label">{t(`invoices.summary.${card.key}`)}</div>
+            <div className="kpi-card-value">
+              {card.amounts.length === 0
+                ? t('invoices.summary.none')
+                : card.amounts.map(([code, value]) => (
+                  <div key={code}>{formatAmount(value, code)}</div>
+                ))}
+            </div>
+            <div className="kpi-card-note">{t('invoices.summary.count', { count: card.count })}</div>
+          </div>
+        ))}
       </div>
 
       <Card className="transport-card">

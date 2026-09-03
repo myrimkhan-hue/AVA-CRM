@@ -52,12 +52,15 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .kpi-card-label { color: var(--text3); font-size: 12.5px; }
 .kpi-card-value { margin-top: 12px; color: var(--text); font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
 .kpi-card-note { margin-top: 5px; color: var(--muted); font-size: 11.5px; }
+/* Вторая и следующие строки — суммы в других валютах, их набираем мельче. */
+.kpi-card-value > div + div { margin-top: 2px; color: var(--text2); font-size: 15px; }
 .kpi-card.positive .kpi-card-value { color: var(--green-fg); }
 .kpi-card.negative .kpi-card-value { color: var(--red-fg); }
 /* Тёмная KPI-карточка — в макете ею отмечена просрочка. */
 .kpi-card.dark { background: var(--ink); box-shadow: 0 2px 14px var(--sh12); }
 .kpi-card.dark .kpi-card-label, .kpi-card.dark .kpi-card-note { color: var(--ink-muted); }
 .kpi-card.dark .kpi-card-value { color: var(--red-bright); }
+.kpi-caption { margin: -6px 0 14px; color: var(--muted); font-size: 11.5px; }
 
 /* Строка «метка — значение» высотой 36px с разделителями: сводки в правой колонке. */
 .value-rows { display: flex; flex-direction: column; }

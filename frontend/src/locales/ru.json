@@ -190,6 +190,17 @@
       "deleted": "Операционный расход удалён",
       "paid": "Расход отмечен оплаченным",
       "unpaid": "Отметка об оплате снята"
+    },
+    "summary": {
+      "total": "Всего расходов",
+      "paid": "Оплачено",
+      "unpaid": "Не оплачено",
+      "overdue": "Просрочено",
+      "caption": "Итоги посчитаны по показанным строкам — они меняются вместе с фильтрами.",
+      "count_one": "{{count}} расход",
+      "count_few": "{{count}} расхода",
+      "count_many": "{{count}} расходов",
+      "count_other": "{{count}} расходов"
     }
   },
   "operatingExpenseTypes": {
@@ -1179,6 +1190,17 @@
       "lineRemoved": "Позиция удалена",
       "paymentAdded": "Оплата зафиксирована",
       "deleted": "Счёт удалён"
+    },
+    "summary": {
+      "issued": "Выставлено",
+      "paid": "Оплачено",
+      "awaiting": "Ожидает оплаты",
+      "overdue": "Просрочено",
+      "none": "—",
+      "count_one": "{{count}} счёт",
+      "count_few": "{{count}} счёта",
+      "count_many": "{{count}} счетов",
+      "count_other": "{{count}} счетов"
     }
   },
   "reports": {
