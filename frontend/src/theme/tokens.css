@@ -1,0 +1,117 @@
+:root {
+  color-scheme: light;
+  --bg: #EEF1F6;
+  --card: #FFFFFF;
+  --card2: #F3F5F9;
+  --hover: #E9EDF4;
+  --rowhover: #FAFBFD;
+  --line: #E7EBF1;
+  --line2: #F0F2F6;
+  --kanban: #E4E8EF;
+  --faint: #D3D9E3;
+  --text: #151A21;
+  --text2: #4B5462;
+  --text3: #6C7482;
+  --muted: #8B93A1;
+  --ink: #151A21;
+  --ink-h: #252C36;
+  --ink-muted: #98A2B0;
+  --bar1: #DDE3EC;
+  --bar2: #3A4250;
+  --bar-red2: #F7BDBA;
+
+  --accent: #E4140E;
+  --accent-h: #C10F0A;
+  --red-bright: #E4140E;
+
+  --red-soft: #FDF2F1;
+  --red-fg: #C1120C;
+  --blue-soft: #EEF3FE;
+  --blue-fg: #1550B8;
+  --amber-soft: #FDF6E9;
+  --amber-fg: #A8620A;
+  --green-soft: #EAF7F0;
+  --green-fg: #0E7A4E;
+  --purple-soft: #F4EEFD;
+  --purple-fg: #6B34B8;
+  --red-row: #FEFAFA;
+
+  /* Статусов у перевозки шесть, а в палитре макета пять оттенков. Эти два
+     оттенка добавлены сверх макета, чтобы «заявка принята» и «груз забран»
+     не слились с остальными. Свести с макетом — в подзадаче «Перевозки». */
+  --indigo-soft: #E7E9FD;
+  --indigo-fg: #4F46E5;
+  --teal-soft: #D5F0EC;
+  --teal-fg: #0F766E;
+
+  --sh05: rgba(21, 26, 33, .05);
+  --sh07: rgba(21, 26, 33, .07);
+  --sh10: rgba(21, 26, 33, .1);
+  --sh12: rgba(21, 26, 33, .12);
+  --sh13: rgba(21, 26, 33, .13);
+  --sh18: rgba(21, 26, 33, .18);
+
+  --r-panel: 22px;
+  --r-card: 20px;
+  --r-column: 18px;
+  --r-day: 16px;
+  --r-tile: 15px;
+  --r-control: 14px;
+  --r-chip: 13px;
+  --r-avatar: 12px;
+  --r-icon: 11px;
+  --r-status: 10px;
+  --r-bar: 8px;
+  --r-pill: 999px;
+
+  --on-strong: #FFFFFF;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0B0D10;
+  --card: #14181E;
+  --card2: #1C222A;
+  --hover: #232A33;
+  --rowhover: #191E25;
+  --line: #262E38;
+  --line2: #1F262E;
+  --kanban: #10141A;
+  --faint: #39424D;
+  --text: #E8EBEF;
+  --text2: #C3CAD3;
+  --text3: #9AA5B2;
+  --muted: #7C8794;
+  --ink: #222A34;
+  --ink-h: #2C3540;
+  --ink-muted: #98A2B0;
+  --bar1: #313B47;
+  --bar2: #64707E;
+  --bar-red2: #7A2320;
+
+  --red-bright: #FF6B66;
+
+  --red-soft: rgba(228, 20, 14, .17);
+  --red-fg: #FF8681;
+  --blue-soft: rgba(59, 130, 246, .16);
+  --blue-fg: #7FB0FF;
+  --amber-soft: rgba(251, 191, 74, .14);
+  --amber-fg: #FBBF4A;
+  --green-soft: rgba(74, 222, 128, .13);
+  --green-fg: #4ADE80;
+  --purple-soft: rgba(167, 105, 240, .16);
+  --purple-fg: #C79BF5;
+  --red-row: rgba(228, 20, 14, .08);
+
+  --indigo-soft: rgba(129, 140, 248, .16);
+  --indigo-fg: #A5B4FC;
+  --teal-soft: rgba(45, 212, 191, .14);
+  --teal-fg: #5EEAD4;
+
+  --sh05: rgba(0, 0, 0, .32);
+  --sh07: rgba(0, 0, 0, .36);
+  --sh10: rgba(0, 0, 0, .44);
+  --sh12: rgba(0, 0, 0, .46);
+  --sh13: rgba(0, 0, 0, .5);
+  --sh18: rgba(0, 0, 0, .55);
+}

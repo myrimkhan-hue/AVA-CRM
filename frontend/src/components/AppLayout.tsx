@@ -1,4 +1,4 @@
-import { LogoutOutlined, MenuOutlined } from '@ant-design/icons';
+import { BulbFilled, BulbOutlined, LogoutOutlined, MenuOutlined } from '@ant-design/icons';
 import { Button, Drawer, Layout } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,12 +7,14 @@ import logo from '../assets/ava-logo.svg';
 import { useAuth } from '../auth/AuthContext';
 import { NotificationBell } from './NotificationBell';
 import { DOCUMENT_ACCESS_ROLES } from '../documents/access';
+import { useThemeMode } from '../theme/ThemeContext';
 
 const { Header, Content } = Layout;
 
 export function AppLayout() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
+  const { mode, toggleTheme } = useThemeMode();
   const location = useLocation();
   const navigate = useNavigate();
   const isAdmin = Boolean(user?.roles.includes('ADMIN'));
@@ -124,6 +126,14 @@ export function AppLayout() {
 
           <div className="user-menu">
             <NotificationBell />
+            <Button
+              type="text"
+              className="theme-toggle-button"
+              icon={mode === 'light' ? <BulbOutlined /> : <BulbFilled />}
+              aria-label={t(mode === 'light' ? 'theme.toDark' : 'theme.toLight')}
+              title={t(mode === 'light' ? 'theme.toDark' : 'theme.toLight')}
+              onClick={toggleTheme}
+            />
             <Button
               type="text"
               className="profile-button"

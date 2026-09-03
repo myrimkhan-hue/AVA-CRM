@@ -4,6 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AVA CRM</title>
+    <!-- Тема проставляется до первой отрисовки: иначе при тёмной теме
+         страница успевает мигнуть белым, пока грузится React. -->
+    <script>
+      (function () {
+        var mode;
+        try {
+          mode = localStorage.getItem('ava-crm-theme');
+        } catch (error) {
+          mode = null;
+        }
+        if (mode !== 'light' && mode !== 'dark') {
+          mode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'dark'
+            : 'light';
+        }
+        document.documentElement.dataset.theme = mode;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

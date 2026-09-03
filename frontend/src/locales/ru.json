@@ -1,4 +1,8 @@
 {
+  "theme": {
+    "toDark": "Тёмная тема",
+    "toLight": "Светлая тема"
+  },
   "app": {
     "title": "CRM AVA Solution"
   },

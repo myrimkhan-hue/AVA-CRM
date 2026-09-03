@@ -177,9 +177,9 @@ const REQUISITES_PASTE_MAPPING: Partial<Record<keyof ParsedRequisites, Contracto
 
 const CONTRACTOR_TYPES: ContractorType[] = ['CLIENT', 'CARRIER', 'CUSTOMS_BROKER', 'WAREHOUSE', 'SUPPLIER', 'OTHER'];
 const CONTRACT_STATUS_COLORS: Record<ContractStatus, { background: string; color: string }> = {
-  ACTIVE: { background: '#DCF5E4', color: '#15803D' },
-  EXPIRED: { background: '#FDE2E1', color: '#B42318' },
-  TERMINATED: { background: '#EDF0F4', color: '#66707D' },
+  ACTIVE: { background: 'var(--green-soft)', color: 'var(--green-fg)' },
+  EXPIRED: { background: 'var(--red-soft)', color: 'var(--red-fg)' },
+  TERMINATED: { background: 'var(--card2)', color: 'var(--text3)' },
 };
 const COLUMN_KEYS = ['name', 'types', 'bin', 'country', 'payment', 'contact', 'status', 'actions'] as const;
 type ColumnKey = (typeof COLUMN_KEYS)[number];
@@ -777,7 +777,7 @@ export function ContractorsPage() {
       <Input.TextArea rows={4} value={flagReason} onChange={(event) => setFlagReason(event.target.value)} placeholder={t('contractors.flags.reasonPlaceholder')} />
     </Modal>
 
-    <Modal open={editorOpen} title={t(editing ? 'contractors.form.editTitle' : 'contractors.form.createTitle')} width={1040} okText={t('common.save')} cancelText={t('common.cancel')} confirmLoading={saving} onOk={() => form.submit()} onCancel={() => setEditorOpen(false)} destroyOnHidden styles={{ body: { maxHeight: '72vh', overflowY: 'auto', background: '#f6f7f9', padding: 16 } }}>
+    <Modal open={editorOpen} title={t(editing ? 'contractors.form.editTitle' : 'contractors.form.createTitle')} width={1040} okText={t('common.save')} cancelText={t('common.cancel')} confirmLoading={saving} onOk={() => form.submit()} onCancel={() => setEditorOpen(false)} destroyOnHidden styles={{ body: { maxHeight: '72vh', overflowY: 'auto', background: 'var(--bg)', padding: 16 } }}>
       <Form<ContractorFormValues> form={form} layout="vertical" requiredMark={false} onFinish={saveContractor} onValuesChange={(changed) => { if ('name' in changed || 'bin' in changed) resetDuplicateWarning(); }}>
         {duplicates.length > 0 && <Alert className="form-alert" type="warning" showIcon message={t('contractors.duplicates.title')} description={<ul>{duplicates.map((item) => <li key={item.id}>{t('contractors.duplicates.item', { name: item.name, bin: item.bin || t('common.notSpecified') })}</li>)}</ul>} />}
         <PasteRequisitesBox
