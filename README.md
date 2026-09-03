@@ -16,16 +16,27 @@ docker compose up --build
 
 ## Миграции Prisma
 
-Сейчас бизнес-моделей нет, поэтому первая миграция будет нужна после их добавления. При запущенных контейнерах:
+Миграции базы данных применяются автоматически при старте backend-контейнера. Запускать их вручную не нужно.
 
-```bash
-docker compose exec backend npx prisma migrate dev --name init
+При первом запуске на чистой машине укажите в `.env` электронную почту и пароль первого администратора:
+
+```env
+ADMIN_SEED_EMAIL=admin@example.com
+ADMIN_SEED_PASSWORD=надёжный-пароль
 ```
 
-Для применения уже созданных миграций в боевом окружении:
+Затем создайте администратора и начальные данные:
 
 ```bash
-docker compose exec backend npx prisma migrate deploy
+docker compose run --rm backend seed
+```
+
+Без этого шага войти в CRM будет некому.
+
+При изменении схемы базы данных новую миграцию создают командой:
+
+```bash
+docker compose exec backend npx prisma migrate dev --name <имя>
 ```
 
 Проверка API:
