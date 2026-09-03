@@ -259,12 +259,19 @@ export function DealDetailPage() {
   return <section className="deal-detail-page">
     <Link className="deal-detail-back" to="/deals">{t('deals.detail.back')}</Link>
 
-    <div className="deal-detail-heading">
-      <Space wrap>
-        <Typography.Title level={2}>{t('deals.detail.title', { number: deal.number })}</Typography.Title>
-        <Tag bordered={false} style={DEAL_STAGE_COLORS[deal.stage]}>{t(`deals.stages.${deal.stage}`)}</Tag>
-        {deal.deletedAt && <Tag>{t('deals.status.deleted')}</Tag>}
-      </Space>
+    <div className="detail-header-panel deal-detail-heading">
+      <div className="detail-header-main">
+        <div className="detail-header-title">
+          <h1>{t('deals.detail.title', { number: deal.number })}</h1>
+          <Tag bordered={false} style={DEAL_STAGE_COLORS[deal.stage]}>{t(`deals.stages.${deal.stage}`)}</Tag>
+          {deal.deletedAt && <Tag>{t('deals.status.deleted')}</Tag>}
+        </div>
+        <div className="detail-header-meta">
+          <span>{deal.client.name}</span>
+          <span>{deal.responsible.fullName}</span>
+          <span>{deal.legalEntity.name}</span>
+        </div>
+      </div>
       <Space wrap>
         {mayEditDeals && activeDeal && <Button icon={<FileTextOutlined />} onClick={() => setContractOpen(true)}>{t('documents.contract.action')}</Button>}
         {mayDownloadAct && activeDeal && <Button icon={<FileTextOutlined />} onClick={() => void downloadAct()}>{t('documents.act.dealAction')}</Button>}
