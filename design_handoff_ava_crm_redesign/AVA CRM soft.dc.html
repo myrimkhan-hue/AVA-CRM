@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root,#ava-root{--bg:#EEF1F6;--card:#fff;--card2:#F3F5F9;--hover:#E9EDF4;--rowhover:#FAFBFD;--line:#E7EBF1;--line2:#F0F2F6;--kanban:#E4E8EF;--faint:#D3D9E3;--text:#151A21;--text2:#4B5462;--text3:#6C7482;--muted:#8B93A1;--ink:#151A21;--ink-h:#252C36;--ink-muted:#98A2B0;--bar1:#DDE3EC;--bar2:#3A4250;--bar-red2:#F7BDBA;--red-soft:#FDF2F1;--red-fg:#C1120C;--red-bright:#E4140E;--blue-soft:#EEF3FE;--blue-fg:#1550B8;--amber-soft:#FDF6E9;--amber-fg:#A8620A;--green-soft:#EAF7F0;--green-fg:#0E7A4E;--violet-soft:#F4EEFD;--violet-fg:#6B34B8;--sh05:rgba(21,26,33,.05);--sh07:rgba(21,26,33,.07);--sh10:rgba(21,26,33,.1);--sh12:rgba(21,26,33,.12);--sh13:rgba(21,26,33,.13);--sh18:rgba(21,26,33,.18)}
+#ava-root[data-theme="dark"],:root:has(#ava-root[data-theme="dark"]){--bg:#0B0D10;--card:#14181E;--card2:#1C222A;--hover:#232A33;--rowhover:#191E25;--line:#262E38;--line2:#1F262E;--kanban:#10141A;--faint:#39424D;--text:#E8EBEF;--text2:#C3CAD3;--text3:#9AA5B2;--muted:#7C8794;--ink:#222A34;--ink-h:#2C3540;--ink-muted:#98A2B0;--bar1:#313B47;--bar2:#64707E;--bar-red2:#7A2320;--red-soft:rgba(228,20,14,.17);--red-fg:#FF8681;--red-bright:#FF6B66;--blue-soft:rgba(59,130,246,.16);--blue-fg:#7FB0FF;--amber-soft:rgba(251,191,74,.14);--amber-fg:#FBBF4A;--green-soft:rgba(74,222,128,.13);--green-fg:#4ADE80;--violet-soft:rgba(167,105,240,.16);--violet-fg:#C79BF5;--sh05:rgba(0,0,0,.32);--sh07:rgba(0,0,0,.36);--sh10:rgba(0,0,0,.44);--sh12:rgba(0,0,0,.46);--sh13:rgba(0,0,0,.5);--sh18:rgba(0,0,0,.55)}
+body{margin:0;background:var(--bg);font:14px/1.5 "Plus Jakarta Sans",system-ui,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased}
+a{color:#E4140E;text-decoration:none}
+a:hover{color:#C10F0A}
+button{font-family:inherit}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--faint);border-radius:10px;border:3px solid var(--bg)}
+</style>
+</helmet>
+<div id="ava-root" data-theme="{{ theme }}">
+<sc-if value="{{ isLogin }}">
+<div style="height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);background:var(--bg)">
+<div style="display:flex;flex-direction:column;justify-content:center;padding:0 clamp(32px,7vw,96px)">
+<img src="assets/ava-logo.svg" alt="AVA" style="width:34px;height:34px;display:block;margin-bottom:28px">
+<div style="font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1.15">Вход в AVA CRM</div>
+<div style="font-size:13px;color:var(--muted);margin-top:8px">Учётная запись сотрудника AVA Solution</div>
+<div style="background:var(--card);border-radius:22px;padding:24px;box-shadow:0 2px 14px var(--sh05);margin-top:24px;max-width:400px">
+<div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:6px">Email</div>
+<div style="background:var(--card2);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--muted)">a.smagulov@ava.kz</div>
+<div style="font-size:11.5px;font-weight:600;color:var(--text3);margin:14px 0 6px">Пароль</div>
+<div style="background:var(--card2);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--muted);display:flex;align-items:center">••••••••<span style="margin-left:auto;font-size:11.5px;font-weight:600;color:var(--text2);cursor:pointer">показать</span></div>
+<button onClick="{{ go.dash }}" style="width:100%;background:#E4140E;border:none;border-radius:14px;padding:13px 16px;font:600 13px 'Plus Jakarta Sans';color:#fff;cursor:pointer;margin-top:18px" style-hover="background:#C10F0A">Войти</button>
+<div style="display:flex;align-items:center;gap:10px;margin-top:14px"><span style="font-size:11.5px;color:var(--muted)">Забыли пароль?</span><span style="margin-left:auto;font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">Написать администратору</span></div>
+</div>
+<div style="font-size:11.5px;color:var(--muted);margin-top:20px">Доступ к разделам зависит от роли: логист не видит сделки и лиды, маржа доступна директору и финансисту.</div>
+</div>
+<div style="background:var(--ink);display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(32px,5vw,64px)">
+<div style="font-size:22px;font-weight:700;color:#fff;letter-spacing:-.025em;line-height:1.3;max-width:420px;text-wrap:pretty">Перевозки, сделки и деньги экспедитора в одном окне</div>
+<div style="display:flex;gap:12px;margin-top:26px;flex-wrap:wrap">
+<div style="background:rgba(255,255,255,.06);border-radius:16px;padding:16px 18px;min-width:132px"><div style="font-size:22px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums">15</div><div style="font-size:11.5px;color:var(--ink-muted);margin-top:2px">перевозок в работе</div></div>
+<div style="background:rgba(255,255,255,.06);border-radius:16px;padding:16px 18px;min-width:132px"><div style="font-size:22px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums">16,3 млн</div><div style="font-size:11.5px;color:var(--ink-muted);margin-top:2px">оборот, июль</div></div>
+<div style="background:rgba(255,255,255,.06);border-radius:16px;padding:16px 18px;min-width:132px"><div style="font-size:22px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums">12</div><div style="font-size:11.5px;color:var(--ink-muted);margin-top:2px">сотрудников</div></div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<div style="{{ shellStyle }}">
+
+<aside onMouseEnter="{{ expand }}" onMouseLeave="{{ collapse }}" style="{{ asideStyle }}">
+<div style="display:flex;align-items:center;gap:11px;height:34px;padding:0 25px;margin-bottom:20px;overflow:hidden;flex:none">
+<img src="assets/ava-logo.svg" alt="AVA" style="width:26px;height:26px;display:block;flex:none">
+<div style="{{ lbl }}"><div style="font-size:13.5px;font-weight:700;letter-spacing:-.02em;white-space:nowrap">AVA Solution</div><div style="font-size:11px;color:var(--muted);white-space:nowrap">Экспедиция · Алматы</div></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px;width:100%;padding:0 16px;flex:1;min-height:0;overflow-y:auto;overflow-x:hidden">
+<div onClick="{{ go.dash }}" style="{{ ns.dash }}" title="Дашборд"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><rect x="2" y="2" width="5" height="5" rx="1.5"></rect><rect x="9" y="2" width="5" height="5" rx="1.5"></rect><rect x="2" y="9" width="5" height="5" rx="1.5"></rect><rect x="9" y="9" width="5" height="5" rx="1.5"></rect></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Дашборд</span></span></div>
+<div onClick="{{ go.tr }}" style="{{ ns.tr }}" title="Перевозки"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><path d="M1.5 4.5h7.5v6.5H1.5z"></path><path d="M9 7h3l2 2.2V11H9z"></path><circle cx="4.4" cy="12.4" r="1.3"></circle><circle cx="11.4" cy="12.4" r="1.3"></circle></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Перевозки</span></span><span style="{{ badgeTr }}">15</span></div>
+<div onClick="{{ go.deals }}" style="{{ ns.deals }}" title="Сделки"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><path d="M2 12.5V9M6 12.5V5.5M10 12.5V7.5M14 12.5V3.5"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Сделки</span></span></div>
+<div onClick="{{ go.leads }}" style="{{ ns.leads }}" title="Лиды"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><path d="M2 3.5h12L9.2 8.6v4.2L6.8 11.4V8.6z"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Лиды</span></span></div>
+<div onClick="{{ go.contractors }}" style="{{ ns.contractors }}" title="Контрагенты"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><circle cx="6" cy="6" r="2.4"></circle><path d="M1.8 13c.4-2.2 2.1-3.4 4.2-3.4S9.8 10.8 10.2 13"></path><path d="M11 4.2a2.2 2.2 0 010 4.2"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Контрагенты</span></span></div>
+<div style="{{ divider }}"></div>
+<div onClick="{{ go.invoices }}" style="{{ ns.invoices }}" title="Счета клиентам"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><path d="M3.5 1.8h9v12.4l-2.2-1.4-2.3 1.4-2.3-1.4-2.2 1.4z"></path><path d="M6 5.4h4M6 8.2h4"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Счета клиентам</span></span></div>
+<div onClick="{{ go.payreq }}" style="{{ ns.payreq }}" title="Заявки на оплату"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><rect x="1.8" y="4" width="12.4" height="8" rx="1.6"></rect><path d="M1.8 6.8h12.4"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Заявки на оплату</span></span><span style="{{ badgePr }}">3</span></div>
+<div onClick="{{ go.documents }}" style="{{ ns.documents }}" title="Документы"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><path d="M4 1.8h5l3 3v9.4H4z"></path><path d="M9 1.8v3h3M6 8.4h4M6 11h2.6"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Документы</span></span></div>
+<div onClick="{{ go.expenses }}" style="{{ ns.expenses }}" title="Операционные расходы"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><path d="M2.4 13.6V6.4M6.1 13.6V2.6M9.9 13.6V8.4M13.6 13.6v-3.4"></path><path d="M1.4 13.6h13.2"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Операционные расходы</span></span></div>
+<div onClick="{{ go.cash }}" style="{{ ns.cash }}" title="Кассовый календарь"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><rect x="2" y="3" width="12" height="11" rx="1.6"></rect><path d="M2 6.4h12M5.4 1.8v2.4M10.6 1.8v2.4"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Кассовый календарь</span></span></div>
+<div onClick="{{ go.reports }}" style="{{ ns.reports }}" title="Отчёты"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><path d="M8 2a6 6 0 106 6H8z"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Отчёты</span></span></div>
+<div style="height:1px;background:var(--line);margin:6px 12px;flex:none"></div>
+<div onClick="{{ go.motivation }}" style="{{ ns.motivation }}" title="Мотивация"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><path d="M4.4 2h7.2v3.6a3.6 3.6 0 01-7.2 0z"></path><path d="M8 9.2v2.4M5.6 14h4.8"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Мотивация</span></span></div>
+<div onClick="{{ go.users }}" style="{{ ns.users }}" title="Пользователи"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><circle cx="8" cy="5.4" r="2.6"></circle><path d="M3 13.2c.6-2.4 2.6-3.6 5-3.6s4.4 1.2 5 3.6"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Пользователи</span></span></div>
+<div onClick="{{ go.settings }}" style="{{ ns.settings }}" title="Настройки"><svg width="19" height="19" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex:none"><circle cx="8" cy="8" r="2.2"></circle><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M12.4 3.6l-1.1 1.1M4.7 11.3l-1.1 1.1"></path></svg><span style="{{ lbl }}"><span style="font-size:13px;font-weight:600;white-space:nowrap">Настройки</span></span></div>
+</div>
+<div style="flex:none;display:flex;align-items:center;gap:11px;padding:14px 25px 0;overflow:hidden;cursor:pointer">
+<div onClick="{{ go.profile }}" style="width:34px;height:34px;border-radius:12px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:700;flex:none">АС</div>
+<div style="{{ lbl }}"><div style="font-size:12.5px;font-weight:600;white-space:nowrap">Алишер Смагулов</div><div style="font-size:11px;color:var(--muted);white-space:nowrap">{{ roleLabel }}</div></div>
+<div onClick="{{ go.login }}" style="{{ logout }}" title="Выйти"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6.4 2.4H3.2v11.2h3.2M10 5l3 3-3 3M13 8H6.6"></path></svg></div>
+</div>
+</aside>
+
+<main style="flex:1;min-width:0;display:flex;flex-direction:column;gap:14px;overflow:hidden">
+
+<header style="flex:none;background:var(--card);border-radius:20px;padding:13px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 14px var(--sh05)">
+<div style="min-width:0"><div style="font-size:15px;font-weight:700;letter-spacing:-.02em">{{ crumb }}</div><div style="font-size:11.5px;color:var(--muted)">AVA Solution · {{ roleLabel }}</div></div>
+<div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+<div style="display:flex;align-items:center;gap:8px;background:var(--card2);border-radius:14px;padding:9px 13px;width:240px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--muted)" stroke-width="1.7"><circle cx="7" cy="7" r="4.6"></circle><path d="M10.6 10.6L14 14"></path></svg><span style="font-size:12.5px;color:var(--muted)">Номер, клиент, водитель</span></div>
+<button onClick="{{ toggleTheme }}" title="{{ themeTitle }}" style="width:38px;height:38px;border-radius:14px;background:var(--card2);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none" style-hover="background:var(--hover)">
+<sc-if value="{{ isLight }}" hint-placeholder-val="{{ true }}"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" stroke-width="1.5"><path d="M13.4 9.6A5.6 5.6 0 016.4 2.6a5.7 5.7 0 107 7z"></path></svg></sc-if>
+<sc-if value="{{ isDark }}"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" stroke-width="1.5"><circle cx="8" cy="8" r="3.1"></circle><path d="M8 1.4v1.6M8 13v1.6M1.4 8h1.6M13 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M12.6 3.4l-1.1 1.1M4.5 11.5l-1.1 1.1"></path></svg></sc-if>
+</button>
+<div style="position:relative">
+<button onClick="{{ toggleNotif }}" style="width:38px;height:38px;border-radius:14px;background:var(--card2);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative" style-hover="background:var(--hover)"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" stroke-width="1.5"><path d="M4 6.6a4 4 0 018 0c0 3 1.2 4 1.2 4H2.8S4 9.6 4 6.6z"></path><path d="M6.6 13a1.6 1.6 0 002.8 0"></path></svg><span style="position:absolute;top:6px;right:6px;min-width:16px;height:16px;border-radius:8px;background:#E4140E;color:#fff;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 0 0 2px var(--card)">3</span></button>
+<div style="{{ notifPanel }}">
+<div style="display:flex;align-items:center;gap:10px;padding:16px 18px 12px"><div style="font-size:13.5px;font-weight:700">Уведомления</div><span style="margin-left:auto;font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">Прочитать все</span><span style="width:26px;height:26px;border-radius:9px;background:var(--card2);display:flex;align-items:center;justify-content:center;cursor:pointer"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" stroke-width="1.6"><circle cx="8" cy="8" r="2.2"></circle><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6"></path></svg></span></div>
+<div onClick="{{ go.trdetail }}" style="display:flex;gap:11px;padding:12px 18px;border-top:1px solid var(--line2);cursor:pointer;background:var(--rowhover)" style-hover="background:var(--card2)"><div style="width:7px;height:7px;border-radius:50%;background:#E4140E;margin-top:6px;flex:none"></div><div><div style="font-size:12.5px;font-weight:700">Просрочка доставки</div><div style="font-size:11.5px;color:var(--text3);margin-top:2px;text-wrap:pretty">AVA-2441 Алматы → Москва просрочена на 2 дня</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px">28.07, 09:15</div></div></div>
+<div onClick="{{ go.payreq }}" style="display:flex;gap:11px;padding:12px 18px;border-top:1px solid var(--line2);cursor:pointer;background:var(--rowhover)" style-hover="background:var(--card2)"><div style="width:7px;height:7px;border-radius:50%;background:#E4140E;margin-top:6px;flex:none"></div><div><div style="font-size:12.5px;font-weight:700">Заявка на оплату ждёт согласования</div><div style="font-size:11.5px;color:var(--text3);margin-top:2px;text-wrap:pretty">PR-114 на 1 588 000 ₸ · ИП Ержанов</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px">27.07, 16:40</div></div></div>
+<div onClick="{{ go.dealdetail }}" style="display:flex;gap:11px;padding:12px 18px;border-top:1px solid var(--line2);cursor:pointer;background:var(--rowhover)" style-hover="background:var(--card2)"><div style="width:7px;height:7px;border-radius:50%;background:#E4140E;margin-top:6px;flex:none"></div><div><div style="font-size:12.5px;font-weight:700">Новая ставка по сделке</div><div style="font-size:11.5px;color:var(--text3);margin-top:2px;text-wrap:pretty">ТОО «Транс Лайн» предложил 1 640 000 ₸ по D-1184</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px">27.07, 11:02</div></div></div>
+<div onClick="{{ go.leads }}" style="display:flex;gap:11px;padding:12px 18px;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--card2)"><div style="width:7px;height:7px;border-radius:50%;background:var(--faint);margin-top:6px;flex:none"></div><div><div style="font-size:12.5px;font-weight:600;color:var(--text2)">Лид с сайта</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Nur Trade LLP · Ержан К.</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px">26.07, 14:28</div></div></div>
+<div onClick="{{ go.invoices }}" style="display:flex;gap:11px;padding:12px 18px;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--card2)"><div style="width:7px;height:7px;border-radius:50%;background:var(--faint);margin-top:6px;flex:none"></div><div><div style="font-size:12.5px;font-weight:600;color:var(--text2)">Счёт оплачен</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">INV-0331 на 1 180 000 ₸ · ТОО «Металл Групп»</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px">25.07, 10:11</div></div></div>
+</div>
+</div>
+<button onClick="{{ go.trnew }}" style="background:#E4140E;border:none;border-radius:14px;padding:11px 17px;font:600 12.5px 'Plus Jakarta Sans';color:#fff;cursor:pointer;white-space:nowrap" style-hover="background:#C10F0A">+ Перевозка</button>
+</div>
+</header>
+
+<div style="flex:1;min-height:0;overflow:auto;padding-right:2px">
+
+<sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(206px,1fr));gap:14px;margin-bottom:14px">
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:9px"><div style="width:30px;height:30px;border-radius:11px;background:var(--card2);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" stroke-width="1.6"><path d="M1.5 4.5h7.5v6.5H1.5z"></path><path d="M9 7h3l2 2.2V11H9z"></path></svg></div><span style="font-size:12.5px;color:var(--text3)">Перевозок</span></div>
+<div style="font-size:30px;font-weight:700;letter-spacing:-.035em;font-variant-numeric:tabular-nums;margin-top:12px">15</div>
+<div style="font-size:11.5px;color:var(--muted);margin-top:2px"><span style="color:var(--green-fg);font-weight:600">+3</span> к июню</div>
+</div>
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:9px"><div style="width:30px;height:30px;border-radius:11px;background:var(--card2);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" stroke-width="1.6"><path d="M2 12.5V9M6 12.5V5.5M10 12.5V7.5M14 12.5V3.5"></path></svg></div><span style="font-size:12.5px;color:var(--text3)">Оборот</span></div>
+<div style="font-size:30px;font-weight:700;letter-spacing:-.035em;font-variant-numeric:tabular-nums;margin-top:12px">16,3<span style="font-size:15px;font-weight:600;color:var(--muted)"> млн ₸</span></div>
+<div style="font-size:11.5px;color:var(--muted);margin-top:2px"><span style="color:var(--green-fg);font-weight:600">+9%</span> к июню</div>
+</div>
+<sc-if value="{{ showMoney }}" hint-placeholder-val="{{ true }}">
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:9px"><div style="width:30px;height:30px;border-radius:11px;background:var(--card2);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" stroke-width="1.6"><circle cx="8" cy="8" r="5.6"></circle><path d="M8 5v6M6.4 6.6h3.2M6.4 9.4h3.2"></path></svg></div><span style="font-size:12.5px;color:var(--text3)">Маржа</span></div>
+<div style="font-size:30px;font-weight:700;letter-spacing:-.035em;font-variant-numeric:tabular-nums;margin-top:12px">2,48<span style="font-size:15px;font-weight:600;color:var(--muted)"> млн ₸</span></div>
+<div style="font-size:11.5px;color:var(--muted);margin-top:2px"><span style="color:var(--amber-fg);font-weight:600">15,2%</span> · цель 17%</div>
+</div>
+</sc-if>
+<div style="background:var(--ink);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh12)">
+<div style="display:flex;align-items:center;gap:9px"><div style="width:30px;height:30px;border-radius:11px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--red-bright)" stroke-width="1.6"><path d="M8 2.6l5.8 10.2H2.2z"></path><path d="M8 6.4v3M8 11.2h.01"></path></svg></div><span style="font-size:12.5px;color:var(--ink-muted)">Просрочка</span></div>
+<div style="font-size:30px;font-weight:700;letter-spacing:-.035em;font-variant-numeric:tabular-nums;margin-top:12px;color:#fff">2</div>
+<div style="font-size:11.5px;color:var(--ink-muted);margin-top:2px">AVA-2441 · AVA-2419</div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;margin-bottom:14px">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+<div><div style="font-size:15px;font-weight:700;letter-spacing:-.02em">Оборот и маржа</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px">млн ₸ · шесть месяцев</div></div>
+<div style="margin-left:auto;display:flex;background:var(--card2);border-radius:12px;padding:3px">
+<span style="font-size:11.5px;font-weight:600;color:var(--text);background:var(--card);border-radius:9px;padding:5px 11px;box-shadow:0 1px 3px var(--sh07);cursor:pointer">6М</span>
+<span style="font-size:11.5px;font-weight:600;color:var(--muted);padding:5px 11px;cursor:pointer">12М</span>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:16px;align-items:end;height:190px">
+<div style="display:flex;gap:4px;align-items:flex-end;height:100%"><div style="flex:1;height:58%;background:var(--bar1);border-radius:8px"></div><div style="flex:1;height:11%;background:var(--bar-red2);border-radius:8px"></div></div>
+<div style="display:flex;gap:4px;align-items:flex-end;height:100%"><div style="flex:1;height:64%;background:var(--bar1);border-radius:8px"></div><div style="flex:1;height:13%;background:var(--bar-red2);border-radius:8px"></div></div>
+<div style="display:flex;gap:4px;align-items:flex-end;height:100%"><div style="flex:1;height:52%;background:var(--bar1);border-radius:8px"></div><div style="flex:1;height:9%;background:var(--bar-red2);border-radius:8px"></div></div>
+<div style="display:flex;gap:4px;align-items:flex-end;height:100%"><div style="flex:1;height:76%;background:var(--bar1);border-radius:8px"></div><div style="flex:1;height:15%;background:var(--bar-red2);border-radius:8px"></div></div>
+<div style="display:flex;gap:4px;align-items:flex-end;height:100%"><div style="flex:1;height:83%;background:var(--bar1);border-radius:8px"></div><div style="flex:1;height:17%;background:var(--bar-red2);border-radius:8px"></div></div>
+<div style="display:flex;gap:4px;align-items:flex-end;height:100%"><div style="flex:1;height:95%;background:var(--ink);border-radius:8px"></div><div style="flex:1;height:19%;background:#E4140E;border-radius:8px"></div></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:16px;padding-top:11px">
+<div style="font-size:11.5px;color:var(--muted);text-align:center">фев</div>
+<div style="font-size:11.5px;color:var(--muted);text-align:center">мар</div>
+<div style="font-size:11.5px;color:var(--muted);text-align:center">апр</div>
+<div style="font-size:11.5px;color:var(--muted);text-align:center">май</div>
+<div style="font-size:11.5px;color:var(--muted);text-align:center">июн</div>
+<div style="font-size:11.5px;color:var(--text);font-weight:700;text-align:center">июл</div>
+</div>
+</div>
+
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px"><div style="font-size:15px;font-weight:700;letter-spacing:-.02em">Требует внимания</div><span style="font-size:11px;font-weight:700;color:#fff;background:#E4140E;border-radius:999px;padding:2px 8px">4</span></div>
+<div style="display:flex;flex-direction:column;gap:9px">
+<div onClick="{{ go.trdetail }}" style="background:var(--red-soft);border-radius:15px;padding:13px 15px;cursor:pointer" style-hover="background:#FBE8E7"><div style="font-size:12.5px;font-weight:600">AVA-2441 · просрочка 2 дня</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Алматы → Москва · ТОО «Кайнар»</div></div>
+<div onClick="{{ go.tr }}" style="background:var(--red-soft);border-radius:15px;padding:13px 15px;cursor:pointer" style-hover="background:#FBE8E7"><div style="font-size:12.5px;font-weight:600">AVA-2419 · нет документов</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Шымкент → Ташкент · ИП Ержанов</div></div>
+<div onClick="{{ go.invoices }}" style="background:var(--card2);border-radius:15px;padding:13px 15px;cursor:pointer" style-hover="background:var(--hover)"><div style="font-size:12.5px;font-weight:600">Счёт INV-0338 просрочен</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">1 240 000 ₸ · 6 дней · ТОО «Астык»</div></div>
+<div onClick="{{ go.payreq }}" style="background:var(--card2);border-radius:15px;padding:13px 15px;cursor:pointer" style-hover="background:var(--hover)"><div style="font-size:12.5px;font-weight:600">PR-114 ждёт финансиста</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">на согласовании 2 дня · Айгуль Н.</div></div>
+</div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:14px">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:18px">Воронка сделок</div>
+<div style="display:flex;flex-direction:column;gap:13px">
+<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="font-size:12.5px;color:var(--text2)">Новые</span><span style="margin-left:auto;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums">12</span></div><div style="height:8px;border-radius:999px;background:var(--card2)"><div style="width:100%;height:100%;border-radius:999px;background:var(--ink)"></div></div></div>
+<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="font-size:12.5px;color:var(--text2)">Расчёт ставки</span><span style="margin-left:auto;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums">8</span></div><div style="height:8px;border-radius:999px;background:var(--card2)"><div style="width:67%;height:100%;border-radius:999px;background:var(--bar2)"></div></div></div>
+<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="font-size:12.5px;color:var(--text2)">Согласование</span><span style="margin-left:auto;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums">5</span></div><div style="height:8px;border-radius:999px;background:var(--card2)"><div style="width:42%;height:100%;border-radius:999px;background:var(--text3)"></div></div></div>
+<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="font-size:12.5px;color:var(--text2)">Договор</span><span style="margin-left:auto;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums">3</span></div><div style="height:8px;border-radius:999px;background:var(--card2)"><div style="width:25%;height:100%;border-radius:999px;background:#E4140E"></div></div></div>
+<div><div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="font-size:12.5px;color:var(--text2)">В перевозке</span><span style="margin-left:auto;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums">2</span></div><div style="height:8px;border-radius:999px;background:var(--card2)"><div style="width:17%;height:100%;border-radius:999px;background:#E4140E"></div></div></div>
+</div>
+<div onClick="{{ go.deals }}" style="margin-top:18px;font-size:12.5px;font-weight:700;color:#E4140E;cursor:pointer">Открыть сделки →</div>
+</div>
+
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:16px">Менеджеры месяца</div>
+<div style="display:grid;grid-template-columns:1fr 88px 104px;padding-bottom:8px;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>МЕНЕДЖЕР</div><div style="text-align:right">СДЕЛОК</div><div style="text-align:right">МАРЖА</div></div>
+<div style="display:grid;grid-template-columns:1fr 88px 104px;align-items:center;padding:11px 0;border-top:1px solid var(--line2)"><div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:10px;background:var(--card2);color:var(--text2);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">ИТ</div><span style="font-size:13px">Ислам Токаев</span></div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">14</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">840 тыс</div></div>
+<div style="display:grid;grid-template-columns:1fr 88px 104px;align-items:center;padding:11px 0;border-top:1px solid var(--line2)"><div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:10px;background:var(--card2);color:var(--text2);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">АН</div><span style="font-size:13px">Айгуль Нурланова</span></div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">11</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">712 тыс</div></div>
+<div style="display:grid;grid-template-columns:1fr 88px 104px;align-items:center;padding:11px 0;border-top:1px solid var(--line2)"><div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:10px;background:var(--red-soft);color:var(--red-fg);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">АС</div><span style="font-size:13px">Алишер Смагулов <span style="color:var(--muted);font-size:11.5px">· вы</span></span></div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">9</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">583 тыс</div></div>
+<div style="display:grid;grid-template-columns:1fr 88px 104px;align-items:center;padding:11px 0;border-top:1px solid var(--line2)"><div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:10px;background:var(--card2);color:var(--text2);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">ДК</div><span style="font-size:13px">Дана Кабылова</span></div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">7</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">401 тыс</div></div>
+<div onClick="{{ go.motivation }}" style="padding-top:14px;font-size:12.5px;font-weight:700;color:#E4140E;cursor:pointer">Мотивация и премии →</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isTr }}">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+<span style="background:var(--ink);color:#fff;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';cursor:pointer">Все 15</span>
+<span style="background:var(--card);color:var(--text2);border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';cursor:pointer;box-shadow:0 1px 6px var(--sh05)">В пути 6</span>
+<span style="background:var(--card);color:var(--text2);border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Погрузка 3</span>
+<span style="background:var(--card);color:var(--text2);border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Доставлено 4</span>
+<span style="background:var(--red-soft);color:var(--red-fg);border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';cursor:pointer">Просрочка 2</span>
+<button style="margin-left:auto;background:var(--card);border:none;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Фильтры</button>
+<button style="background:var(--card);border:none;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Экспорт XLSX</button>
+</div>
+<div style="overflow-x:auto;padding-bottom:4px"><div style="display:flex;flex-direction:column;gap:10px;min-width:840px">
+<div onClick="{{ go.trdetail }}" style="background:var(--card);border-radius:20px;padding:16px 20px;box-shadow:0 2px 14px var(--sh05);display:grid;grid-template-columns:106px minmax(160px,1.4fr) minmax(130px,1fr) 120px minmax(126px,0.9fr) 84px;align-items:center;gap:12px;cursor:pointer;min-width:0" style-hover="box-shadow:0 4px 20px var(--sh10)">
+<div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">AVA-2441</div>
+<div><div style="font-size:13.5px;font-weight:600">Алматы → Москва</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Fura 20 т · Ержанов А.</div></div>
+<div style="font-size:12.5px;color:var(--text2)">ТОО «Кайнар»</div>
+<div><span style="display:inline-block;background:var(--red-soft);color:var(--red-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Просрочка</span></div>
+<div style="text-align:right"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">1 850 000 ₸</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px"><sc-if value="{{ showMoney }}" hint-placeholder-val="{{ true }}">маржа 262 000</sc-if><sc-if value="{{ hideMoney }}">маржа скрыта</sc-if></div></div>
+<div style="text-align:right;font-size:12.5px;font-weight:600;color:var(--red-fg)">28 июл</div>
+</div>
+<div style="background:var(--card);border-radius:20px;padding:16px 20px;box-shadow:0 2px 14px var(--sh05);display:grid;grid-template-columns:106px minmax(160px,1.4fr) minmax(130px,1fr) 120px minmax(126px,0.9fr) 84px;align-items:center;gap:12px;cursor:pointer;min-width:0" style-hover="box-shadow:0 4px 20px var(--sh10)">
+<div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">AVA-2440</div>
+<div><div style="font-size:13.5px;font-weight:600">Шымкент → Ташкент</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Реф 12 т · Сапаров Б.</div></div>
+<div style="font-size:12.5px;color:var(--text2)">ИП Ержанов</div>
+<div><span style="display:inline-block;background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">В пути</span></div>
+<div style="text-align:right"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">940 000 ₸</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px"><sc-if value="{{ showMoney }}" hint-placeholder-val="{{ true }}">маржа 118 000</sc-if><sc-if value="{{ hideMoney }}">маржа скрыта</sc-if></div></div>
+<div style="text-align:right;font-size:12.5px;font-weight:600;color:var(--text2)">2 авг</div>
+</div>
+<div style="background:var(--card);border-radius:20px;padding:16px 20px;box-shadow:0 2px 14px var(--sh05);display:grid;grid-template-columns:106px minmax(160px,1.4fr) minmax(130px,1fr) 120px minmax(126px,0.9fr) 84px;align-items:center;gap:12px;cursor:pointer;min-width:0" style-hover="box-shadow:0 4px 20px var(--sh10)">
+<div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">AVA-2438</div>
+<div><div style="font-size:13.5px;font-weight:600">Астана → Урумчи</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Тент 22 т · Ким В.</div></div>
+<div style="font-size:12.5px;color:var(--text2)">ТОО «Астык Транс»</div>
+<div><span style="display:inline-block;background:var(--amber-soft);color:var(--amber-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Погрузка</span></div>
+<div style="text-align:right"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">2 310 000 ₸</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px"><sc-if value="{{ showMoney }}" hint-placeholder-val="{{ true }}">маржа 344 000</sc-if><sc-if value="{{ hideMoney }}">маржа скрыта</sc-if></div></div>
+<div style="text-align:right;font-size:12.5px;font-weight:600;color:var(--text2)">8 авг</div>
+</div>
+<div style="background:var(--card);border-radius:20px;padding:16px 20px;box-shadow:0 2px 14px var(--sh05);display:grid;grid-template-columns:106px minmax(160px,1.4fr) minmax(130px,1fr) 120px minmax(126px,0.9fr) 84px;align-items:center;gap:12px;cursor:pointer;min-width:0" style-hover="box-shadow:0 4px 20px var(--sh10)">
+<div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">AVA-2436</div>
+<div><div style="font-size:13.5px;font-weight:600">Актау → Баку</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Паром · Мурадов Р.</div></div>
+<div style="font-size:12.5px;color:var(--text2)">Caspian Logistics</div>
+<div><span style="display:inline-block;background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">В пути</span></div>
+<div style="text-align:right"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">1 420 000 ₸</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px"><sc-if value="{{ showMoney }}" hint-placeholder-val="{{ true }}">маржа 196 000</sc-if><sc-if value="{{ hideMoney }}">маржа скрыта</sc-if></div></div>
+<div style="text-align:right;font-size:12.5px;font-weight:600;color:var(--text2)">5 авг</div>
+</div>
+<div style="background:var(--card);border-radius:20px;padding:16px 20px;box-shadow:0 2px 14px var(--sh05);display:grid;grid-template-columns:106px minmax(160px,1.4fr) minmax(130px,1fr) 120px minmax(126px,0.9fr) 84px;align-items:center;gap:12px;cursor:pointer;min-width:0" style-hover="box-shadow:0 4px 20px var(--sh10)">
+<div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">AVA-2433</div>
+<div><div style="font-size:13.5px;font-weight:600">Караганда → Новосибирск</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Fura 20 т · Абенов Д.</div></div>
+<div style="font-size:12.5px;color:var(--text2)">ТОО «Металл Групп»</div>
+<div><span style="display:inline-block;background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Доставлено</span></div>
+<div style="text-align:right"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">1 180 000 ₸</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px"><sc-if value="{{ showMoney }}" hint-placeholder-val="{{ true }}">маржа 164 000</sc-if><sc-if value="{{ hideMoney }}">маржа скрыта</sc-if></div></div>
+<div style="text-align:right;font-size:12.5px;font-weight:600;color:var(--muted)">24 июл</div>
+</div>
+<div style="background:var(--card);border-radius:20px;padding:16px 20px;box-shadow:0 2px 14px var(--sh05);display:grid;grid-template-columns:106px minmax(160px,1.4fr) minmax(130px,1fr) 120px minmax(126px,0.9fr) 84px;align-items:center;gap:12px;cursor:pointer;min-width:0" style-hover="box-shadow:0 4px 20px var(--sh10)">
+<div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">AVA-2419</div>
+<div><div style="font-size:13.5px;font-weight:600">Шымкент → Ташкент</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">Реф 12 т · нет водителя</div></div>
+<div style="font-size:12.5px;color:var(--text2)">ИП Ержанов</div>
+<div><span style="display:inline-block;background:var(--red-soft);color:var(--red-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Нет док-в</span></div>
+<div style="text-align:right"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">780 000 ₸</div><div style="font-size:11.5px;color:var(--muted);margin-top:1px"><sc-if value="{{ showMoney }}" hint-placeholder-val="{{ true }}">маржа 92 000</sc-if><sc-if value="{{ hideMoney }}">маржа скрыта</sc-if></div></div>
+<div style="text-align:right;font-size:12.5px;font-weight:600;color:var(--red-fg)">19 июл</div>
+</div>
+</div></div>
+</sc-if>
+
+<sc-if value="{{ isTrDetail }}">
+<div onClick="{{ go.tr }}" style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--text3);cursor:pointer;margin-bottom:12px" style-hover="color:var(--text)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3L5.4 8 10 13"></path></svg>Все перевозки</div>
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05);margin-bottom:14px;display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+<div>
+<div style="display:flex;align-items:center;gap:11px"><div style="font-size:24px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums">AVA-2441</div><span style="background:var(--red-soft);color:var(--red-fg);border-radius:10px;padding:5px 11px;font-size:12px;font-weight:600">Просрочка 2 дня</span></div>
+<div style="font-size:12.5px;color:var(--muted);margin-top:5px">Алматы → Москва · ТОО «Кайнар» · создана 12 июля, Алишер Смагулов</div>
+</div>
+<div style="margin-left:auto;display:flex;align-items:center;gap:9px">
+<button style="background:var(--card2);border:none;border-radius:13px;padding:10px 15px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer" style-hover="background:var(--hover)">Документы</button>
+<button onClick="{{ go.payreq }}" style="background:var(--card2);border:none;border-radius:13px;padding:10px 15px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer" style-hover="background:var(--hover)">Заявка на оплату</button>
+<button style="background:#E4140E;border:none;border-radius:13px;padding:10px 16px;font:600 12.5px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">Сменить статус</button>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:14px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:18px">Плечи маршрута</div>
+<div style="display:flex;gap:14px"><div style="display:flex;flex-direction:column;align-items:center;flex:none;width:20px"><div style="width:11px;height:11px;border-radius:50%;background:var(--green-fg);flex:none"></div><div style="width:2px;flex:1;background:var(--line)"></div></div><div style="padding-bottom:20px;flex:1"><div style="font-size:13.5px;font-weight:600">Погрузка · Алматы, склад «Кайнар»</div><div style="font-size:12px;color:var(--muted);margin-top:2px">14 июля 09:40 · факт · 20 т, стройматериалы</div></div></div>
+<div style="display:flex;gap:14px"><div style="display:flex;flex-direction:column;align-items:center;flex:none;width:20px"><div style="width:11px;height:11px;border-radius:50%;background:var(--green-fg);flex:none"></div><div style="width:2px;flex:1;background:var(--line)"></div></div><div style="padding-bottom:20px;flex:1"><div style="font-size:13.5px;font-weight:600">Граница · Сагарчин</div><div style="font-size:12px;color:var(--muted);margin-top:2px">18 июля 22:10 · пройдена за 6 ч</div></div></div>
+<div style="display:flex;gap:14px"><div style="display:flex;flex-direction:column;align-items:center;flex:none;width:20px"><div style="width:11px;height:11px;border-radius:50%;background:#E4140E;flex:none;box-shadow:0 0 0 4px var(--red-soft)"></div><div style="width:2px;flex:1;background:var(--line)"></div></div><div style="padding-bottom:20px;flex:1"><div style="font-size:13.5px;font-weight:600">В пути · трасса М5, Пенза</div><div style="font-size:12px;color:var(--muted);margin-top:2px">последняя отметка 27 июля 14:20 · осталось 610 км</div></div></div>
+<div style="display:flex;gap:14px"><div style="display:flex;flex-direction:column;align-items:center;flex:none;width:20px"><div style="width:11px;height:11px;border-radius:50%;background:var(--card);border:2px solid var(--faint);flex:none"></div></div><div style="flex:1"><div style="font-size:13.5px;font-weight:600;color:var(--text3)">Выгрузка · Москва, Домодедово</div><div style="font-size:12px;color:var(--red-fg);margin-top:2px">план 28 июля · прогноз 30 июля</div></div></div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:16px">Участники и транспорт</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(198px,1fr));gap:18px 24px">
+<div><div style="font-size:11.5px;color:var(--muted)">Клиент</div><div style="font-size:13.5px;font-weight:600;margin-top:2px">ТОО «Кайнар»</div></div>
+<div><div style="font-size:11.5px;color:var(--muted)">Перевозчик</div><div style="font-size:13.5px;font-weight:600;margin-top:2px">ИП Ержанов А.</div></div>
+<div><div style="font-size:11.5px;color:var(--muted)">Водитель</div><div style="font-size:13.5px;font-weight:600;margin-top:2px">Ержанов Азамат · +7 701 448 22 10</div></div>
+<div><div style="font-size:11.5px;color:var(--muted)">Транспорт</div><div style="font-size:13.5px;font-weight:600;margin-top:2px">Fura 20 т · 458 KZA 02</div></div>
+<div><div style="font-size:11.5px;color:var(--muted)">Менеджер</div><div style="font-size:13.5px;font-weight:600;margin-top:2px">Алишер Смагулов</div></div>
+<div><div style="font-size:11.5px;color:var(--muted)">Логист</div><div style="font-size:13.5px;font-weight:600;margin-top:2px">Ислам Токаев</div></div>
+</div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:16px">Переписка и заметки</div>
+<div style="display:flex;gap:11px;margin-bottom:14px"><div style="width:30px;height:30px;border-radius:11px;background:var(--green-soft);color:var(--green-fg);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none">ЕА</div><div style="background:var(--card2);border-radius:15px;padding:11px 14px"><div style="font-size:12.5px">«Стою в Пензе, ремонт тягача, выезжаю утром»</div><div style="font-size:11px;color:var(--muted);margin-top:3px">WhatsApp · водитель · 27 июля 14:20</div></div></div>
+<div style="display:flex;gap:11px"><div style="width:30px;height:30px;border-radius:11px;background:var(--red-soft);color:var(--red-fg);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none">АС</div><div style="background:var(--card2);border-radius:15px;padding:11px 14px"><div style="font-size:12.5px">Предупредил клиента о сдвиге на 30 июля</div><div style="font-size:11px;color:var(--muted);margin-top:3px">заметка · 27 июля 15:05</div></div></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="background:var(--card);border-radius:22px;padding:20px 22px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px">Экономика</div>
+<div style="display:flex;align-items:center;height:36px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px;color:var(--text3)">Ставка клиенту</span><span style="margin-left:auto;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">1 850 000 ₸</span></div>
+<div style="display:flex;align-items:center;height:36px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px;color:var(--text3)">Перевозчику</span><span style="margin-left:auto;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">1 588 000 ₸</span></div>
+<sc-if value="{{ showMoney }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;height:36px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px;color:var(--text3)">Маржа</span><span style="margin-left:auto;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">262 000 ₸</span></div>
+<div style="display:flex;align-items:center;height:36px"><span style="font-size:12.5px;color:var(--text3)">Рентабельность</span><span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--amber-fg);background:var(--amber-soft);border-radius:999px;padding:3px 9px">14,2%</span></div>
+</sc-if>
+<sc-if value="{{ hideMoney }}"><div style="display:flex;align-items:center;height:44px;font-size:12px;color:var(--muted)">Маржа скрыта для роли «{{ roleLabel }}»</div></sc-if>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:20px 22px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px">Документы</div>
+<div style="display:flex;align-items:center;gap:10px;height:38px;border-bottom:1px solid var(--line2)"><div style="width:7px;height:7px;border-radius:50%;background:var(--green-fg)"></div><span style="font-size:12.5px">Заявка на перевозку</span><span style="margin-left:auto;font-size:11.5px;color:var(--muted)">PDF</span></div>
+<div style="display:flex;align-items:center;gap:10px;height:38px;border-bottom:1px solid var(--line2)"><div style="width:7px;height:7px;border-radius:50%;background:var(--green-fg)"></div><span style="font-size:12.5px">Договор-заявка</span><span style="margin-left:auto;font-size:11.5px;color:var(--muted)">PDF</span></div>
+<div style="display:flex;align-items:center;gap:10px;height:38px;border-bottom:1px solid var(--line2)"><div style="width:7px;height:7px;border-radius:50%;background:var(--amber-fg)"></div><span style="font-size:12.5px">ТТН</span><span style="margin-left:auto;font-size:11.5px;color:var(--amber-fg)">скан ждём</span></div>
+<div style="display:flex;align-items:center;gap:10px;height:38px"><div style="width:7px;height:7px;border-radius:50%;background:var(--faint)"></div><span style="font-size:12.5px;color:var(--text3)">Акт выполненных работ</span><span style="margin-left:auto;font-size:11.5px;color:var(--muted)">после выгрузки</span></div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isTrNew }}">
+<div style="max-width:880px">
+<div style="background:var(--card);border-radius:22px;padding:24px;box-shadow:0 2px 14px var(--sh05);margin-bottom:14px">
+<div style="font-size:17px;font-weight:700;letter-spacing:-.025em">Новая перевозка</div>
+<div style="font-size:12.5px;color:var(--muted);margin-top:4px">Шаг 1 из 3 · маршрут и груз</div>
+<div style="display:flex;gap:8px;margin-top:16px">
+<div style="flex:1;height:5px;border-radius:999px;background:#E4140E"></div>
+<div style="flex:1;height:5px;border-radius:999px;background:var(--line)"></div>
+<div style="flex:1;height:5px;border-radius:999px;background:var(--line)"></div>
+</div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+<div><div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:6px">Клиент</div><div style="background:var(--card2);border-radius:14px;padding:12px 14px;font-size:13px;display:flex;align-items:center">ТОО «Кайнар»<span style="margin-left:auto;color:var(--muted)">▾</span></div></div>
+<div><div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:6px">Юрлицо AVA</div><div style="background:var(--card2);border-radius:14px;padding:12px 14px;font-size:13px;display:flex;align-items:center">ТОО «AVA Solution»<span style="margin-left:auto;color:var(--muted)">▾</span></div></div>
+<div><div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:6px">Пункт погрузки</div><div style="background:var(--card2);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--muted)">Город, адрес склада</div></div>
+<div><div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:6px">Пункт выгрузки</div><div style="background:var(--card2);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--muted)">Город, адрес склада</div></div>
+<div><div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:6px">Груз и вес</div><div style="background:var(--card2);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--muted)">напр. стройматериалы, 20 т</div></div>
+<div><div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:6px">Тип транспорта</div><div style="display:flex;gap:7px;flex-wrap:wrap"><span style="background:var(--ink);color:#fff;border-radius:11px;padding:9px 13px;font-size:12px;font-weight:600;cursor:pointer">Fura</span><span style="background:var(--card2);color:var(--text2);border-radius:11px;padding:9px 13px;font-size:12px;font-weight:600;cursor:pointer">Реф</span><span style="background:var(--card2);color:var(--text2);border-radius:11px;padding:9px 13px;font-size:12px;font-weight:600;cursor:pointer">Тент</span><span style="background:var(--card2);color:var(--text2);border-radius:11px;padding:9px 13px;font-size:12px;font-weight:600;cursor:pointer">Паром</span></div></div>
+<div><div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:6px">Ставка клиенту, ₸</div><div style="background:var(--card2);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums">0</div></div>
+<div><div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:6px">Срок доставки</div><div style="background:var(--card2);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--muted)">дд.мм.гггг</div></div>
+</div>
+<div style="display:flex;gap:9px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line2)">
+<button onClick="{{ go.tr }}" style="background:var(--card2);border:none;border-radius:13px;padding:11px 16px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer" style-hover="background:var(--hover)">Отмена</button>
+<button style="margin-left:auto;background:var(--card2);border:none;border-radius:13px;padding:11px 16px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer" style-hover="background:var(--hover)">Сохранить черновик</button>
+<button style="background:#E4140E;border:none;border-radius:13px;padding:11px 18px;font:600 12.5px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">Далее: перевозчик</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDeals }}">
+<div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;flex-wrap:wrap">
+<div style="display:flex;background:var(--card);border-radius:13px;padding:3px;box-shadow:0 1px 6px var(--sh05)">
+<span style="font-size:12.5px;font-weight:600;color:var(--muted);padding:7px 13px;cursor:pointer">Таблица</span>
+<span style="font-size:12.5px;font-weight:600;color:var(--text);background:var(--card2);border-radius:11px;padding:7px 13px;cursor:pointer">Канбан</span>
+</div>
+<button style="margin-left:auto;background:var(--card);border:none;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Фильтры</button>
+<button style="background:#E4140E;border:none;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">+ Сделка</button>
+</div>
+<div style="display:grid;grid-template-columns:repeat(5,minmax(214px,1fr));gap:12px;align-items:start">
+<div style="background:var(--kanban);border-radius:18px;padding:12px">
+<div style="display:flex;align-items:center;gap:8px;padding:2px 6px 12px"><span style="font-size:12.5px;font-weight:700">Новые</span><span style="font-size:11px;font-weight:700;color:var(--text2);background:var(--card);border-radius:999px;padding:1px 8px">3</span></div>
+<div style="display:flex;flex-direction:column;gap:9px">
+<div onClick="{{ go.dealdetail }}" style="background:var(--card);border-radius:15px;padding:14px;cursor:pointer;box-shadow:0 1px 4px var(--sh05)" style-hover="box-shadow:0 4px 16px var(--sh10)"><div style="font-size:12.5px;font-weight:700">ТОО «Кайнар»</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px">Алматы → Москва · 20 т</div><div style="display:flex;align-items:center;gap:8px;margin-top:11px"><span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">1,85 млн ₸</span><span style="margin-left:auto;width:22px;height:22px;border-radius:8px;background:var(--card2);color:var(--text2);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">АС</span></div></div>
+<div style="background:var(--card);border-radius:15px;padding:14px;cursor:pointer;box-shadow:0 1px 4px var(--sh05)" style-hover="box-shadow:0 4px 16px var(--sh10)"><div style="font-size:12.5px;font-weight:700">ТОО «Астык Транс»</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px">Астана → Урумчи · 22 т</div><div style="display:flex;align-items:center;gap:8px;margin-top:11px"><span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">2,31 млн ₸</span><span style="margin-left:auto;width:22px;height:22px;border-radius:8px;background:var(--card2);color:var(--text2);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">ИТ</span></div></div>
+<div style="background:var(--card);border-radius:15px;padding:14px;cursor:pointer;box-shadow:0 1px 4px var(--sh05)" style-hover="box-shadow:0 4px 16px var(--sh10)"><div style="font-size:12.5px;font-weight:700">Silk Road Cargo</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px">Хоргос → Алматы · сборный</div><div style="display:flex;align-items:center;gap:8px;margin-top:11px"><span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">640 тыс ₸</span><span style="margin-left:auto;width:22px;height:22px;border-radius:8px;background:var(--card2);color:var(--text2);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">ДК</span></div></div>
+</div>
+</div>
+<div style="background:var(--kanban);border-radius:18px;padding:12px">
+<div style="display:flex;align-items:center;gap:8px;padding:2px 6px 12px"><span style="font-size:12.5px;font-weight:700">Расчёт ставки</span><span style="font-size:11px;font-weight:700;color:var(--text2);background:var(--card);border-radius:999px;padding:1px 8px">2</span></div>
+<div style="display:flex;flex-direction:column;gap:9px">
+<div style="background:var(--card);border-radius:15px;padding:14px;cursor:pointer;box-shadow:0 1px 4px var(--sh05)" style-hover="box-shadow:0 4px 16px var(--sh10)"><div style="font-size:12.5px;font-weight:700">Caspian Logistics</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px">Актау → Баку · паром</div><div style="display:flex;align-items:center;gap:8px;margin-top:11px"><span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">1,42 млн ₸</span><span style="margin-left:auto;font-size:10.5px;font-weight:600;color:var(--amber-fg);background:var(--amber-soft);border-radius:7px;padding:2px 7px">3 ставки</span></div></div>
+<div style="background:var(--card);border-radius:15px;padding:14px;cursor:pointer;box-shadow:0 1px 4px var(--sh05)" style-hover="box-shadow:0 4px 16px var(--sh10)"><div style="font-size:12.5px;font-weight:700">ТОО «Металл Групп»</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px">Караганда → Новосибирск</div><div style="display:flex;align-items:center;gap:8px;margin-top:11px"><span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">1,18 млн ₸</span><span style="margin-left:auto;font-size:10.5px;color:var(--muted)">2 ставки</span></div></div>
+</div>
+</div>
+<div style="background:var(--kanban);border-radius:18px;padding:12px">
+<div style="display:flex;align-items:center;gap:8px;padding:2px 6px 12px"><span style="font-size:12.5px;font-weight:700">Согласование</span><span style="font-size:11px;font-weight:700;color:var(--text2);background:var(--card);border-radius:999px;padding:1px 8px">1</span></div>
+<div style="background:var(--card);border-radius:15px;padding:14px;cursor:pointer;box-shadow:0 1px 4px var(--sh05)" style-hover="box-shadow:0 4px 16px var(--sh10)"><div style="font-size:12.5px;font-weight:700">ОсОО «Ак-Жол»</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px">Алматы → Бишкек · 10 т</div><div style="display:flex;align-items:center;gap:8px;margin-top:11px"><span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">420 тыс ₸</span><span style="margin-left:auto;font-size:10.5px;font-weight:600;color:var(--red-fg);background:var(--red-soft);border-radius:7px;padding:2px 7px">4 дня</span></div></div>
+</div>
+<div style="background:var(--kanban);border-radius:18px;padding:12px">
+<div style="display:flex;align-items:center;gap:8px;padding:2px 6px 12px"><span style="font-size:12.5px;font-weight:700">Договор</span><span style="font-size:11px;font-weight:700;color:var(--text2);background:var(--card);border-radius:999px;padding:1px 8px">1</span></div>
+<div style="background:var(--card);border-radius:15px;padding:14px;cursor:pointer;box-shadow:0 1px 4px var(--sh05)" style-hover="box-shadow:0 4px 16px var(--sh10)"><div style="font-size:12.5px;font-weight:700">ИП Ержанов</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px">Шымкент → Ташкент · реф</div><div style="display:flex;align-items:center;gap:8px;margin-top:11px"><span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">940 тыс ₸</span><span style="margin-left:auto;font-size:10.5px;font-weight:600;color:var(--green-fg);background:var(--green-soft);border-radius:7px;padding:2px 7px">на подписи</span></div></div>
+</div>
+<div style="background:var(--kanban);border-radius:18px;padding:12px">
+<div style="display:flex;align-items:center;gap:8px;padding:2px 6px 12px"><span style="font-size:12.5px;font-weight:700">В перевозке</span><span style="font-size:11px;font-weight:700;color:var(--text2);background:var(--card);border-radius:999px;padding:1px 8px">1</span></div>
+<div onClick="{{ go.trdetail }}" style="background:var(--card);border-radius:15px;padding:14px;cursor:pointer;box-shadow:0 1px 4px var(--sh05)" style-hover="box-shadow:0 4px 16px var(--sh10)"><div style="font-size:12.5px;font-weight:700">ТОО «Кайнар»</div><div style="font-size:11.5px;color:var(--muted);margin-top:3px">AVA-2441 · в пути</div><div style="display:flex;align-items:center;gap:8px;margin-top:11px"><span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">1,85 млн ₸</span><span style="margin-left:auto;font-size:10.5px;font-weight:600;color:var(--red-fg);background:var(--red-soft);border-radius:7px;padding:2px 7px">просрочка</span></div></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDealDetail }}">
+<div onClick="{{ go.deals }}" style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--text3);cursor:pointer;margin-bottom:12px" style-hover="color:var(--text)"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 3L5.4 8 10 13"></path></svg>Все сделки</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 336px;gap:14px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap"><div style="font-size:20px;font-weight:700;letter-spacing:-.025em">ТОО «Кайнар» · Алматы → Москва</div><span style="background:var(--card2);color:var(--text2);border-radius:10px;padding:5px 11px;font-size:12px;font-weight:600">Новая</span></div>
+<div style="font-size:12.5px;color:var(--muted);margin-top:5px">Сделка D-1184 · создана 10 июля · менеджер Алишер Смагулов</div>
+<div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap">
+<span style="background:var(--ink);color:#fff;border-radius:11px;padding:8px 13px;font-size:11.5px;font-weight:600">Новая</span>
+<span style="background:var(--card2);color:var(--text2);border-radius:11px;padding:8px 13px;font-size:11.5px;font-weight:600;cursor:pointer">Расчёт ставки</span>
+<span style="background:var(--card2);color:var(--text2);border-radius:11px;padding:8px 13px;font-size:11.5px;font-weight:600;cursor:pointer">Согласование</span>
+<span style="background:var(--card2);color:var(--text2);border-radius:11px;padding:8px 13px;font-size:11.5px;font-weight:600;cursor:pointer">Договор</span>
+<span style="background:var(--card2);color:var(--text2);border-radius:11px;padding:8px 13px;font-size:11.5px;font-weight:600;cursor:pointer">В перевозке</span>
+</div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:16px">Ставки перевозчиков</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 130px 120px 116px;padding-bottom:8px;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>ПЕРЕВОЗЧИК</div><div style="text-align:right">СТАВКА</div><div style="text-align:right">СРОК</div><div style="text-align:right"></div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 130px 120px 116px;align-items:center;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">ИП Ержанов А.</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">1 588 000</div><div style="font-size:12.5px;text-align:right;color:var(--text3)">12 дней</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">выбрана</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 130px 120px 116px;align-items:center;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">ТОО «Транс Лайн»</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">1 640 000</div><div style="font-size:12.5px;text-align:right;color:var(--text3)">10 дней</div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">выбрать</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 130px 120px 116px;align-items:center;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">ИП Абенов Д.</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">1 705 000</div><div style="font-size:12.5px;text-align:right;color:var(--text3)">14 дней</div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">выбрать</span></div></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="background:var(--card);border-radius:22px;padding:20px 22px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px">Условия</div>
+<div style="display:flex;align-items:center;height:36px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px;color:var(--text3)">Ставка клиенту</span><span style="margin-left:auto;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">1 850 000 ₸</span></div>
+<div style="display:flex;align-items:center;height:36px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px;color:var(--text3)">Оплата</span><span style="margin-left:auto;font-size:13px;font-weight:600">50% предоплата</span></div>
+<div style="display:flex;align-items:center;height:36px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px;color:var(--text3)">Валюта</span><span style="margin-left:auto;font-size:13px;font-weight:600">KZT</span></div>
+<sc-if value="{{ showMoney }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;height:36px"><span style="font-size:12.5px;color:var(--text3)">Ожидаемая маржа</span><span style="margin-left:auto;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">262 000 ₸</span></div></sc-if>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:20px 22px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><div style="font-size:15px;font-weight:700;letter-spacing:-.02em">WhatsApp</div><span style="margin-left:auto;font-size:11px;font-weight:600;color:var(--green-fg);background:var(--green-soft);border-radius:999px;padding:3px 9px">подключён</span></div>
+<div style="display:flex;flex-direction:column;gap:9px;max-height:260px;overflow-y:auto;padding-right:2px">
+<div style="align-self:flex-start;max-width:88%;background:var(--card2);border-radius:15px 15px 15px 5px;padding:10px 13px"><div style="font-size:12.5px;text-wrap:pretty">Добрый день! Пришлите ставку на Алматы — Москва, 20 т</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px">Марат С. · 10.07, 10:12</div></div>
+<div style="align-self:flex-end;max-width:88%;background:var(--ink);border-radius:15px 15px 5px 15px;padding:10px 13px"><div style="font-size:12.5px;color:#fff;text-wrap:pretty">Здравствуйте! Ставка 1 850 000 ₸, подача 14 июля, срок 12 дней.</div><div style="display:flex;align-items:center;gap:6px;margin-top:4px"><span style="font-size:10.5px;color:var(--ink-muted)">Алишер С. · 10.07, 10:40</span><span style="font-size:9.5px;font-weight:600;color:var(--ink-muted);background:rgba(255,255,255,.1);border-radius:6px;padding:1px 6px">прочитано</span></div></div>
+<div style="align-self:flex-start;max-width:88%;background:var(--card2);border-radius:15px 15px 15px 5px;padding:10px 13px"><div style="font-size:12.5px;text-wrap:pretty">Согласны. Готовьте договор-заявку.</div><div style="font-size:10.5px;color:var(--muted);margin-top:4px">Марат С. · 10.07, 12:05</div></div>
+</div>
+<div style="background:var(--card2);border-radius:14px;padding:10px 12px;margin-top:12px">
+<div style="font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:8px">Шаблон<span style="margin-left:auto;color:var(--text2);font-weight:600">Запрос статуса ▾</span></div>
+<div style="display:flex;align-items:flex-end;gap:9px;margin-top:9px"><div style="flex:1;background:var(--card);border-radius:11px;padding:9px 11px;font-size:12.5px;color:var(--muted);min-height:42px">Сообщение…</div><button style="width:38px;height:38px;border-radius:12px;background:#E4140E;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none" style-hover="background:#C10F0A"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="1.6"><path d="M14 2L7 9M14 2l-4.6 12-2.6-5.4L1.4 6z"></path></svg></button></div>
+</div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:20px 22px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px">Дальше</div>
+<button style="width:100%;background:#E4140E;border:none;border-radius:13px;padding:11px 16px;font:600 12.5px 'Plus Jakarta Sans';color:#fff;cursor:pointer;margin-bottom:9px" style-hover="background:#C10F0A">Сформировать договор-заявку</button>
+<button onClick="{{ go.trnew }}" style="width:100%;background:var(--card2);border:none;border-radius:13px;padding:11px 16px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer" style-hover="background:var(--hover)">Создать перевозку</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLeads }}">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+<span onClick="{{ setL.all }}" style="{{ ltabs.all }}">Все 4</span>
+<span onClick="{{ setL.my }}" style="{{ ltabs.my }}">Мои 2</span>
+<span onClick="{{ setL.site }}" style="{{ ltabs.site }}">С сайта 1</span>
+<button style="margin-left:auto;background:#E4140E;border:none;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">+ Лид</button>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:8px 22px 14px;box-shadow:0 2px 14px var(--sh05);overflow-x:auto">
+<div style="min-width:900px">
+<div style="display:grid;grid-template-columns:minmax(190px,1fr) 190px 150px 150px 130px;padding:12px 0;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>КОМПАНИЯ</div><div>КОНТАКТ</div><div>ИСТОЧНИК</div><div>МЕНЕДЖЕР</div><div>СТАТУС</div></div>
+<div style="display:grid;grid-template-columns:minmax(190px,1fr) 190px 150px 150px 130px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:600">ТОО «Агро Проект»</div><div style="font-size:12.5px;color:var(--text2)">Сауле Т. · +7 707 112 88 03</div><div style="font-size:12.5px;color:var(--text3)">WhatsApp</div><div style="font-size:12.5px;color:var(--text3)">Дана Кабылова</div><div><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Новый</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(190px,1fr) 190px 150px 150px 130px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:600">Nur Trade LLP</div><div style="font-size:12.5px;color:var(--text2)">Ержан К. · +7 701 900 44 12</div><div style="font-size:12.5px;color:var(--text3)">Сайт</div><div style="font-size:12.5px;color:var(--text3)">Алишер Смагулов</div><div><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Новый</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(190px,1fr) 190px 150px 150px 130px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:600">ИП Мукашев</div><div style="font-size:12.5px;color:var(--text2)">Азат М. · +7 705 331 77 20</div><div style="font-size:12.5px;color:var(--text3)">Рекомендация</div><div style="font-size:12.5px;color:var(--text3)">Ислам Токаев</div><div><span style="background:var(--amber-soft);color:var(--amber-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">В работе</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(190px,1fr) 190px 150px 150px 130px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:600">Kazakh Steel</div><div style="font-size:12.5px;color:var(--text2)">Дархан Б. · +7 702 554 10 98</div><div style="font-size:12.5px;color:var(--text3)">Выставка</div><div style="font-size:12.5px;color:var(--text3)">Айгуль Нурланова</div><div><span style="background:var(--card2);color:var(--text3);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Отказ</span></div></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isContractors }}">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+<span style="background:var(--ink);color:#fff;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';cursor:pointer">Все 48</span>
+<span style="background:var(--card);color:var(--text2);border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Клиенты 27</span>
+<span style="background:var(--card);color:var(--text2);border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Перевозчики 21</span>
+<button style="margin-left:auto;background:#E4140E;border:none;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">+ Контрагент</button>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:8px 22px 14px;box-shadow:0 2px 14px var(--sh05);overflow-x:auto">
+<div style="min-width:960px">
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 150px 130px 190px 150px;padding:12px 0;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>НАИМЕНОВАНИЕ</div><div>БИН / ИИН</div><div>ТИП</div><div>КОНТАКТ</div><div style="text-align:right">САЛЬДО</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 150px 130px 190px 150px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:600">ТОО «Кайнар»</div><div style="font-size:12.5px;color:var(--text2);font-variant-numeric:tabular-nums">140 340 012 887</div><div><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Клиент</span></div><div style="font-size:12.5px;color:var(--text3)">Марат С. · +7 701 220 45 10</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:var(--green-fg)">+1 850 000</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 150px 130px 190px 150px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:600">ИП Ержанов А.</div><div style="font-size:12.5px;color:var(--text2);font-variant-numeric:tabular-nums">880 512 300 145</div><div><span style="background:var(--amber-soft);color:var(--amber-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Перевозчик</span></div><div style="font-size:12.5px;color:var(--text3)">Азамат Е. · +7 701 448 22 10</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:var(--red-fg)">−1 588 000</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 150px 130px 190px 150px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:600">ТОО «Астык Транс»</div><div style="font-size:12.5px;color:var(--text2);font-variant-numeric:tabular-nums">150 240 778 401</div><div><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Клиент</span></div><div style="font-size:12.5px;color:var(--text3)">Гульнара А. · +7 705 118 02 33</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:var(--green-fg)">+2 310 000</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 150px 130px 190px 150px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:600">Caspian Logistics</div><div style="font-size:12.5px;color:var(--text2);font-variant-numeric:tabular-nums">AZ-4471102</div><div><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Клиент</span></div><div style="font-size:12.5px;color:var(--text3)">Rashad M. · +994 50 220 11 44</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)">0</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 150px 130px 190px 150px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:600">ТОО «Транс Лайн»</div><div style="font-size:12.5px;color:var(--text2);font-variant-numeric:tabular-nums">120 940 551 208</div><div><span style="background:var(--amber-soft);color:var(--amber-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Перевозчик</span></div><div style="font-size:12.5px;color:var(--text3)">Виктор К. · +7 707 001 76 55</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;color:var(--red-fg)">−640 000</div></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isInvoices }}">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(206px,1fr));gap:14px;margin-bottom:14px">
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)"><div style="font-size:12.5px;color:var(--text3)">Выставлено в июле</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px">9,4 млн ₸</div></div>
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)"><div style="font-size:12.5px;color:var(--text3)">Оплачено</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px;color:var(--green-fg)">6,1 млн ₸</div></div>
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)"><div style="font-size:12.5px;color:var(--text3)">Ожидает оплаты</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px">2,1 млн ₸</div></div>
+<div style="background:var(--ink);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh12)"><div style="font-size:12.5px;color:var(--ink-muted)">Просрочено</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px;color:var(--red-bright)">1,24 млн ₸</div></div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:8px 22px 14px;box-shadow:0 2px 14px var(--sh05);overflow-x:auto">
+<div style="min-width:1000px">
+<div style="display:grid;grid-template-columns:130px minmax(190px,1fr) 140px 150px 140px 130px;padding:12px 0;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>НОМЕР</div><div>КЛИЕНТ</div><div>ПЕРЕВОЗКА</div><div style="text-align:right">СУММА</div><div>СТАТУС</div><div style="text-align:right">СРОК</div></div>
+<div style="display:grid;grid-template-columns:130px minmax(190px,1fr) 140px 150px 140px 130px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">INV-0338</div><div style="font-size:12.5px">ТОО «Астык Транс»</div><div style="font-size:12.5px;color:var(--text3);font-variant-numeric:tabular-nums">AVA-2415</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">1 240 000</div><div><span style="background:var(--red-soft);color:var(--red-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Просрочен</span></div><div style="font-size:12.5px;text-align:right;color:var(--red-fg);font-weight:600">21 июл</div></div>
+<div style="display:grid;grid-template-columns:130px minmax(190px,1fr) 140px 150px 140px 130px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">INV-0344</div><div style="font-size:12.5px">ТОО «Кайнар»</div><div style="font-size:12.5px;color:var(--text3);font-variant-numeric:tabular-nums">AVA-2441</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">925 000</div><div><span style="background:var(--amber-soft);color:var(--amber-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Ожидает</span></div><div style="font-size:12.5px;text-align:right;color:var(--text2)">5 авг</div></div>
+<div style="display:grid;grid-template-columns:130px minmax(190px,1fr) 140px 150px 140px 130px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">INV-0345</div><div style="font-size:12.5px">Caspian Logistics</div><div style="font-size:12.5px;color:var(--text3);font-variant-numeric:tabular-nums">AVA-2436</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">1 420 000</div><div><span style="background:var(--amber-soft);color:var(--amber-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Ожидает</span></div><div style="font-size:12.5px;text-align:right;color:var(--text2)">9 авг</div></div>
+<div style="display:grid;grid-template-columns:130px minmax(190px,1fr) 140px 150px 140px 130px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">INV-0331</div><div style="font-size:12.5px">ТОО «Металл Групп»</div><div style="font-size:12.5px;color:var(--text3);font-variant-numeric:tabular-nums">AVA-2433</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">1 180 000</div><div><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Оплачен</span></div><div style="font-size:12.5px;text-align:right;color:var(--muted)">18 июл</div></div>
+<div style="display:grid;grid-template-columns:130px minmax(190px,1fr) 140px 150px 140px 130px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">INV-0329</div><div style="font-size:12.5px">ОсОО «Ак-Жол»</div><div style="font-size:12.5px;color:var(--text3);font-variant-numeric:tabular-nums">AVA-2431</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">420 000</div><div><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Оплачен</span></div><div style="font-size:12.5px;text-align:right;color:var(--muted)">15 июл</div></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPayreq }}">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="background:var(--card);border-radius:20px;padding:18px 22px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">PR-114</div><span style="background:var(--amber-soft);color:var(--amber-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Ждёт финансиста</span><span style="margin-left:auto;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">1 588 000 ₸</span></div>
+<div style="font-size:12.5px;color:var(--muted);margin-top:6px">ИП Ержанов А. · перевозка AVA-2441 · создал Алишер Смагулов, 25 июля</div>
+<div style="display:flex;align-items:center;gap:9px;margin-top:14px;flex-wrap:wrap">
+<button style="background:var(--ink);border:none;border-radius:12px;padding:10px 15px;font:600 12px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:var(--ink-h)">Согласовать</button>
+<button style="background:var(--card2);border:none;border-radius:12px;padding:10px 15px;font:600 12px 'Plus Jakarta Sans';color:var(--red-fg);cursor:pointer" style-hover="background:var(--red-soft)">Отклонить</button>
+<span style="margin-left:auto;font-size:11.5px;color:var(--muted)">срок оплаты 30 июля</span>
+</div>
+</div>
+<div style="background:var(--card);border-radius:20px;padding:18px 22px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">PR-113</div><span style="background:var(--amber-soft);color:var(--amber-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Ждёт финансиста</span><span style="margin-left:auto;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">812 000 ₸</span></div>
+<div style="font-size:12.5px;color:var(--muted);margin-top:6px">ТОО «Транс Лайн» · перевозка AVA-2440 · создал Ислам Токаев, 24 июля</div>
+<div style="display:flex;align-items:center;gap:9px;margin-top:14px;flex-wrap:wrap">
+<button style="background:var(--ink);border:none;border-radius:12px;padding:10px 15px;font:600 12px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:var(--ink-h)">Согласовать</button>
+<button style="background:var(--card2);border:none;border-radius:12px;padding:10px 15px;font:600 12px 'Plus Jakarta Sans';color:var(--red-fg);cursor:pointer" style-hover="background:var(--red-soft)">Отклонить</button>
+<span style="margin-left:auto;font-size:11.5px;color:var(--muted)">срок оплаты 1 авг</span>
+</div>
+</div>
+<div style="background:var(--card);border-radius:20px;padding:18px 22px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">PR-112</div><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Согласована</span><span style="margin-left:auto;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">1 205 000 ₸</span></div>
+<div style="font-size:12.5px;color:var(--muted);margin-top:6px">ИП Абенов Д. · перевозка AVA-2433 · оплата запланирована 29 июля</div>
+</div>
+<div style="background:var(--card);border-radius:20px;padding:18px 22px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums">PR-110</div><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Оплачена</span><span style="margin-left:auto;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums">358 000 ₸</span></div>
+<div style="font-size:12.5px;color:var(--muted);margin-top:6px">ОсОО «Ак-Жол» · перевозка AVA-2431 · платёж 18 июля</div>
+</div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:20px 22px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:14px">Очередь оплат</div>
+<div style="display:flex;align-items:center;height:36px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px;color:var(--text3)">На согласовании</span><span style="margin-left:auto;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">2,4 млн ₸</span></div>
+<div style="display:flex;align-items:center;height:36px;border-bottom:1px solid var(--line2)"><span style="font-size:12.5px;color:var(--text3)">К оплате на неделе</span><span style="margin-left:auto;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">3,6 млн ₸</span></div>
+<div style="display:flex;align-items:center;height:36px"><span style="font-size:12.5px;color:var(--text3)">Остаток на счетах</span><span style="margin-left:auto;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">5,1 млн ₸</span></div>
+<div onClick="{{ go.cash }}" style="margin-top:16px;font-size:12.5px;font-weight:700;color:#E4140E;cursor:pointer">Кассовый календарь →</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCash }}">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(206px,1fr));gap:14px;margin-bottom:14px">
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)"><div style="font-size:12.5px;color:var(--text3)">Остаток на 28 июля</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px">5,1 млн ₸</div></div>
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)"><div style="font-size:12.5px;color:var(--text3)">Поступления, неделя</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px;color:var(--green-fg)">+4,3 млн</div></div>
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)"><div style="font-size:12.5px;color:var(--text3)">Выплаты, неделя</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px;color:var(--red-fg)">−3,6 млн</div></div>
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)"><div style="font-size:12.5px;color:var(--text3)">Прогноз на 4 авг</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px">5,8 млн ₸</div></div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05);overflow-x:auto">
+<div style="min-width:960px">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><div style="font-size:15px;font-weight:700;letter-spacing:-.02em">Неделя 28 июля — 3 августа</div><div style="margin-left:auto;display:flex;gap:7px"><span style="width:30px;height:30px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text2);cursor:pointer">‹</span><span style="width:30px;height:30px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text2);cursor:pointer">›</span></div></div>
+<div style="display:grid;grid-template-columns:repeat(7,minmax(120px,1fr));gap:10px">
+<div style="background:var(--card2);border-radius:16px;padding:13px;min-height:170px"><div style="font-size:11.5px;font-weight:700;color:var(--text2)">пн · 28</div><div style="background:var(--card);border-radius:11px;padding:9px 10px;margin-top:9px"><div style="font-size:11px;color:var(--muted)">выплата</div><div style="font-size:12px;font-weight:700;color:var(--red-fg);font-variant-numeric:tabular-nums">−1 588 000</div><div style="font-size:10.5px;color:var(--muted);margin-top:2px">ИП Ержанов</div></div></div>
+<div style="background:var(--card2);border-radius:16px;padding:13px;min-height:170px"><div style="font-size:11.5px;font-weight:700;color:var(--text2)">вт · 29</div><div style="background:var(--card);border-radius:11px;padding:9px 10px;margin-top:9px"><div style="font-size:11px;color:var(--muted)">выплата</div><div style="font-size:12px;font-weight:700;color:var(--red-fg);font-variant-numeric:tabular-nums">−1 205 000</div><div style="font-size:10.5px;color:var(--muted);margin-top:2px">ИП Абенов</div></div></div>
+<div style="background:var(--card2);border-radius:16px;padding:13px;min-height:170px"><div style="font-size:11.5px;font-weight:700;color:var(--text2)">ср · 30</div><div style="background:var(--card);border-radius:11px;padding:9px 10px;margin-top:9px"><div style="font-size:11px;color:var(--muted)">поступление</div><div style="font-size:12px;font-weight:700;color:var(--green-fg);font-variant-numeric:tabular-nums">+1 240 000</div><div style="font-size:10.5px;color:var(--muted);margin-top:2px">ТОО «Астык»</div></div></div>
+<div style="background:var(--card2);border-radius:16px;padding:13px;min-height:170px"><div style="font-size:11.5px;font-weight:700;color:var(--text2)">чт · 31</div></div>
+<div style="background:var(--card2);border-radius:16px;padding:13px;min-height:170px"><div style="font-size:11.5px;font-weight:700;color:var(--text2)">пт · 1</div><div style="background:var(--card);border-radius:11px;padding:9px 10px;margin-top:9px"><div style="font-size:11px;color:var(--muted)">выплата</div><div style="font-size:12px;font-weight:700;color:var(--red-fg);font-variant-numeric:tabular-nums">−812 000</div><div style="font-size:10.5px;color:var(--muted);margin-top:2px">Транс Лайн</div></div></div>
+<div style="background:var(--card2);border-radius:16px;padding:13px;min-height:170px"><div style="font-size:11.5px;font-weight:700;color:var(--text2)">сб · 2</div></div>
+<div style="background:var(--card2);border-radius:16px;padding:13px;min-height:170px"><div style="font-size:11.5px;font-weight:700;color:var(--text2)">вс · 3</div><div style="background:var(--card);border-radius:11px;padding:9px 10px;margin-top:9px"><div style="font-size:11px;color:var(--muted)">поступление</div><div style="font-size:12px;font-weight:700;color:var(--green-fg);font-variant-numeric:tabular-nums">+925 000</div><div style="font-size:10.5px;color:var(--muted);margin-top:2px">ТОО «Кайнар»</div></div></div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isReports }}">
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+<span onClick="{{ go.dash }}" style="{{ rtabs.off }}">Дашборд</span>
+<span onClick="{{ go.cash }}" style="{{ rtabs.off }}">Кассовый календарь</span>
+<span onClick="{{ setTab.debit }}" style="{{ rtabs.debit }}">Дебиторка</span>
+<span onClick="{{ setTab.credit }}" style="{{ rtabs.credit }}">Кредиторка</span>
+<button style="margin-left:auto;background:var(--card);border:none;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Экспорт XLSX</button>
+</div>
+<sc-if value="{{ tabDebit }}" hint-placeholder-val="{{ true }}">
+<div style="background:var(--card);border-radius:22px;padding:8px 22px 14px;box-shadow:0 2px 14px var(--sh05);overflow-x:auto">
+<div style="min-width:940px">
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 140px 140px 140px 140px;padding:12px 0;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>КЛИЕНТ</div><div style="text-align:right">ВСЕГО</div><div style="text-align:right">0–15 ДН</div><div style="text-align:right">16–30 ДН</div><div style="text-align:right">&gt;30 ДН</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 140px 140px 140px 140px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">ТОО «Астык Транс»</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">1 240 000</div><div style="font-size:12.5px;text-align:right;color:var(--muted)">—</div><div style="font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums">1 240 000</div><div style="font-size:12.5px;text-align:right;color:var(--muted)">—</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 140px 140px 140px 140px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">ТОО «Кайнар»</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">925 000</div><div style="font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums">925 000</div><div style="font-size:12.5px;text-align:right;color:var(--muted)">—</div><div style="font-size:12.5px;text-align:right;color:var(--muted)">—</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 140px 140px 140px 140px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Caspian Logistics</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">1 420 000</div><div style="font-size:12.5px;text-align:right;font-variant-numeric:tabular-nums">1 420 000</div><div style="font-size:12.5px;text-align:right;color:var(--muted)">—</div><div style="font-size:12.5px;text-align:right;color:var(--muted)">—</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 140px 140px 140px 140px;align-items:center;padding:14px 0 4px;border-top:2px solid var(--line)"><div style="font-size:12.5px;font-weight:700">Итого</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">3 585 000</div><div style="font-size:12.5px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums">2 345 000</div><div style="font-size:12.5px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums">1 240 000</div><div style="font-size:12.5px;text-align:right;color:var(--muted)">—</div></div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ tabCredit }}">
+<div style="background:var(--card);border-radius:22px;padding:8px 22px 14px;box-shadow:0 2px 14px var(--sh05);overflow-x:auto">
+<div style="min-width:940px">
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 140px 160px 160px;padding:12px 0;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>ПЕРЕВОЗЧИК</div><div style="text-align:right">ДОЛГ</div><div style="text-align:right">СРОК ОПЛАТЫ</div><div style="text-align:right">ПЕРЕВОЗКА</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 140px 160px 160px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">ИП Ержанов А.</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">1 588 000</div><div style="font-size:12.5px;text-align:right;color:var(--red-fg);font-weight:600">30 июл</div><div style="font-size:12.5px;text-align:right;color:var(--text3);font-variant-numeric:tabular-nums">AVA-2441</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 140px 160px 160px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">ТОО «Транс Лайн»</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">812 000</div><div style="font-size:12.5px;text-align:right;color:var(--text2)">1 авг</div><div style="font-size:12.5px;text-align:right;color:var(--text3);font-variant-numeric:tabular-nums">AVA-2440</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 140px 160px 160px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">ИП Абенов Д.</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">1 205 000</div><div style="font-size:12.5px;text-align:right;color:var(--text2)">29 июл</div><div style="font-size:12.5px;text-align:right;color:var(--text3);font-variant-numeric:tabular-nums">AVA-2433</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 140px 160px 160px;align-items:center;padding:14px 0 4px;border-top:2px solid var(--line)"><div style="font-size:12.5px;font-weight:700">Итого</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">3 605 000</div><div></div><div></div></div>
+</div>
+</div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ isMotivation }}">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+<span onClick="{{ setM.my }}" style="{{ mtabs.my }}">Моя мотивация</span>
+<span onClick="{{ setM.summary }}" style="{{ mtabs.summary }}">Сводная по отделу</span>
+</div>
+<sc-if value="{{ mSummary }}">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:16px">Сводная по отделу · июль</div>
+<div style="display:grid;grid-template-columns:minmax(180px,1fr) 100px 130px 130px 120px;padding-bottom:8px;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>МЕНЕДЖЕР</div><div style="text-align:right">СДЕЛОК</div><div style="text-align:right">МАРЖА</div><div style="text-align:right">ПЛАН</div><div style="text-align:right">ПРЕМИЯ</div></div>
+<div style="display:grid;grid-template-columns:minmax(180px,1fr) 100px 130px 130px 120px;align-items:center;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Ислам Токаев</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">14</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">840 000</div><div style="text-align:right"><span style="font-size:11px;font-weight:700;color:var(--green-fg);background:var(--green-soft);border-radius:999px;padding:3px 9px">140%</span></div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">126 000</div></div>
+<div style="display:grid;grid-template-columns:minmax(180px,1fr) 100px 130px 130px 120px;align-items:center;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Айгуль Нурланова</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">11</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">712 000</div><div style="text-align:right"><span style="font-size:11px;font-weight:700;color:var(--green-fg);background:var(--green-soft);border-radius:999px;padding:3px 9px">119%</span></div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">98 000</div></div>
+<div style="display:grid;grid-template-columns:minmax(180px,1fr) 100px 130px 130px 120px;align-items:center;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Алишер Смагулов <span style="color:var(--muted);font-size:11.5px">· вы</span></div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">9</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">583 000</div><div style="text-align:right"><span style="font-size:11px;font-weight:700;color:var(--amber-fg);background:var(--amber-soft);border-radius:999px;padding:3px 9px">97%</span></div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">70 000</div></div>
+<div style="display:grid;grid-template-columns:minmax(180px,1fr) 100px 130px 130px 120px;align-items:center;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Дана Кабылова</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">7</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">401 000</div><div style="text-align:right"><span style="font-size:11px;font-weight:700;color:var(--red-fg);background:var(--red-soft);border-radius:999px;padding:3px 9px">67%</span></div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">32 000</div></div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><div style="font-size:15px;font-weight:700;letter-spacing:-.02em">Правила расчёта</div><button onClick="{{ go.settings }}" style="margin-left:auto;background:var(--card2);border:none;border-radius:12px;padding:8px 13px;font:600 12px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer" style-hover="background:var(--hover)">Настроить</button></div>
+<div style="display:flex;align-items:center;gap:11px;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:12.5px;flex:1">Базовая ставка от маржи</div><span style="font-size:12.5px;font-weight:700">12%</span></div>
+<div style="display:flex;align-items:center;gap:11px;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:12.5px;flex:1">Бонус при плане &gt; 120%</div><span style="font-size:12.5px;font-weight:700">+3%</span></div>
+<div style="display:flex;align-items:center;gap:11px;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:12.5px;flex:1">Штраф за просрочку доставки</div><span style="font-size:12.5px;font-weight:700;color:var(--red-fg)">−5 000 ₸ / день</span></div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ mMy }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:360px minmax(0,1fr);gap:14px;align-items:start">
+<div style="background:var(--ink);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh12)">
+<div style="font-size:12.5px;color:var(--ink-muted)">Моя премия за июль</div>
+<div style="font-size:32px;font-weight:700;letter-spacing:-.035em;color:#fff;font-variant-numeric:tabular-nums;margin-top:8px">70 000 ₸</div>
+<div style="font-size:11.5px;color:var(--ink-muted);margin-top:4px">маржа 583 000 ₸ · план 600 000 ₸</div>
+<div style="height:8px;border-radius:999px;background:rgba(255,255,255,.14);margin-top:18px"><div style="width:97%;height:100%;border-radius:999px;background:#E4140E"></div></div>
+<div style="display:flex;align-items:center;gap:10px;margin-top:8px"><span style="font-size:11.5px;color:var(--ink-muted)">97% плана</span><span style="margin-left:auto;font-size:11.5px;color:var(--ink-muted)">до бонуса 17 000 ₸ маржи</span></div>
+<div style="border-top:1px solid rgba(255,255,255,.1);margin-top:20px;padding-top:16px">
+<div style="display:flex;align-items:center;height:32px"><span style="font-size:12.5px;color:var(--ink-muted)">Сделок закрыто</span><span style="margin-left:auto;font-size:13px;font-weight:600;color:#fff">9</span></div>
+<div style="display:flex;align-items:center;height:32px"><span style="font-size:12.5px;color:var(--ink-muted)">Штрафы</span><span style="margin-left:auto;font-size:13px;font-weight:600;color:var(--red-bright)">−10 000 ₸</span></div>
+<div style="display:flex;align-items:center;height:32px"><span style="font-size:12.5px;color:var(--ink-muted)">Выплата</span><span style="margin-left:auto;font-size:13px;font-weight:600;color:#fff">5 августа</span></div>
+</div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:16px">Мои сделки в расчёте</div>
+<div style="display:grid;grid-template-columns:minmax(150px,1fr) minmax(140px,1fr) 130px 120px;padding-bottom:8px;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>СДЕЛКА</div><div>КЛИЕНТ</div><div style="text-align:right">МАРЖА</div><div style="text-align:right">К ПРЕМИИ</div></div>
+<div style="display:grid;grid-template-columns:minmax(150px,1fr) minmax(140px,1fr) 130px 120px;align-items:center;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">AVA-2441</div><div style="font-size:12.5px;color:var(--text2)">ТОО «Кайнар»</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">262 000</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">31 440</div></div>
+<div style="display:grid;grid-template-columns:minmax(150px,1fr) minmax(140px,1fr) 130px 120px;align-items:center;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">AVA-2436</div><div style="font-size:12.5px;color:var(--text2)">Caspian Logistics</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">196 000</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">23 520</div></div>
+<div style="display:grid;grid-template-columns:minmax(150px,1fr) minmax(140px,1fr) 130px 120px;align-items:center;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">AVA-2431</div><div style="font-size:12.5px;color:var(--text2)">ОсОО «Ак-Жол»</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">61 000</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">7 320</div></div>
+<div style="display:grid;grid-template-columns:minmax(150px,1fr) minmax(140px,1fr) 130px 120px;align-items:center;padding:12px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Штраф · AVA-2441</div><div style="font-size:12.5px;color:var(--muted)">просрочка 2 дня</div><div style="font-size:12.5px;text-align:right;color:var(--muted)">—</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums;color:var(--red-fg)">−10 000</div></div>
+<div style="display:grid;grid-template-columns:minmax(150px,1fr) minmax(140px,1fr) 130px 120px;align-items:center;padding:14px 0 2px;border-top:2px solid var(--line)"><div style="font-size:12.5px;font-weight:700">Итого</div><div></div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">519 000</div><div style="font-size:13px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">70 000</div></div>
+</div>
+</div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{ isUsers }}">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+<span style="background:var(--ink);color:#fff;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';cursor:pointer">Все 12</span>
+<span style="background:var(--card);color:var(--text2);border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Активные 11</span>
+<span style="background:var(--card);color:var(--text2);border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Заблокированные 1</span>
+<button style="margin-left:auto;background:#E4140E;border:none;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">+ Пользователь</button>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:8px 22px 14px;box-shadow:0 2px 14px var(--sh05);overflow-x:auto">
+<div style="min-width:900px">
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 190px 180px 140px 100px;padding:12px 0;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>СОТРУДНИК</div><div>РОЛЬ</div><div>EMAIL</div><div>ВХОД</div><div style="text-align:right">СТАТУС</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 190px 180px 140px 100px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="display:flex;align-items:center;gap:11px"><div style="width:30px;height:30px;border-radius:11px;background:var(--red-soft);color:var(--red-fg);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">АС</div><span style="font-size:13px;font-weight:600">Алишер Смагулов</span></div><div><span style="background:var(--card2);color:var(--text2);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Директор</span></div><div style="font-size:12.5px;color:var(--text3)">a.smagulov@ava.kz</div><div style="font-size:12.5px;color:var(--text3)">сегодня 09:12</div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:var(--green-fg)">активен</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 190px 180px 140px 100px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="display:flex;align-items:center;gap:11px"><div style="width:30px;height:30px;border-radius:11px;background:var(--card2);color:var(--text2);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">ИТ</div><span style="font-size:13px;font-weight:600">Ислам Токаев</span></div><div><span style="background:var(--card2);color:var(--text2);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Логист</span></div><div style="font-size:12.5px;color:var(--text3)">i.tokaev@ava.kz</div><div style="font-size:12.5px;color:var(--text3)">сегодня 08:40</div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:var(--green-fg)">активен</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 190px 180px 140px 100px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="display:flex;align-items:center;gap:11px"><div style="width:30px;height:30px;border-radius:11px;background:var(--card2);color:var(--text2);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">АН</div><span style="font-size:13px;font-weight:600">Айгуль Нурланова</span></div><div><span style="background:var(--card2);color:var(--text2);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Финансист</span></div><div style="font-size:12.5px;color:var(--text3)">a.nurlanova@ava.kz</div><div style="font-size:12.5px;color:var(--text3)">вчера 18:05</div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:var(--green-fg)">активен</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 190px 180px 140px 100px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="display:flex;align-items:center;gap:11px"><div style="width:30px;height:30px;border-radius:11px;background:var(--card2);color:var(--text2);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">ДК</div><span style="font-size:13px;font-weight:600">Дана Кабылова</span></div><div><span style="background:var(--card2);color:var(--text2);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Менеджер</span></div><div style="font-size:12.5px;color:var(--text3)">d.kabylova@ava.kz</div><div style="font-size:12.5px;color:var(--text3)">вчера 17:22</div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:var(--green-fg)">активен</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 190px 180px 140px 100px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="display:flex;align-items:center;gap:11px"><div style="width:30px;height:30px;border-radius:11px;background:var(--card2);color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center">БС</div><span style="font-size:13px;font-weight:600;color:var(--muted)">Бекзат Сапаров</span></div><div><span style="background:var(--card2);color:var(--muted);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Логист</span></div><div style="font-size:12.5px;color:var(--muted)">b.saparov@ava.kz</div><div style="font-size:12.5px;color:var(--muted)">12 июня</div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:var(--red-fg)">блок</span></div></div>
+</div>
+</div>
+</sc-if>
+
+
+<sc-if value="{{ isDocuments }}">
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+<div style="display:flex;align-items:center;gap:8px;background:var(--card);border-radius:13px;padding:9px 13px;box-shadow:0 1px 6px var(--sh05);width:250px"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="var(--muted)" stroke-width="1.7"><circle cx="7" cy="7" r="4.6"></circle><path d="M10.6 10.6L14 14"></path></svg><span style="font-size:12.5px;color:var(--muted)">Номер, контрагент, перевозка</span></div>
+<span onClick="{{ setD.all }}" style="{{ dtabs.all }}">Все 5</span>
+<span onClick="{{ setD.contract }}" style="{{ dtabs.contract }}">Договоры 2</span>
+<span onClick="{{ setD.request }}" style="{{ dtabs.request }}">Заявки 1</span>
+<span onClick="{{ setD.invoice }}" style="{{ dtabs.invoice }}">Счета 1</span>
+<span onClick="{{ setD.act }}" style="{{ dtabs.act }}">Акты 1</span>
+<button style="margin-left:auto;background:var(--card);border:none;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Сбросить фильтры</button>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:8px 22px 14px;box-shadow:0 2px 14px var(--sh05);overflow-x:auto">
+<div style="min-width:1120px">
+<div style="display:grid;grid-template-columns:170px 150px 160px minmax(160px,1fr) minmax(180px,1fr) 150px 110px;padding:12px 0;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>НОМЕР</div><div>ТИП</div><div>СФОРМИРОВАН</div><div>КЕМ</div><div>КОНТРАГЕНТ</div><div>ОСНОВАНИЕ</div><div style="text-align:right">ФАЙЛ</div></div>
+<div onClick="{{ go.trdetail }}" style="display:grid;grid-template-columns:170px 150px 160px minmax(160px,1fr) minmax(180px,1fr) 150px 110px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">DOG-2026-118</div><div><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Договор</span></div><div style="font-size:12.5px;color:var(--text2)">12.07, 14:20</div><div style="font-size:12.5px;color:var(--text3)">Алишер Смагулов</div><div style="font-size:12.5px">ТОО «Кайнар»</div><div style="font-size:12px;color:var(--text3)">Сделка · D-1184</div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">Скачать</span></div></div>
+<div onClick="{{ go.trdetail }}" style="display:grid;grid-template-columns:170px 150px 160px minmax(160px,1fr) minmax(180px,1fr) 150px 110px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">ZP-2026-441</div><div><span style="background:var(--amber-soft);color:var(--amber-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Заявка</span></div><div style="font-size:12.5px;color:var(--text2)">13.07, 09:05</div><div style="font-size:12.5px;color:var(--text3)">Ислам Токаев</div><div style="font-size:12.5px">ИП Ержанов А.</div><div style="font-size:12px;color:var(--text3)">Перевозка · AVA-2441</div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">Скачать</span></div></div>
+<div style="display:grid;grid-template-columns:170px 150px 160px minmax(160px,1fr) minmax(180px,1fr) 150px 110px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">INV-0344</div><div><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Счёт</span></div><div style="font-size:12.5px;color:var(--text2)">25.07, 11:40</div><div style="font-size:12.5px;color:var(--text3)">Айгуль Нурланова</div><div style="font-size:12.5px">ТОО «Кайнар»</div><div style="font-size:12px;color:var(--text3)">Перевозка · AVA-2441</div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">Скачать</span></div></div>
+<div style="display:grid;grid-template-columns:170px 150px 160px minmax(160px,1fr) minmax(180px,1fr) 150px 110px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">AKT-2026-096</div><div><span style="background:var(--violet-soft);color:var(--violet-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Акт</span></div><div style="font-size:12.5px;color:var(--text2)">24.07, 18:12</div><div style="font-size:12.5px;color:var(--text3)">Айгуль Нурланова</div><div style="font-size:12.5px">ТОО «Металл Групп»</div><div style="font-size:12px;color:var(--text3)">Перевозка · AVA-2433</div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">Скачать</span></div></div>
+<div style="display:grid;grid-template-columns:170px 150px 160px minmax(160px,1fr) minmax(180px,1fr) 150px 110px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums">DOG-2026-115</div><div><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Договор</span></div><div style="font-size:12.5px;color:var(--text2)">08.07, 16:33</div><div style="font-size:12.5px;color:var(--text3)">Дана Кабылова</div><div style="font-size:12.5px">ОсОО «Ак-Жол»</div><div style="font-size:12px;color:var(--text3)">Сделка · D-1176</div><div style="text-align:right"><span style="font-size:11.5px;color:var(--faint)" title="Нет доступа к скачиванию">—</span></div></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isExpenses }}">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(206px,1fr));gap:14px;margin-bottom:14px">
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)"><div style="font-size:12.5px;color:var(--text3)">Расходы за июль</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px">3,18 млн ₸</div></div>
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)"><div style="font-size:12.5px;color:var(--text3)">Оплачено</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px;color:var(--green-fg)">1,93 млн ₸</div></div>
+<div style="background:var(--card);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh05)"><div style="font-size:12.5px;color:var(--text3)">Не оплачено</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px">1,25 млн ₸</div></div>
+<div style="background:var(--ink);border-radius:20px;padding:19px 21px;box-shadow:0 2px 14px var(--sh12)"><div style="font-size:12.5px;color:var(--ink-muted)">Просрочено</div><div style="font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:8px;color:var(--red-bright)">420 000 ₸</div></div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+<span onClick="{{ setE.all }}" style="{{ etabs.all }}">Все 6</span>
+<span onClick="{{ setE.unpaid }}" style="{{ etabs.unpaid }}">Не оплачены 3</span>
+<span onClick="{{ setE.paid }}" style="{{ etabs.paid }}">Оплачены 3</span>
+<button style="margin-left:auto;background:var(--card);border:none;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer;box-shadow:0 1px 6px var(--sh05)">Период</button>
+<button style="background:#E4140E;border:none;border-radius:13px;padding:9px 15px;font:600 12.5px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">+ Расход</button>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:8px 22px 14px;box-shadow:0 2px 14px var(--sh05);overflow-x:auto">
+<div style="min-width:1080px">
+<div style="display:grid;grid-template-columns:120px 170px 190px 150px minmax(180px,1fr) 100px 160px;padding:12px 0;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>СРОК</div><div>ТИП</div><div>ЮРЛИЦО</div><div style="text-align:right">СУММА</div><div>НАЗНАЧЕНИЕ</div><div style="text-align:center">ЕЖЕМЕС.</div><div style="text-align:right">СТАТУС</div></div>
+<div style="display:grid;grid-template-columns:120px 170px 190px 150px minmax(180px,1fr) 100px 160px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);background:var(--red-soft);cursor:pointer" style-hover="background:var(--red-soft)"><div><div style="font-size:12.5px;font-weight:600;color:var(--red-fg)">22 июл</div><div style="font-size:10.5px;color:var(--red-fg);margin-top:1px">просрочен</div></div><div style="font-size:12.5px">Аренда офиса</div><div style="font-size:12.5px;color:var(--text3)">ТОО «AVA Solution»</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">420 000</div><div style="font-size:12px;color:var(--text3)">Аренда, Алматы, июль</div><div style="text-align:center;font-size:12px;color:var(--text2)">да</div><div style="text-align:right"><span style="background:var(--red-soft);color:var(--red-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Не оплачен</span></div></div>
+<div style="display:grid;grid-template-columns:120px 170px 190px 150px minmax(180px,1fr) 100px 160px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:12.5px;font-weight:600;color:var(--text2)">31 июл</div><div style="font-size:12.5px">Зарплата</div><div style="font-size:12.5px;color:var(--text3)">ТОО «AVA Solution»</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">1 620 000</div><div style="font-size:12px;color:var(--text3)">ФОТ за июль, 12 человек</div><div style="text-align:center;font-size:12px;color:var(--text2)">да</div><div style="text-align:right"><span style="background:var(--amber-soft);color:var(--amber-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Не оплачен</span></div></div>
+<div style="display:grid;grid-template-columns:120px 170px 190px 150px minmax(180px,1fr) 100px 160px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:12.5px;font-weight:600;color:var(--text2)">3 авг</div><div style="font-size:12.5px">Связь и интернет</div><div style="font-size:12.5px;color:var(--text3)">ТОО «AVA Solution»</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">86 000</div><div style="font-size:12px;color:var(--text3)">Билайн, корпоративный тариф</div><div style="text-align:center;font-size:12px;color:var(--text2)">да</div><div style="text-align:right"><span style="background:var(--amber-soft);color:var(--amber-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Не оплачен</span></div></div>
+<div style="display:grid;grid-template-columns:120px 170px 190px 150px minmax(180px,1fr) 100px 160px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:12.5px;color:var(--muted)">15 июл</div><div style="font-size:12.5px">Аренда офиса</div><div style="font-size:12.5px;color:var(--text3)">ИП Смагулов А.</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">180 000</div><div style="font-size:12px;color:var(--text3)">Склад, Шымкент</div><div style="text-align:center;font-size:12px;color:var(--muted)">нет</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Оплачен 15.07</span></div></div>
+<div style="display:grid;grid-template-columns:120px 170px 190px 150px minmax(180px,1fr) 100px 160px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:12.5px;color:var(--muted)">10 июл</div><div style="font-size:12.5px">Программное обеспечение</div><div style="font-size:12.5px;color:var(--text3)">ТОО «AVA Solution»</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">212 000</div><div style="font-size:12px;color:var(--text3)">Лицензии 1С и CRM</div><div style="text-align:center;font-size:12px;color:var(--text2)">да</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Оплачен 10.07</span></div></div>
+<div style="display:grid;grid-template-columns:120px 170px 190px 150px minmax(180px,1fr) 100px 160px;align-items:center;padding:13px 0;border-top:1px solid var(--line2);cursor:pointer" style-hover="background:var(--rowhover)"><div style="font-size:12.5px;color:var(--muted)">5 июл</div><div style="font-size:12.5px">Банковские услуги</div><div style="font-size:12.5px;color:var(--text3)">ТОО «AVA Solution»</div><div style="font-size:13px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums">64 000</div><div style="font-size:12px;color:var(--text3)">РКО Halyk Bank, июль</div><div style="text-align:center;font-size:12px;color:var(--text2)">да</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:600">Оплачен 05.07</span></div></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isProfile }}">
+<div style="max-width:620px">
+<div style="background:var(--card);border-radius:22px;padding:24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:14px">
+<div style="width:52px;height:52px;border-radius:18px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex:none">АС</div>
+<div><div style="font-size:17px;font-weight:700;letter-spacing:-.025em">Алишер Смагулов</div><div style="font-size:12.5px;color:var(--muted);margin-top:2px">{{ roleLabel }} · a.smagulov@ava.kz</div></div>
+</div>
+<div style="font-size:12.5px;color:var(--text3);margin-top:18px;text-wrap:pretty">Имя и телефон ниже подставляются в договоры и заявки на перевозку вместо данных из учётной записи.</div>
+<div style="margin-top:20px">
+<div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:6px">Имя в документах</div>
+<div style="background:var(--card2);border-radius:14px;padding:12px 14px;font-size:13px">Смагулов Алишер Ержанович</div>
+<div style="font-size:11px;color:var(--muted);margin-top:5px">в учётной записи: Алишер Смагулов</div>
+</div>
+<div style="margin-top:16px">
+<div style="font-size:11.5px;font-weight:600;color:var(--text3);margin-bottom:6px">Телефон в документах</div>
+<div style="background:var(--card2);border-radius:14px;padding:12px 14px;font-size:13px">+7 701 220 45 10</div>
+<div style="font-size:11px;color:var(--muted);margin-top:5px">в учётной записи: +7 701 220 45 10</div>
+</div>
+<div style="display:flex;gap:9px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line2)">
+<button style="background:#E4140E;border:none;border-radius:13px;padding:11px 18px;font:600 12.5px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">Сохранить</button>
+<button onClick="{{ go.login }}" style="margin-left:auto;background:var(--card2);border:none;border-radius:13px;padding:11px 16px;font:600 12.5px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer" style-hover="background:var(--hover)">Выйти из системы</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSettings }}">
+<div style="display:grid;grid-template-columns:224px minmax(0,1fr);gap:14px;align-items:start">
+<div style="background:var(--card);border-radius:22px;padding:14px;box-shadow:0 2px 14px var(--sh05);display:flex;flex-direction:column;gap:4px">
+<span onClick="{{ setSet.legal }}" style="{{ stabs.legal }}">Юрлица</span>
+<span onClick="{{ setSet.currency }}" style="{{ stabs.currency }}">Валюты</span>
+<span onClick="{{ setSet.expTypes }}" style="{{ stabs.expTypes }}">Типы расходов</span>
+<span onClick="{{ setSet.rules }}" style="{{ stabs.rules }}">Правила мотивации</span>
+<span onClick="{{ setSet.wa }}" style="{{ stabs.wa }}">WhatsApp-шаблоны</span>
+<span onClick="{{ setSet.docTpl }}" style="{{ stabs.docTpl }}">Шаблоны документов</span>
+<span onClick="{{ setSet.payTexts }}" style="{{ stabs.payTexts }}">Тексты об оплате</span>
+</div>
+<div>
+<sc-if value="{{ setLegal }}" hint-placeholder-val="{{ true }}">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><div style="font-size:15px;font-weight:700;letter-spacing:-.02em">Юридические лица</div><button style="margin-left:auto;background:#E4140E;border:none;border-radius:12px;padding:9px 14px;font:600 12px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">+ Юрлицо</button></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 160px 150px 120px;padding-bottom:8px;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>НАИМЕНОВАНИЕ</div><div>БИН</div><div>БАНК</div><div style="text-align:right">ПО УМОЛЧАНИЮ</div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 160px 150px 120px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">ТОО «AVA Solution»</div><div style="font-size:12.5px;color:var(--text2);font-variant-numeric:tabular-nums">170 140 021 553</div><div style="font-size:12.5px;color:var(--text3)">Halyk Bank</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">да</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 160px 150px 120px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">ИП Смагулов А.</div><div style="font-size:12.5px;color:var(--text2);font-variant-numeric:tabular-nums">890 320 400 112</div><div style="font-size:12.5px;color:var(--text3)">Kaspi Bank</div><div style="text-align:right"><span style="font-size:11.5px;color:var(--muted)">—</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(200px,1fr) 160px 150px 120px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">AVA Logistics FZE</div><div style="font-size:12.5px;color:var(--text2);font-variant-numeric:tabular-nums">AE-9930112</div><div style="font-size:12.5px;color:var(--text3)">Mashreq</div><div style="text-align:right"><span style="font-size:11.5px;color:var(--muted)">—</span></div></div>
+</div>
+</sc-if>
+<sc-if value="{{ setCurrency }}">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px"><div><div style="font-size:15px;font-weight:700;letter-spacing:-.02em">Валюты и курсы</div><div style="font-size:11.5px;color:var(--muted);margin-top:2px">курс НБ РК на 28 июля, обновляется автоматически</div></div><button style="margin-left:auto;background:var(--card2);border:none;border-radius:12px;padding:9px 14px;font:600 12px 'Plus Jakarta Sans';color:var(--text2);cursor:pointer" style-hover="background:var(--hover)">Обновить</button></div>
+<div style="display:grid;grid-template-columns:120px minmax(160px,1fr) 140px 150px;padding-bottom:8px;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>КОД</div><div>ВАЛЮТА</div><div style="text-align:right">КУРС, ₸</div><div style="text-align:right">ИСТОЧНИК</div></div>
+<div style="display:grid;grid-template-columns:120px minmax(160px,1fr) 140px 150px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:700">KZT</div><div style="font-size:12.5px">Тенге · базовая</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">1,00</div><div style="font-size:12px;text-align:right;color:var(--muted)">—</div></div>
+<div style="display:grid;grid-template-columns:120px minmax(160px,1fr) 140px 150px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:700">USD</div><div style="font-size:12.5px">Доллар США</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">521,40</div><div style="font-size:12px;text-align:right;color:var(--muted)">НБ РК</div></div>
+<div style="display:grid;grid-template-columns:120px minmax(160px,1fr) 140px 150px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:700">RUB</div><div style="font-size:12.5px">Российский рубль</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">6,12</div><div style="font-size:12px;text-align:right;color:var(--muted)">НБ РК</div></div>
+<div style="display:grid;grid-template-columns:120px minmax(160px,1fr) 140px 150px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:700">CNY</div><div style="font-size:12.5px">Юань</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">72,80</div><div style="font-size:12px;text-align:right;color:var(--muted)">НБ РК</div></div>
+</div>
+</sc-if>
+<sc-if value="{{ setWa }}">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px"><div style="font-size:13.5px;font-weight:700">Запрос статуса у водителя</div><span style="margin-left:auto;background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">активен</span></div>
+<div style="background:var(--card2);border-radius:15px;padding:13px 15px;font-size:12.5px;color:var(--text2);margin-top:12px;text-wrap:pretty">Здравствуйте, {водитель}! Уточните, пожалуйста, где находитесь по рейсу {номер} ({маршрут}) и ожидаемое время прибытия.</div>
+<div style="font-size:11.5px;color:var(--muted);margin-top:9px">переменные: {водитель}, {номер}, {маршрут} · отправлено 42 раза в июле</div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px"><div style="font-size:13.5px;font-weight:700">Уведомление клиента о доставке</div><span style="margin-left:auto;background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">активен</span></div>
+<div style="background:var(--card2);border-radius:15px;padding:13px 15px;font-size:12.5px;color:var(--text2);margin-top:12px;text-wrap:pretty">{клиент}, груз по перевозке {номер} доставлен {дата}. Документы направим на {email} в течение дня.</div>
+<div style="font-size:11.5px;color:var(--muted);margin-top:9px">переменные: {клиент}, {номер}, {дата}, {email} · отправлено 18 раз в июле</div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px"><div style="font-size:13.5px;font-weight:700">Напоминание об оплате счёта</div><span style="margin-left:auto;background:var(--card2);color:var(--muted);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">черновик</span></div>
+<div style="background:var(--card2);border-radius:15px;padding:13px 15px;font-size:12.5px;color:var(--text2);margin-top:12px;text-wrap:pretty">{клиент}, напоминаем об оплате счёта {счёт} на сумму {сумма} ₸. Срок оплаты — {срок}.</div>
+<div style="font-size:11.5px;color:var(--muted);margin-top:9px">переменные: {клиент}, {счёт}, {сумма}, {срок}</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ setRules }}">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px">Правила мотивации</div>
+<div style="font-size:11.5px;color:var(--muted);margin-bottom:16px">применяются к марже закрытых сделок в расчётном месяце</div>
+<div style="display:grid;grid-template-columns:minmax(220px,1fr) 150px 150px 110px;padding-bottom:8px;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>ПРАВИЛО</div><div>РОЛЬ</div><div style="text-align:right">ЗНАЧЕНИЕ</div><div style="text-align:right">СТАТУС</div></div>
+<div style="display:grid;grid-template-columns:minmax(220px,1fr) 150px 150px 110px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Базовый процент от маржи</div><div style="font-size:12.5px;color:var(--text3)">Менеджер</div><div style="font-size:13px;text-align:right;font-weight:700">12%</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">вкл</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(220px,1fr) 150px 150px 110px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Бонус за перевыполнение плана</div><div style="font-size:12.5px;color:var(--text3)">Менеджер</div><div style="font-size:13px;text-align:right;font-weight:700">+3%</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">вкл</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(220px,1fr) 150px 150px 110px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Штраф за просрочку доставки</div><div style="font-size:12.5px;color:var(--text3)">Логист</div><div style="font-size:13px;text-align:right;font-weight:700;color:var(--red-fg)">−5 000 ₸/день</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">вкл</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(220px,1fr) 150px 150px 110px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Премия за новый клиент</div><div style="font-size:12.5px;color:var(--text3)">Менеджер</div><div style="font-size:13px;text-align:right;font-weight:700">15 000 ₸</div><div style="text-align:right"><span style="background:var(--card2);color:var(--muted);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">выкл</span></div></div>
+</div>
+</sc-if>
+<sc-if value="{{ setExpTypes }}">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px"><div style="font-size:15px;font-weight:700;letter-spacing:-.02em">Типы операционных расходов</div><button style="margin-left:auto;background:#E4140E;border:none;border-radius:12px;padding:9px 14px;font:600 12px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">+ Тип</button></div>
+<div style="font-size:11.5px;color:var(--muted);margin-bottom:16px">справочник для формы расхода, порядок задаёт сортировку в списке</div>
+<div style="display:grid;grid-template-columns:minmax(220px,1fr) 130px 140px 120px;padding-bottom:8px;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>НАИМЕНОВАНИЕ</div><div style="text-align:right">ПОРЯДОК</div><div style="text-align:right">СТАТУС</div><div style="text-align:right"></div></div>
+<div style="display:grid;grid-template-columns:minmax(220px,1fr) 130px 140px 120px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Зарплата</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">10</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">активен</span></div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">Изменить</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(220px,1fr) 130px 140px 120px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Аренда офиса</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">20</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">активен</span></div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">Изменить</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(220px,1fr) 130px 140px 120px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Связь и интернет</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">30</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">активен</span></div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">Изменить</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(220px,1fr) 130px 140px 120px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600">Программное обеспечение</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">40</div><div style="text-align:right"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">активен</span></div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">Изменить</span></div></div>
+<div style="display:grid;grid-template-columns:minmax(220px,1fr) 130px 140px 120px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:13px;font-weight:600;color:var(--muted)">Представительские</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)">90</div><div style="text-align:right"><span style="background:var(--card2);color:var(--muted);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">выключен</span></div><div style="text-align:right"><span style="font-size:11.5px;font-weight:600;color:#E4140E;cursor:pointer">Включить</span></div></div>
+</div>
+</sc-if>
+<sc-if value="{{ setDocTpl }}">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="font-size:13.5px;font-weight:700">Договор-заявка на перевозку</div><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">DOCX</span><span style="margin-left:auto;background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">по умолчанию</span></div>
+<div style="font-size:12px;color:var(--muted);margin-top:8px">contract-kz.docx · обновлён 18 июля, Администратор · нумерация DOG-{год}-{номер}</div>
+<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:12px"><span style="background:var(--card2);color:var(--text2);border-radius:8px;padding:4px 9px;font-size:11px;font-weight:600">{контрагент}</span><span style="background:var(--card2);color:var(--text2);border-radius:8px;padding:4px 9px;font-size:11px;font-weight:600">{реквизиты}</span><span style="background:var(--card2);color:var(--text2);border-radius:8px;padding:4px 9px;font-size:11px;font-weight:600">{маршрут}</span><span style="background:var(--card2);color:var(--text2);border-radius:8px;padding:4px 9px;font-size:11px;font-weight:600">{ставка}</span><span style="background:var(--card2);color:var(--text2);border-radius:8px;padding:4px 9px;font-size:11px;font-weight:600">{условия_оплаты}</span></div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="font-size:13.5px;font-weight:700">Счёт на оплату</div><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">XLSX</span><span style="margin-left:auto;background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">по умолчанию</span></div>
+<div style="font-size:12px;color:var(--muted);margin-top:8px">invoice-kz.xlsx · обновлён 2 июля, Администратор · нумерация INV-{номер}</div>
+<div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:12px"><span style="background:var(--card2);color:var(--text2);border-radius:8px;padding:4px 9px;font-size:11px;font-weight:600">{плательщик}</span><span style="background:var(--card2);color:var(--text2);border-radius:8px;padding:4px 9px;font-size:11px;font-weight:600">{позиции}</span><span style="background:var(--card2);color:var(--text2);border-radius:8px;padding:4px 9px;font-size:11px;font-weight:600">{сумма_прописью}</span><span style="background:var(--card2);color:var(--text2);border-radius:8px;padding:4px 9px;font-size:11px;font-weight:600">{способ_оплаты}</span></div>
+</div>
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="font-size:13.5px;font-weight:700">Акт выполненных работ</div><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">DOCX</span><span style="margin-left:auto;background:var(--card2);color:var(--muted);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">черновик</span></div>
+<div style="font-size:12px;color:var(--muted);margin-top:8px">act-kz-draft.docx · загружен 26 июля, Администратор · нумерация AKT-{год}-{номер}</div>
+</div>
+<button style="align-self:flex-start;background:#E4140E;border:none;border-radius:13px;padding:11px 17px;font:600 12.5px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">+ Загрузить шаблон</button>
+</div>
+</sc-if>
+<sc-if value="{{ setPayTexts }}">
+<div style="background:var(--card);border-radius:22px;padding:22px 24px;box-shadow:0 2px 14px var(--sh05)">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px"><div style="font-size:15px;font-weight:700;letter-spacing:-.02em">Тексты об оплате</div><button style="margin-left:auto;background:#E4140E;border:none;border-radius:12px;padding:9px 14px;font:600 12px 'Plus Jakarta Sans';color:#fff;cursor:pointer" style-hover="background:#C10F0A">+ Текст</button></div>
+<div style="font-size:11.5px;color:var(--muted);margin-bottom:16px">подставляются в договоры и счета как способ оплаты и условия оплаты</div>
+<div style="display:grid;grid-template-columns:160px 180px minmax(240px,1fr) 90px 170px;padding-bottom:8px;font-size:10.5px;font-weight:700;letter-spacing:.06em;color:var(--muted)"><div>ТИП</div><div>КОРОТКОЕ ИМЯ</div><div>ТЕКСТ</div><div style="text-align:right">ПОРЯДОК</div><div style="text-align:right">СТАТУС</div></div>
+<div style="display:grid;grid-template-columns:160px 180px minmax(240px,1fr) 90px 170px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:12.5px;color:var(--text3)">Способ оплаты</div><div style="font-size:13px;font-weight:600">Безналичный</div><div style="font-size:12px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Оплата производится безналичным переводом на счёт исполнителя…</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">10</div><div style="display:flex;gap:6px;justify-content:flex-end"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">активен</span><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">по умолч.</span></div></div>
+<div style="display:grid;grid-template-columns:160px 180px minmax(240px,1fr) 90px 170px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:12.5px;color:var(--text3)">Способ оплаты</div><div style="font-size:13px;font-weight:600">Наличными</div><div style="font-size:12px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Оплата наличными в кассу исполнителя по факту выгрузки…</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">20</div><div style="display:flex;gap:6px;justify-content:flex-end"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">активен</span></div></div>
+<div style="display:grid;grid-template-columns:160px 180px minmax(240px,1fr) 90px 170px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:12.5px;color:var(--text3)">Условия оплаты</div><div style="font-size:13px;font-weight:600">50 / 50</div><div style="font-size:12px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">50% предоплата до подачи транспорта, 50% в течение 5 банковских дней…</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">10</div><div style="display:flex;gap:6px;justify-content:flex-end"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">активен</span><span style="background:var(--blue-soft);color:var(--blue-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">по умолч.</span></div></div>
+<div style="display:grid;grid-template-columns:160px 180px minmax(240px,1fr) 90px 170px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:12.5px;color:var(--text3)">Условия оплаты</div><div style="font-size:13px;font-weight:600">По факту выгрузки</div><div style="font-size:12px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">100% в течение 10 банковских дней с момента получения оригиналов…</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums">20</div><div style="display:flex;gap:6px;justify-content:flex-end"><span style="background:var(--green-soft);color:var(--green-fg);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">активен</span></div></div>
+<div style="display:grid;grid-template-columns:160px 180px minmax(240px,1fr) 90px 170px;align-items:center;padding:13px 0;border-top:1px solid var(--line2)"><div style="font-size:12.5px;color:var(--muted)">Условия оплаты</div><div style="font-size:13px;font-weight:600;color:var(--muted)">Отсрочка 30 дней</div><div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Оплата в течение 30 календарных дней после подписания акта…</div><div style="font-size:13px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)">30</div><div style="display:flex;gap:6px;justify-content:flex-end"><span style="background:var(--card2);color:var(--muted);border-radius:9px;padding:5px 10px;font-size:11px;font-weight:600">выключен</span></div></div>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+</div>
+</main>
+</div>
+
+</div></x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Директор&quot;,&quot;Финансист&quot;,&quot;Руководитель отдела&quot;,&quot;Менеджер&quot;,&quot;Логист&quot;],&quot;default&quot;:&quot;Директор&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Роль и доступ&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Оформление&quot;}}">
+class Component extends DCLogic {
+  state = { screen: 'login', open: false, rtab: 'debit', stab: 'legal', mtab: 'my' };
+
+  renderVals() {
+    const role = this.props.role ?? 'Директор';
+    const theme = this.state.theme ?? this.props.theme ?? 'light';
+    let { screen } = this.state;
+    const { open, rtab, stab, mtab } = this.state;
+    // редирект как в App.tsx: нет доступа → /transportations
+    const guard = { deals:'deals', dealdetail:'deals', leads:'leads', invoices:'invoices', documents:'documents', expenses:'expenses', users:'users', settings:'settings' };
+    const gated = { Логист:['deals','dealdetail','leads','invoices','documents','expenses','users','settings'],
+      Менеджер:['documents','expenses','users','settings'],
+      Финансист:['leads','users','settings'],
+      'Руководитель отдела':['expenses','users','settings'] }[role] ?? [];
+    if (gated.includes(screen)) screen = 'tr';
+
+    const titles = { login:'Вход', dash:'Дашборд', tr:'Перевозки', trdetail:'AVA-2441', trnew:'Новая перевозка',
+      deals:'Сделки', dealdetail:'Сделка D-1184', leads:'Лиды', contractors:'Контрагенты',
+      invoices:'Счета клиентам', documents:'Реестр документов', payreq:'Заявки на оплату',
+      expenses:'Операционные расходы', cash:'Кассовый календарь',
+      reports:'Отчёты', motivation:'Мотивация', users:'Пользователи', settings:'Настройки',
+      profile:'Мой профиль' };
+    // права по коду: LEAD_ROLES, INVOICE_ROLES, OPERATING_EXPENSE_ROLES, DOCUMENT_ACCESS_ROLES + редирект логиста со сделок
+    const isLogist = role === 'Логист';
+    const allow = {
+      deals: !isLogist,
+      leads: ['Директор','Руководитель отдела','Менеджер'].includes(role),
+      invoices: ['Директор','Руководитель отдела','Менеджер','Финансист'].includes(role),
+      documents: ['Директор','Руководитель отдела','Финансист'].includes(role),
+      expenses: ['Директор','Финансист'].includes(role),
+      users: role === 'Директор',
+      settings: role === 'Директор',
+    };
+    const navKeys = ['dash','tr','deals','leads','contractors','invoices','payreq','documents','expenses','cash','reports','motivation','users','settings']
+      .filter((k) => allow[k] !== false);
+    const activeNav = (screen === 'trdetail' || screen === 'trnew') ? 'tr' : (screen === 'dealdetail' ? 'deals' : screen);
+
+    const base = { position:'relative', height:'42px', borderRadius:'14px', display:'flex', alignItems:'center', gap:'12px', padding:'0 9px', cursor:'pointer', overflow:'hidden', flex:'none', transition:'background .14s' };
+    const hidden = { display:'none' };
+    const ns = {}, go = {};
+    Object.keys(titles).forEach((k) => { go[k] = () => this.setState({ screen: k }); });
+    ['dash','tr','deals','leads','contractors','invoices','payreq','documents','expenses','cash','reports','motivation','users','settings'].forEach((k) => {
+      ns[k] = allow[k] === false ? hidden
+        : (k === activeNav ? { ...base, background:'var(--ink)', color:'#fff' } : { ...base, color:'var(--muted)' });
+    });
+
+    const badge = { marginLeft:'auto', flex:'none', fontSize:'10.5px', fontWeight:700, borderRadius:'999px', padding:'2px 8px', display: open ? 'block' : 'none' };
+
+    const chip = (on) => on
+      ? { background:'var(--ink)', color:'#fff', borderRadius:'13px', padding:'9px 15px', fontSize:'12.5px', fontWeight:600, cursor:'pointer' }
+      : { background:'var(--card)', color:'var(--text2)', borderRadius:'13px', padding:'9px 15px', fontSize:'12.5px', fontWeight:600, cursor:'pointer', boxShadow:'0 1px 6px var(--sh05)' };
+    const setTab = { debit: () => this.setState({ rtab:'debit' }), credit: () => this.setState({ rtab:'credit' }) };
+    const rtabs = { debit: chip(rtab === 'debit'), credit: chip(rtab === 'credit'), off: chip(false) };
+    const setM = { my: () => this.setState({ mtab:'my' }), summary: () => this.setState({ mtab:'summary' }) };
+    const mtabs = { my: chip(mtab === 'my'), summary: chip(mtab === 'summary') };
+    const ltab = this.state.ltab ?? 'all';
+    const setL = {}, ltabs = {};
+    ['all','my','site'].forEach((k) => { setL[k] = () => this.setState({ ltab: k }); ltabs[k] = chip(ltab === k); });
+    const dtab = this.state.dtab ?? 'all';
+    const setD = {}, dtabs = {};
+    ['all','contract','request','invoice','act'].forEach((k) => { setD[k] = () => this.setState({ dtab: k }); dtabs[k] = chip(dtab === k); });
+    const etab = this.state.etab ?? 'all';
+    const setE = {}, etabs = {};
+    ['all','unpaid','paid'].forEach((k) => { setE[k] = () => this.setState({ etab: k }); etabs[k] = chip(etab === k); });
+
+    const sitem = (on) => on
+      ? { borderRadius:'14px', padding:'11px 14px', fontSize:'12.5px', fontWeight:600, background:'var(--ink)', color:'#fff', cursor:'pointer' }
+      : { borderRadius:'14px', padding:'11px 14px', fontSize:'12.5px', fontWeight:600, color:'var(--text2)', cursor:'pointer' };
+    const setKeys = ['legal','currency','expTypes','rules','wa','docTpl','payTexts'];
+    const setSet = {}, stabs = {};
+    setKeys.forEach((k) => { setSet[k] = () => this.setState({ stab: k }); stabs[k] = sitem(stab === k); });
+
+    const showMoney = ['Директор','Финансист','Руководитель отдела'].includes(role);
+
+    return {
+      roleLabel: role, crumb: titles[screen] ?? 'Экран', ns, go, rtabs, setTab, stabs, setSet, mtabs, setM,
+      isLogin: screen === 'login',
+      shellStyle: { display: screen === 'login' ? 'none' : 'flex', height:'100vh', overflow:'hidden', padding:'14px', gap:'14px', background:'var(--bg)' },
+      logout: { width:'32px', height:'32px', borderRadius:'11px', background:'var(--card2)', color:'var(--muted)', display: open ? 'flex' : 'none', alignItems:'center', justifyContent:'center', marginLeft:'auto', flex:'none', cursor:'pointer' },
+      mMy: mtab === 'my', mSummary: mtab === 'summary',
+      expand: () => this.setState({ open: true }),
+      collapse: () => this.setState({ open: false }),
+      asideStyle: { width: open ? '246px' : '76px', flex:'none', background:'var(--card)', borderRadius:'22px', display:'flex', flexDirection:'column', padding:'18px 0 16px', boxShadow: open ? '0 8px 30px var(--sh13)' : '0 2px 14px var(--sh05)', transition:'width .2s cubic-bezier(.4,0,.2,1), box-shadow .2s', overflowX:'hidden', overflowY:'hidden', minHeight:0 },
+      lbl: { display: open ? 'block' : 'none', minWidth: 0 },
+      badgeTr: { ...badge, background:'#E4140E', color:'#fff' },
+      badgePr: { ...badge, background:'var(--red-soft)', color:'var(--red-fg)' },
+      isDash: screen === 'dash', isTr: screen === 'tr', isTrDetail: screen === 'trdetail', isTrNew: screen === 'trnew',
+      isDeals: screen === 'deals', isDealDetail: screen === 'dealdetail', isLeads: screen === 'leads',
+      isContractors: screen === 'contractors', isInvoices: screen === 'invoices', isPayreq: screen === 'payreq',
+      isCash: screen === 'cash', isReports: screen === 'reports', isMotivation: screen === 'motivation',
+      isUsers: screen === 'users', isSettings: screen === 'settings',
+      tabDebit: rtab === 'debit', tabCredit: rtab === 'credit',
+      setLegal: stab === 'legal', setCurrency: stab === 'currency', setWa: stab === 'wa', setRules: stab === 'rules',
+      setExpTypes: stab === 'expTypes', setDocTpl: stab === 'docTpl', setPayTexts: stab === 'payTexts',
+      setD, dtabs, setE, etabs, setL, ltabs,
+      divider: { height:'1px', background:'var(--line)', margin:'6px 12px', flex:'none' },
+      theme, isLight: theme === 'light', isDark: theme === 'dark',
+      themeTitle: theme === 'light' ? 'Тёмная тема' : 'Светлая тема',
+      toggleTheme: () => this.setState({ theme: theme === 'light' ? 'dark' : 'light' }),
+      toggleNotif: () => this.setState((prev) => ({ notif: !prev.notif })),
+      notifPanel: {
+        display: this.state.notif ? 'block' : 'none',
+        position: 'absolute', top: '46px', right: 0, width: '344px', zIndex: 40,
+        background: 'var(--card)', borderRadius: '20px', boxShadow: '0 12px 40px var(--sh18)',
+        overflow: 'hidden', maxHeight: '440px', overflowY: 'auto',
+      },
+      isDocuments: screen === 'documents', isExpenses: screen === 'expenses', isProfile: screen === 'profile',
+      showMoney, hideMoney: !showMoney,
+    };
+  }
+}
+</script>
+</body>
+</html>
