@@ -114,7 +114,7 @@ export function MyMotivationPage() {
           <Typography.Text type="secondary">{t('motivation.kpis.totalMargin')}</Typography.Text>
           <Typography.Title level={3}>{formatMoney(report?.totalMarginKzt ?? 0)}</Typography.Title>
         </Card>
-        <Card className="transport-card">
+        <Card className="transport-card motivation-bonus-card">
           <Typography.Text type="secondary">{t('motivation.kpis.totalBonus', { rate: report?.ratePercent ?? 0 })}</Typography.Text>
           <Typography.Title level={3} className="motivation-bonus">{formatMoney(report?.totalBonusKzt ?? 0)}</Typography.Title>
         </Card>

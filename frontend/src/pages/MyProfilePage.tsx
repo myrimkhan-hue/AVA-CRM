@@ -1,8 +1,9 @@
 import { App, Button, Card, Form, Input, Spin, Typography } from 'antd';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, apiRequest } from '../api/client';
 import type { DocumentContactRecord } from '../api/types';
+import { useAuth } from '../auth/AuthContext';
 
 interface FormValues {
   documentName?: string;
@@ -11,6 +12,12 @@ interface FormValues {
 
 export function MyProfilePage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const initials = useMemo(
+    () => user?.fullName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]?.toLocaleUpperCase()).join('') ?? '',
+    [user?.fullName],
+  );
+  const roleLine = [user?.roles.map((role) => t(`roles.${role}`)).join(', '), user?.email].filter(Boolean).join(' · ');
   const { message } = App.useApp();
   const [form] = Form.useForm<FormValues>();
   const [profile, setProfile] = useState<DocumentContactRecord>();
@@ -57,8 +64,14 @@ export function MyProfilePage() {
   return (
     <div className="profile-page">
       <Card>
-        <Typography.Title level={2}>{t('profile.title')}</Typography.Title>
-        <Typography.Paragraph type="secondary">
+        <div className="profile-identity">
+          <span className="profile-avatar" aria-hidden="true">{initials}</span>
+          <div>
+            <Typography.Title level={2}>{profile?.fullName ?? t('profile.title')}</Typography.Title>
+            <Typography.Text type="secondary">{roleLine}</Typography.Text>
+          </div>
+        </div>
+        <Typography.Paragraph type="secondary" className="profile-subtitle">
           {t('profile.subtitle')}
         </Typography.Paragraph>
         {loading ? <Spin /> : (

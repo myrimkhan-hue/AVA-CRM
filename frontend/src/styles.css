@@ -591,7 +591,20 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .dashboard-subtitle { margin-top: 24px; }
 .dashboard-forecast-tag { margin-left: 8px; vertical-align: middle; }
 .dashboard-period-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.motivation-hint-banner { background: var(--amber-soft); border: 1px solid var(--amber-fg); border-radius: 10px; padding: 10px 14px; font-size: 12.5px; color: var(--amber-fg); margin-bottom: 16px; }
+/* Плашка-подсказка: макет держит статусы на мягком фоне без обводки. */
+.motivation-hint-banner { padding: 13px 15px; margin-bottom: 14px; color: var(--amber-fg); background: var(--amber-soft); border: 0; border-radius: var(--r-tile); font-size: 12.5px; }
+/* Премия в макете — тёмная панель, а не обычная карточка. */
+.motivation-bonus-card.ant-card { background: var(--ink); box-shadow: 0 2px 14px var(--sh12); }
+.motivation-bonus-card .ant-typography, .motivation-bonus-card .ant-typography-secondary { color: var(--ink-muted); }
+.motivation-bonus-card h3.ant-typography.motivation-bonus { color: var(--on-strong); font-size: 32px; letter-spacing: -.035em; }
+
+/* Профиль: аватар и подпись по макету. */
+.profile-page { width: min(100%, 620px); }
+.profile-identity { display: flex; align-items: center; gap: 14px; }
+.profile-avatar { display: flex; flex: none; width: 52px; height: 52px; align-items: center; justify-content: center; color: var(--on-strong); background: var(--ink); border-radius: var(--r-column); font-size: 16px; font-weight: 700; }
+.profile-identity h2.ant-typography { margin: 0; font-size: 17px; }
+.profile-identity .ant-typography-secondary { font-size: 12.5px; }
+.profile-subtitle { margin-top: 14px !important; color: var(--text3); font-size: 12.5px; }
 .motivation-kpis { margin-bottom: 16px; }
 .motivation-kpis .transport-card { flex: 1; min-width: 180px; }
 .motivation-bonus { color: var(--green-fg); }
