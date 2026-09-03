@@ -442,7 +442,23 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 }
 
 .settings-page, .legal-entities-page, .currencies-page { width: min(100%, 1400px); margin: 0 auto; }
-.settings-tabs { margin-bottom: 8px; }
+/* Вкладки отчётов, мотивации и настроек макет рисует чипами, а не
+   подчёркнутыми ярлыками Ant Design. Одно правило покрывает все три экрана. */
+.settings-tabs { margin-bottom: 14px; }
+.settings-tabs > .ant-tabs-nav { margin: 0; }
+.settings-tabs > .ant-tabs-nav::before { display: none; }
+.settings-tabs .ant-tabs-nav-list { gap: 8px; }
+.settings-tabs .ant-tabs-tab { margin: 0 !important; padding: 9px 15px; color: var(--text2); background: var(--card); border-radius: var(--r-chip); box-shadow: 0 1px 6px var(--sh05); transition: background .14s, color .14s; }
+.settings-tabs .ant-tabs-tab:hover { background: var(--hover); }
+.settings-tabs .ant-tabs-tab .ant-tabs-tab-btn { color: inherit; font-size: 12.5px; font-weight: 600; }
+.settings-tabs .ant-tabs-tab-active, .settings-tabs .ant-tabs-tab-active:hover { background: var(--ink); }
+.settings-tabs .ant-tabs-tab-active .ant-tabs-tab-btn { color: var(--on-strong); }
+.settings-tabs .ant-tabs-ink-bar { display: none; }
+
+/* Итог дебиторки и кредиторки — крупным числом в плашке. */
+.reports-summary { display: inline-flex; flex-direction: column; gap: 4px; padding: 19px 21px; background: var(--card2); border-radius: var(--r-card); }
+.reports-summary .ant-typography:first-child { color: var(--text3); font-size: 12.5px; }
+.reports-summary h3.ant-typography { margin: 0; font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
 .legal-entities-list-card { margin-bottom: 14px; }
 .legal-entities-list-card .ant-table-tbody > tr { cursor: pointer; }
 .legal-entities-list-card .ant-table-tbody > tr.selected-row > td { background: var(--red-soft); }
@@ -551,9 +567,20 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .margin-hint { font-size: 12px; }
 .reports-page { width: min(100%, 1400px); margin: 0 auto; }
 .reports-page .ant-table-tbody > tr { cursor: pointer; }
-.reports-summary { margin-bottom: 16px; }
 .reports-toolbar { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
-.reports-summary-row { display: flex; gap: 32px; flex-wrap: wrap; }
+.reports-summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(206px, 1fr)); gap: 14px; }
+.reports-summary-row > div { padding: 19px 21px; background: var(--card2); border-radius: var(--r-card); }
+.reports-summary-row > div .ant-typography:first-child { color: var(--text3); font-size: 12.5px; }
+.reports-summary-row > div h3.ant-typography { margin: 10px 0 0; font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+
+/* Полосы на дашборде: соотношение между строками списка. */
+.dashboard-bars { display: flex; flex-direction: column; gap: 13px; margin: 0; padding: 0; list-style: none; }
+.dashboard-bar-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 6px; }
+.dashboard-bar-head span { color: var(--text2); font-size: 12.5px; }
+.dashboard-bar-head strong { color: var(--text); font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dashboard-bar-track { height: 8px; background: var(--card2); border-radius: var(--r-pill); overflow: hidden; }
+.dashboard-bar-fill { height: 100%; background: var(--ink); border-radius: var(--r-pill); transition: width .3s; }
+.dashboard-bar-fill.accent { background: var(--accent); }
 .cash-calendar-negative { color: var(--red-fg); }
 .dashboard-page { display: flex; flex-direction: column; gap: 16px; }
 .dashboard-page .ant-table-tbody > tr { cursor: default; }

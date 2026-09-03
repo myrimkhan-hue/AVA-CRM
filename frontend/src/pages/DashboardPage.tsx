@@ -104,6 +104,13 @@ export function DashboardPage() {
 
   const total: MarginTotals | undefined = result?.finance.total;
 
+
+  // Полоса рисуется от наибольшего значения в своём списке: она показывает
+  // соотношение между строками, а не долю от какого-то придуманного плана.
+  const barWidth = (value: number, max: number) => `${max > 0 ? Math.max(3, Math.round((value / max) * 100)) : 0}%`;
+  const statusMax = Math.max(0, ...(result?.transportations.byStatus.map((row) => row.count) ?? []));
+  const funnelMax = Math.max(0, ...(result?.dealsFunnel.byStage.map((row) => row.count) ?? []));
+
   return (
     <section className="reports-page dashboard-page">
       <Card className="transport-card">
@@ -156,22 +163,32 @@ export function DashboardPage() {
 
       <div className="dashboard-grid">
         <Card className="transport-card" title={t('reports.dashboard.byStatus')} loading={loading}>
-          <ul className="dashboard-status-list">
+          <ul className="dashboard-bars">
             {result?.transportations.byStatus.map((row) => (
               <li key={row.status}>
-                <span>{t(`transportations.statuses.${row.status}`)}</span>
-                <Typography.Text strong>{row.count}</Typography.Text>
+                <div className="dashboard-bar-head">
+                  <span>{t(`transportations.statuses.${row.status}`)}</span>
+                  <strong>{row.count}</strong>
+                </div>
+                <div className="dashboard-bar-track">
+                  <div className="dashboard-bar-fill" style={{ width: barWidth(row.count, statusMax) }} />
+                </div>
               </li>
             ))}
           </ul>
         </Card>
 
         <Card className="transport-card" title={t('reports.dashboard.funnel')} loading={loading}>
-          <ul className="dashboard-status-list">
+          <ul className="dashboard-bars">
             {result?.dealsFunnel.byStage.map((row) => (
               <li key={row.stage}>
-                <span>{t(`deals.stages.${row.stage}`)}</span>
-                <Typography.Text strong>{row.count}</Typography.Text>
+                <div className="dashboard-bar-head">
+                  <span>{t(`deals.stages.${row.stage}`)}</span>
+                  <strong>{row.count}</strong>
+                </div>
+                <div className="dashboard-bar-track">
+                  <div className="dashboard-bar-fill accent" style={{ width: barWidth(row.count, funnelMax) }} />
+                </div>
               </li>
             ))}
           </ul>
