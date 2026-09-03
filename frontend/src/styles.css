@@ -84,6 +84,10 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .back-link { display: inline-block; margin-bottom: 7px; padding: 0; color: var(--text3); background: none; border: 0; cursor: pointer; font-size: 12.5px; font-weight: 600; }
 .back-link:hover { color: var(--text); }
 
+.ant-segmented { padding: 3px; background: var(--card2); border-radius: var(--r-avatar); }
+.ant-segmented .ant-segmented-item { border-radius: var(--r-icon); color: var(--text2); font-size: 12.5px; font-weight: 600; }
+.ant-segmented .ant-segmented-item-selected { color: var(--text); background: var(--card); box-shadow: 0 1px 4px var(--sh07); }
+
 .route-loader { display: grid; min-height: 100vh; place-items: center; }
 .login-page { display: grid; min-height: 100vh; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); background: var(--bg); }
 .login-form-column { display: flex; min-width: 0; min-height: 100vh; align-items: center; padding: 0 clamp(32px, 7vw, 96px); }
@@ -222,11 +226,11 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .contractor-view-switch button.active { color: var(--text); background: var(--card); box-shadow: 0 1px 3px var(--sh12); font-weight: 600; }
 .contractors-table-filters { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
 .contractors-table-filters > .ant-input-search { width: min(100%, 360px); }
-.contractor-type-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.contractor-type-chip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; color: var(--text2); background: var(--card); border: 1px solid var(--line); border-radius: 999px; cursor: pointer; font-size: 12.5px; }
-.contractor-type-chip:hover { border-color: var(--faint); }
-.contractor-type-chip.active { color: var(--text); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
-.contractor-type-chip strong { font-size: 11.5px; }
+.contractor-type-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.contractor-type-chip { display: inline-flex; align-items: center; gap: 7px; padding: 9px 15px; color: var(--text2); background: var(--card); border: 0; border-radius: var(--r-chip); box-shadow: 0 1px 6px var(--sh05); cursor: pointer; font-size: 12.5px; font-weight: 600; transition: background .14s, color .14s; }
+.contractor-type-chip:hover { background: var(--hover); }
+.contractor-type-chip.active, .contractor-type-chip.active:hover { color: var(--on-strong); background: var(--ink); }
+.contractor-type-chip strong { font-size: 11.5px; font-variant-numeric: tabular-nums; opacity: .75; }
 .contractor-deleted-filter { display: inline-flex; align-items: center; gap: 7px; color: var(--text2); font-size: 12.5px; cursor: pointer; }
 .contractor-cards-layout { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 14px; align-items: start; }
 .contractor-list-card, .contractor-detail-card { border-color: var(--line); box-shadow: 0 1px 2px var(--sh05); }
@@ -263,7 +267,6 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .contractor-info-list > div:last-child { padding-bottom: 0; border-bottom: 0; }
 .contractor-info-list span { margin-top: 3px; line-height: 1.45; }
 .contractors-table .ant-table-container { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 2px var(--sh05); }
-.contractors-table .ant-table-thead > tr > th, .contractor-related-table .ant-table-thead > tr > th { color: var(--muted); background: transparent; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; }
 .contractors-table .ant-table-tbody > tr, .contractor-related-table .ant-table-tbody > tr { cursor: pointer; }
 .contractors-footer { margin-top: 10px; color: var(--text2); font-size: 12.5px; }
 .contractor-status-tags, .contractor-row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -464,7 +467,6 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .deals-title-row .ant-segmented { flex: none; background: var(--card2); }
 .deals-filters { display: grid; grid-template-columns: minmax(280px, 1fr) 190px 220px auto auto; gap: 10px; align-items: center; margin-bottom: 14px; }
 .deals-table .ant-table-container { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 2px var(--sh05); }
-.deals-table .ant-table-thead > tr > th { color: var(--muted); background: transparent; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; }
 .deals-table .ant-table-tbody > tr { cursor: pointer; }
 .deals-footer { margin-top: 10px; color: var(--text2); font-size: 12.5px; }
 .deal-kanban { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(214px, 1fr); gap: 12px; align-items: start; padding-bottom: 12px; overflow-x: auto; }
@@ -499,7 +501,6 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .deal-stage-hint { display: block; margin-top: 11px; font-size: 12px; }
 .deal-detail-columns { display: grid; grid-template-columns: minmax(0, 1fr) 336px; gap: 14px; align-items: start; }
 .deal-detail-main, .deal-detail-side { display: flex; flex-direction: column; gap: 14px; }
-.deal-transportations-table .ant-table-thead > tr > th { color: var(--muted); background: transparent; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; }
 .deal-transportations-table .ant-table-tbody > tr { cursor: pointer; }
 .deal-notes { margin-bottom: 0 !important; white-space: pre-wrap; }
 .deal-timeline { display: flex; flex-direction: column; gap: 14px; }
@@ -584,7 +585,6 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .leads-bulk-bar { display: flex; align-items: center; gap: 10px; padding: 10px 14px; margin-bottom: 12px; background: var(--red-row); border: 1px solid var(--red-fg); border-radius: 10px; }
 .leads-bulk-bar span { margin-right: auto; color: var(--red-fg); font-size: 12.5px; font-weight: 600; }
 .leads-table .ant-table-container { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 2px var(--sh05); }
-.leads-table .ant-table-thead > tr > th { color: var(--muted); background: transparent; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; }
 .leads-table .ant-table-tbody > tr { cursor: pointer; }
 .leads-detail-tags { display: flex; gap: 8px; margin-bottom: 14px; }
 .leads-detail-grid { margin-bottom: 14px; }

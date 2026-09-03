@@ -57,6 +57,7 @@ export function UsersPage() {
   const { user: currentUser } = useAuth();
   const { message, modal } = App.useApp();
   const [users, setUsers] = useState<UserRecord[]>([]);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'blocked'>('all');
   const [departments, setDepartments] = useState<Department[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
@@ -251,16 +252,39 @@ export function UsersPage() {
     },
   ];
 
+  const userCounts = {
+    all: users.length,
+    active: users.filter((item) => item.isActive).length,
+    blocked: users.filter((item) => !item.isActive).length,
+  };
+  const visibleUsers = statusFilter === 'all'
+    ? users
+    : users.filter((item) => (statusFilter === 'active' ? item.isActive : !item.isActive));
+
   return (
     <Card>
       <div className="page-heading">
         <div><Typography.Title level={2}>{t('users.title')}</Typography.Title><Typography.Text type="secondary">{t('users.subtitle')}</Typography.Text></div>
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>{t('users.add')}</Button>
       </div>
+      <div className="chip-row" role="group" aria-label={t('users.filters.label')}>
+        {(['all', 'active', 'blocked'] as const).map((value) => (
+          <button
+            type="button"
+            key={value}
+            className={`chip${statusFilter === value ? ' active' : ''}`}
+            aria-pressed={statusFilter === value}
+            onClick={() => setStatusFilter(value)}
+          >
+            {t(`users.filters.${value}`)}
+            <span className="chip-count">{userCounts[value]}</span>
+          </button>
+        ))}
+      </div>
       <Table
         rowKey="id"
         columns={columns}
-        dataSource={users}
+        dataSource={visibleUsers}
         loading={loading}
         scroll={{ x: 1100 }}
         rowClassName={(user) => user.isActive ? '' : 'inactive-row'}
