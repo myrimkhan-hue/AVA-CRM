@@ -160,7 +160,10 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 .app-sidebar:hover .sidebar-logout, .app-sidebar:focus-within .sidebar-logout { display: flex; }
 .app-main { min-width: 0; min-height: 0; height: 100%; gap: 14px; overflow: hidden; background: transparent; }
 .app-header { display: flex; flex: none; min-height: 60px; height: auto; align-items: center; gap: 14px; padding: 13px 20px; line-height: 1.5; background: var(--card); border-radius: var(--r-card); box-shadow: 0 2px 14px var(--sh05); }
-.nav-burger { display: none; flex: none; }
+/* Кнопка меню нужна только там, где боковая панель спрятана (см. медиа-запрос ниже).
+   Селектор с .ant-btn — иначе более позднее правило .header-icon-button.ant-btn перебивает
+   скрытие по специфичности, и кнопка дублирует боковую панель на широком экране. */
+.app-header .nav-burger.ant-btn { display: none; flex: none; }
 .header-title-block { min-width: 0; }
 .header-title-block strong, .header-title-block span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .header-title-block strong { color: var(--text); font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
@@ -381,7 +384,7 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
 
 @media (max-width: 1024px) {
   .app-sidebar-slot { display: none; }
-  .nav-burger { display: inline-flex; }
+  .app-header .nav-burger.ant-btn { display: inline-flex; }
   .header-title-block { flex: 1; }
   .header-search { display: none !important; }
   .header-new-transportation.ant-btn { width: 38px; min-width: 38px; padding: 0; }
