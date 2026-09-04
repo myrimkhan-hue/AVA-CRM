@@ -142,7 +142,7 @@ export class ActGeneratorService {
     }
 
     const transportationDates = await this.prisma.transportation.findMany({
-      where: { dealId, deletedAt: null },
+      where: { dealId, isQuoteDraft: false, deletedAt: null },
       select: { unloadingEventDate: true },
     });
     const [supplier, buyer] = await Promise.all([

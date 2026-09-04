@@ -92,7 +92,7 @@ export class ContractorsService {
       where: {
         AND: [
           transportationVisibilityWhere(user),
-          { deletedAt: null },
+          { isQuoteDraft: false, deletedAt: null },
           {
             OR: [
               { deal: { clientId: id } },

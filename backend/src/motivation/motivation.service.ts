@@ -151,6 +151,7 @@ export class MotivationService {
 
     const transportations = await this.prisma.transportation.findMany({
       where: {
+        isQuoteDraft: false,
         deletedAt: null,
         deal: { deletedAt: null },
         unloadingEventDate: { gte: range.start, lte: range.end },

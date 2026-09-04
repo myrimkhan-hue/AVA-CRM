@@ -21,7 +21,13 @@ const dealInclude = {
   legalEntity: { select: { id: true, name: true, numberingPrefix: true } },
   responsible: { select: { id: true, fullName: true } },
   department: { select: { id: true, name: true } },
-  _count: { select: { transportations: { where: { deletedAt: null } } } },
+  _count: {
+    select: {
+      transportations: {
+        where: { isQuoteDraft: false, deletedAt: null },
+      },
+    },
+  },
 } satisfies Prisma.DealInclude;
 
 type DealWithRelations = Prisma.DealGetPayload<{ include: typeof dealInclude }>;
@@ -74,7 +80,7 @@ export class DealsService {
     }
     await this.getVisibleDeal(id, user);
     const transportations = await this.prisma.transportation.findMany({
-      where: { dealId: id, deletedAt: null },
+      where: { dealId: id, isQuoteDraft: false, deletedAt: null },
       select: { id: true },
     });
     return this.marginService.calculateForTransportations(

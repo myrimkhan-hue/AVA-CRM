@@ -28,6 +28,7 @@ import { UpdateTransportationDto } from './dto/update-transportation.dto';
 import {
   assertCanAssignTransportationResponsible,
   canSeeTransportationClientRate,
+  canSeeTransportationClientRateForRow,
   resolveStatusBusinessEventDate,
   resolveStatusTransition,
   transportationVisibilityWhere,
@@ -88,6 +89,7 @@ export class TransportationsService {
         AND: [
           this.visibilityWhere(user),
           {
+            isQuoteDraft: false,
             deletedAt: query.includeDeleted ? undefined : null,
             // Перевозка удалённой сделки не считается активной: так же её
             // исключают все отчёты (дебиторка, кредиторка, дашборд, мотивация).
@@ -460,6 +462,7 @@ export class TransportationsService {
           { id },
           this.visibilityWhere(user),
           {
+            isQuoteDraft: false,
             deletedAt: includeDeleted ? undefined : null,
             deal: includeDeleted ? undefined : { deletedAt: null },
           },
@@ -477,16 +480,8 @@ export class TransportationsService {
     return row;
   }
 
-  private canSeeClientRate(user: AuthUser, row?: TransportationWithRelations): boolean {
-    if (user.roles.some((role) => ['ADMIN', 'DIRECTOR', 'FINANCIER'].includes(role))) return true;
-    if (!row) return canSeeTransportationClientRate(user);
-    if (user.roles.includes('DEPARTMENT_HEAD') && row.deal.departmentId === user.departmentId) return true;
-    if (user.roles.includes('MANAGER') && row.deal.responsibleId === user.id) return true;
-    return false;
-  }
-
   private present(row: TransportationWithRelations, user: AuthUser) {
-    if (this.canSeeClientRate(user, row)) {
+    if (canSeeTransportationClientRateForRow(user, row)) {
       const invoice = row.invoices[0] ?? null;
       const { invoices: _invoices, ...transportation } = row;
       return {
@@ -507,7 +502,7 @@ export class TransportationsService {
     dto: Pick<CreateTransportationDto, 'clientRate' | 'clientRateCurrency'>,
     user: AuthUser,
   ): void {
-    if (!this.canSeeClientRate(user) && (dto.clientRate !== undefined || dto.clientRateCurrency !== undefined)) {
+    if (!canSeeTransportationClientRate(user) && (dto.clientRate !== undefined || dto.clientRateCurrency !== undefined)) {
       throw new ForbiddenException('Недостаточно прав для работы со ставкой клиента');
     }
   }

@@ -25,6 +25,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { LeadsModule } from './leads/leads.module';
 import { WhatsappModule } from './whatsapp/whatsapp.module';
 import { OperatingExpensesModule } from './operating-expenses/operating-expenses.module';
+import { QuotesModule } from './quotes/quotes.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { OperatingExpensesModule } from './operating-expenses/operating-expenses
     AttachmentsModule,
     ContractsModule,
     OperatingExpensesModule,
+    QuotesModule,
   ],
   controllers: [HealthController],
   providers: [

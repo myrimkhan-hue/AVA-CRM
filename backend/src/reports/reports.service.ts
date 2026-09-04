@@ -152,7 +152,11 @@ export class ReportsService {
       await Promise.all([
         this.prisma.transportation.groupBy({
           by: ['status'],
-          where: { deletedAt: null, deal: { deletedAt: null } },
+          where: {
+            isQuoteDraft: false,
+            deletedAt: null,
+            deal: { deletedAt: null },
+          },
           _count: { _all: true },
         }),
         this.prisma.deal.findMany({
@@ -161,6 +165,7 @@ export class ReportsService {
         }),
         this.prisma.transportation.findMany({
           where: {
+            isQuoteDraft: false,
             deletedAt: null,
             deal: { deletedAt: null },
             unloadingEventDate: { gte: range.start, lte: range.end },

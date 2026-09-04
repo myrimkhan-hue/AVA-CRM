@@ -415,6 +415,7 @@ model Transportation {
   logistId              String                      @map("logist_id")
   status                TransportationStatus        @default(REQUEST_ACCEPTED)
   isMultiLeg            Boolean                     @default(false) @map("is_multi_leg")
+  isQuoteDraft          Boolean                     @default(false) @map("is_quote_draft")
   cargoName             String?                     @map("cargo_name")
   placesCount           Int?                        @map("places_count")
   placesUnit            String?                     @map("places_unit")
@@ -463,6 +464,7 @@ model Transportation {
   @@unique([dealId, sequenceInDeal])
   @@index([logistId])
   @@index([status])
+  @@index([isQuoteDraft])
   @@map("transportations")
 }
 

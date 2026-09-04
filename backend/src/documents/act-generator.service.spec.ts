@@ -147,7 +147,7 @@ describe('ActGeneratorService', () => {
     await service.generateForDeal('deal-1', user);
 
     expect(prisma.transportation.findMany).toHaveBeenCalledWith({
-      where: { dealId: 'deal-1', deletedAt: null },
+      where: { dealId: 'deal-1', isQuoteDraft: false, deletedAt: null },
       select: { unloadingEventDate: true },
     });
     expect(documentsService.nextDocumentNumber).toHaveBeenCalledWith(

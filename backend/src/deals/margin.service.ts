@@ -27,7 +27,11 @@ export class MarginService {
     }
 
     const transportations = await this.prisma.transportation.findMany({
-      where: { id: { in: transportationIds }, deletedAt: null },
+      where: {
+        id: { in: transportationIds },
+        isQuoteDraft: false,
+        deletedAt: null,
+      },
       select: {
         id: true,
         createdAt: true,

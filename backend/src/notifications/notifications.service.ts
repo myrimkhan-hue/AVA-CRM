@@ -159,7 +159,11 @@ export class NotificationsService {
   private async checkOverdueTransportations(): Promise<void> {
     const today = this.today();
     const candidates = await this.prisma.transportation.findMany({
-      where: { deletedAt: null, plannedDeliveryDate: { not: null } },
+      where: {
+        isQuoteDraft: false,
+        deletedAt: null,
+        plannedDeliveryDate: { not: null },
+      },
       select: { id: true, number: true, logistId: true, status: true, plannedDeliveryDate: true },
     });
     for (const item of candidates) {

@@ -58,3 +58,46 @@ describe('Кассовый календарь с операционными ра
     ]);
   });
 });
+
+describe('Дашборд перевозок', () => {
+  it('явно исключает черновики просчётов из счётчиков по статусам', async () => {
+    const prisma = {
+      transportation: {
+        groupBy: jest.fn().mockResolvedValue([]),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
+      deal: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    const margin = { calculateForTransportations: jest.fn().mockResolvedValue({}) };
+    const service = new ReportsService(
+      prisma as never,
+      {} as ExchangeRatesService,
+      margin as never,
+    );
+    jest.spyOn(service, 'getReceivables').mockResolvedValue([]);
+    jest.spyOn(service, 'getPayables').mockResolvedValue([]);
+    jest.spyOn(service, 'getCashCalendar').mockResolvedValue({
+      overdueIncomeKzt: 0,
+      overdueExpenseKzt: 0,
+      openingBalanceKzt: 0,
+      periods: [],
+    });
+
+    await service.getDashboard({ from: '2026-08-01', to: '2026-08-31' });
+
+    expect(prisma.transportation.groupBy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: {
+          isQuoteDraft: false,
+          deletedAt: null,
+          deal: { deletedAt: null },
+        },
+      }),
+    );
+    expect(prisma.transportation.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ isQuoteDraft: false }),
+      }),
+    );
+  });
+});
