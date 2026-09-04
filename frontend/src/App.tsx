@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import { ProtectedRoute } from './auth/ProtectedRoute';
 import { AppLayout } from './components/AppLayout';
 import { LoginPage } from './pages/LoginPage';
@@ -33,6 +34,9 @@ import { MyProfilePage } from './pages/MyProfilePage';
 import { DOCUMENT_ACCESS_ROLES } from './documents/access';
 import { OperatingExpensesPage } from './pages/OperatingExpensesPage';
 import { OperatingExpenseTypesPage } from './pages/OperatingExpenseTypesPage';
+import { QuotesPage } from './pages/QuotesPage';
+import { NewQuotePage } from './pages/NewQuotePage';
+import { QuoteDetailPage } from './pages/QuoteDetailPage';
 
 const INVOICE_ROLES = [
   'ADMIN',
@@ -44,6 +48,21 @@ const INVOICE_ROLES = [
 
 const LEAD_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'];
 const OPERATING_EXPENSE_ROLES = ['ADMIN', 'DIRECTOR', 'FINANCIER'];
+const QUOTE_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'LOGIST'];
+
+function QuotesRoute({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const canAccess = Boolean(user?.roles.some((role) => QUOTE_ROLES.includes(role)));
+  return canAccess ? children : <Navigate to="/transportations" replace />;
+}
+
+function QuoteManageRoute({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const canManage = Boolean(
+    user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'].includes(role)),
+  );
+  return canManage ? children : <Navigate to="/quotes" replace />;
+}
 
 function DealsRoute() {
   const { user } = useAuth();
@@ -98,6 +117,12 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<AppLayout />}>
           <Route index element={<Navigate to="/transportations" replace />} />
+          <Route path="quotes" element={<QuotesRoute><QuotesPage /></QuotesRoute>} />
+          <Route
+            path="quotes/new"
+            element={<QuotesRoute><QuoteManageRoute><NewQuotePage /></QuoteManageRoute></QuotesRoute>}
+          />
+          <Route path="quotes/:id" element={<QuotesRoute><QuoteDetailPage /></QuotesRoute>} />
           <Route path="transportations" element={<TransportationsPage />} />
           <Route path="transportations/new" element={<NewTransportationPage />} />
           <Route path="transportations/:id" element={<TransportationDetailPage />} />

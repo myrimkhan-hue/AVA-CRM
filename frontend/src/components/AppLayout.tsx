@@ -26,6 +26,12 @@ const NAVIGATION_ICON_CONTENT: Record<NavigationIconName, ReactNode> = {
       <rect x="9" y="9" width="5" height="5" rx="1.5" />
     </>
   ),
+  quotes: (
+    <>
+      <path d="M3 2.2h10v11.6H3z" />
+      <path d="M5.5 5.2h5M5.5 8h5M5.5 10.8h2.8" />
+    </>
+  ),
   transportations: (
     <>
       <path d="M1.5 4.5h7.5v6.5H1.5z" />

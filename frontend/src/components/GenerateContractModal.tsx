@@ -130,7 +130,7 @@ export function GenerateContractModal({ open, contractorId, onClose, onGenerate 
           >
             <div className="form-grid two">
               <Form.Item name="legalForm" label={t('documents.contract.fields.legalForm')}>
-                <Input placeholder="ТОО / ИП" />
+                <Input placeholder={t('documents.contract.placeholders.legalForm')} />
               </Form.Item>
               <Form.Item name="bin" label={t('documents.contract.fields.bin')}>
                 <Input />
@@ -142,13 +142,13 @@ export function GenerateContractModal({ open, contractorId, onClose, onGenerate 
                 <Input />
               </Form.Item>
               <Form.Item name="signBasis" label={t('documents.contract.fields.signBasis')}>
-                <Input placeholder="Устава / Талона / Доверенности" />
+                <Input placeholder={t('documents.contract.placeholders.signBasis')} />
               </Form.Item>
               <Form.Item name="signerFullName" label={t('documents.contract.fields.signerFullName')}>
                 <Input />
               </Form.Item>
               <Form.Item name="signerShortName" label={t('documents.contract.fields.signerShortName')}>
-                <Input placeholder="Фамилия И." />
+                <Input placeholder={t('documents.contract.placeholders.signerShortName')} />
               </Form.Item>
               <Form.Item name="bankName" label={t('documents.contract.fields.bankName')}>
                 <Input />

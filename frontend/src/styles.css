@@ -437,6 +437,40 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
   .transportation-card { padding: 15px 16px; }
   .transportation-pagination { align-items: flex-start; flex-direction: column; }
 }
+.quotes-page { width: min(100%, 1400px); margin: 0 auto; }
+.quotes-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.quotes-heading h2.ant-typography { margin: 0 0 3px; }
+.quote-filters { display: grid; grid-template-columns: minmax(240px, 1.6fr) repeat(4, minmax(150px, 1fr)) minmax(220px, 1.3fr) auto; gap: 10px; align-items: center; margin-bottom: 14px; }
+.quotes-table .ant-table { background: var(--card); border-radius: var(--r-card); box-shadow: 0 2px 14px var(--sh05); }
+.quote-table-row { cursor: pointer; }
+.quote-form-page { width: min(100%, 920px); }
+.quote-form-card + .quote-form-card { margin-top: 14px; }
+.quote-form-card.transport-card { display: block; cursor: default; }
+.quote-form-card.transport-card:hover { box-shadow: 0 2px 14px var(--sh05); }
+.quote-form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+.quote-places-count { width: 120px; }
+.quote-checkbox-field { display: flex; align-items: flex-end; }
+.quote-detail-page { width: min(100%, 1400px); }
+.quote-actions-card.transport-card { display: block; margin-bottom: 14px; cursor: default; }
+.quote-actions-card.transport-card:hover { box-shadow: 0 2px 14px var(--sh05); }
+.quote-detail-columns { grid-template-columns: minmax(0, 1fr) 320px; }
+.quote-money-value { display: flex; flex-direction: column; gap: 4px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--line); }
+.quote-money-value strong { font-size: 20px; font-variant-numeric: tabular-nums; }
+.quote-money-value small { color: var(--text2); }
+.quote-option-selected > td { background: var(--green-soft) !important; }
+.quote-selected-tag { color: var(--green-fg); background: var(--green-soft); }
+.quote-contract-alert { max-width: 820px; margin: 0 auto; }
+@media (max-width: 1100px) {
+  .quote-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .quote-filters > .ant-input-search { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .quotes-heading { align-items: stretch; flex-direction: column; }
+  .quote-filters { grid-template-columns: minmax(0, 1fr); }
+  .quote-filters > .ant-input-search { grid-column: auto; }
+  .quote-detail-columns { grid-template-columns: minmax(0, 1fr); }
+}
+
 .deal-number {
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
 }

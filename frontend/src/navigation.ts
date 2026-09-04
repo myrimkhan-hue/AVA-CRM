@@ -2,6 +2,7 @@ import { DOCUMENT_ACCESS_ROLES } from './documents/access';
 
 export type NavigationIconName =
   | 'dashboard'
+  | 'quotes'
   | 'transportations'
   | 'deals'
   | 'leads'
@@ -31,6 +32,7 @@ const LEAD_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'];
 const INVOICE_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'FINANCIER'];
 const REPORT_ROLES = ['ADMIN', 'DIRECTOR', 'FINANCIER'];
 const SETTINGS_ROLES = ['ADMIN', 'FINANCIER'];
+const QUOTE_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'LOGIST'];
 
 const visibleToEveryone = () => true;
 const hasAnyRole = (roles: string[], allowedRoles: string[]) =>
@@ -44,6 +46,13 @@ export const NAVIGATION_GROUPS: NavigationItem[][] = [
       labelKey: 'nav.dashboard',
       icon: 'dashboard',
       isVisible: (roles) => hasAnyRole(roles, REPORT_ROLES),
+    },
+    {
+      id: 'quotes',
+      path: '/quotes',
+      labelKey: 'nav.quotes',
+      icon: 'quotes',
+      isVisible: (roles) => hasAnyRole(roles, QUOTE_ROLES),
     },
     {
       id: 'transportations',
@@ -160,6 +169,8 @@ export function isNavigationItemActive(item: NavigationItem, pathname: string): 
 }
 
 export function getHeaderTitleKey(pathname: string): string {
+  if (pathname === '/quotes/new') return 'header.quoteNew';
+  if (/^\/quotes\/[^/]+$/.test(pathname)) return 'header.quoteDetail';
   if (pathname === '/transportations/new') return 'header.transportationNew';
   if (/^\/transportations\/[^/]+$/.test(pathname)) return 'header.transportationDetail';
   if (/^\/deals\/[^/]+$/.test(pathname)) return 'header.dealDetail';
