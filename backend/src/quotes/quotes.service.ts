@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import {
   AuditAction,
+  ContractStatus,
   DealRejectReason,
   DealStage,
   Prisma,
@@ -14,6 +15,10 @@ import { AuthUser } from '../auth/auth-user.type';
 import { ExchangeRatesService } from '../currencies/exchange-rates.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { assertCanAssignTransportationResponsible } from '../transportations/transportation-policy';
+import {
+  initialLegModeForTransportation,
+  transportationLegCreateData,
+} from '../transportations/transportation-leg-data';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { LoseQuoteDto } from './dto/lose-quote.dto';
 import {
@@ -22,6 +27,7 @@ import {
 } from './dto/quote-option.dto';
 import { QuoteQueryDto } from './dto/quote-query.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
+import { WinQuoteDto } from './dto/win-quote.dto';
 import {
   assertCanEditQuoteClientRate,
   canSeeQuoteClientRate,
@@ -391,6 +397,115 @@ export class QuotesService {
     return this.stage(id, DealStage.REJECTED, user, dto);
   }
 
+  async win(id: string, dto: WinQuoteDto, user: AuthUser) {
+    const current = await this.visibleForWin(id, user);
+    const option = current.quoteOptions.find((item) => item.id === dto.optionId);
+    if (!option) {
+      throw new BadRequestException(
+        'Выбранный вариант не принадлежит этому просчёту или удалён',
+      );
+    }
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      await tx.quoteOption.updateMany({
+        where: { transportationId: id },
+        data: { isSelected: false },
+      });
+      await tx.quoteOption.update({
+        where: { id: option.id },
+        data: { isSelected: true },
+      });
+
+      const aggregate = await tx.transportation.aggregate({
+        where: {
+          dealId: current.dealId,
+          id: { not: id },
+          isQuoteDraft: false,
+        },
+        _max: { sequenceInDeal: true },
+      });
+      const sequenceInDeal = (aggregate._max.sequenceInDeal ?? 0) + 1;
+      const number = `${current.deal.number}/${sequenceInDeal}`;
+
+      await tx.deal.update({
+        where: { id: current.dealId },
+        data: {
+          stage: DealStage.AGREED,
+          rejectReason: null,
+          rejectComment: null,
+        },
+      });
+      if (current.deal.client.isProspect) {
+        await tx.contractor.update({
+          where: { id: current.deal.clientId },
+          data: { isProspect: false },
+        });
+      }
+
+      const promoted = await tx.transportation.updateMany({
+        where: { id, isQuoteDraft: true },
+        data: {
+          isQuoteDraft: false,
+          number,
+          sequenceInDeal,
+          clientRate: option.clientRate,
+          clientRateCurrency: option.clientRateCurrency,
+          bodyType: current.bodyType || option.vehicleType,
+        },
+      });
+      if (promoted.count !== 1) {
+        throw new BadRequestException('Просчёт уже выигран');
+      }
+
+      if (option.carrierId) {
+        await tx.transportationLeg.create({
+          data: {
+            ...transportationLegCreateData(
+              {
+                subcontractorId: option.carrierId,
+                subcontractorRate: option.costRate?.toNumber(),
+                subcontractorRateCurrency: option.costRateCurrency ?? undefined,
+              },
+              current.originPoint,
+              current.destinationPoint,
+              initialLegModeForTransportation(current.transportMode),
+            ),
+            transportationId: id,
+            orderIndex: 1,
+          },
+        });
+      }
+
+      await this.audit(tx, user.id, current.dealId, AuditAction.UPDATE, {
+        stage: { old: current.deal.stage, new: DealStage.AGREED },
+        selectedOptionId: { old: null, new: option.id },
+        transportationNumber: { old: current.number, new: number },
+        isQuoteDraft: { old: true, new: false },
+      });
+
+      const [transportation, activeContract] = await Promise.all([
+        tx.transportation.findUniqueOrThrow({ where: { id }, include }),
+        tx.contract.findFirst({
+          where: {
+            contractorId: current.deal.clientId,
+            legalEntityId: current.deal.legalEntityId,
+            status: ContractStatus.ACTIVE,
+            deletedAt: null,
+            terminatedAt: null,
+            OR: [{ validUntil: null }, { validUntil: { gte: this.today() } }],
+          },
+          select: { id: true },
+        }),
+      ]);
+      return { transportation, hasActiveContract: Boolean(activeContract) };
+    });
+
+    return {
+      ...(await this.present(result.transportation, user)),
+      hasActiveContract: result.hasActiveContract,
+    };
+  }
+
   async remove(id: string, user: AuthUser) {
     const current = await this.active(id, user);
     const now = new Date();
@@ -457,6 +572,26 @@ export class QuotesService {
       include,
     });
     if (!row) throw new ForbiddenException('Нет доступа к этому просчёту');
+    return row;
+  }
+
+  private async visibleForWin(id: string, user: AuthUser): Promise<QuoteRow> {
+    const exists = await this.prisma.transportation.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!exists) throw new NotFoundException('Просчёт не найден');
+    const row = await this.prisma.transportation.findFirst({
+      where: { AND: [{ id }, quoteVisibilityWhere(user)] },
+      include,
+    });
+    if (!row) throw new ForbiddenException('Нет доступа к этому просчёту');
+    if (row.deletedAt || row.deal.deletedAt) {
+      throw new BadRequestException('Нельзя выиграть удалённый просчёт');
+    }
+    if (!row.isQuoteDraft || !QUOTE_STAGES.includes(row.deal.stage)) {
+      throw new BadRequestException('Просчёт уже выигран или больше не активен');
+    }
     return row;
   }
   private async active(id: string, user: AuthUser) {
@@ -598,6 +733,12 @@ export class QuotesService {
   }
   private endOfDay(value: Date) {
     return new Date(value.getTime() + 86_399_999);
+  }
+  private today() {
+    const now = new Date();
+    return new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    );
   }
   private defined<T extends object>(value: T): T {
     return Object.fromEntries(

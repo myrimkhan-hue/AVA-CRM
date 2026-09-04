@@ -26,6 +26,10 @@ import { TransportationQueryDto } from './dto/transportation-query.dto';
 import { UpdateTransportationStatusDto } from './dto/update-transportation-status.dto';
 import { UpdateTransportationDto } from './dto/update-transportation.dto';
 import {
+  transportationLegCreateData,
+  transportationLegData,
+} from './transportation-leg-data';
+import {
   assertCanAssignTransportationResponsible,
   canSeeTransportationClientRate,
   canSeeTransportationClientRateForRow,
@@ -167,7 +171,7 @@ export class TransportationsService {
           });
           await tx.transportationLeg.create({
             data: {
-              ...this.legCreateData(dto.initialLeg ?? {}, dto.originPoint, dto.destinationPoint, this.initialLegMode(dto)),
+              ...transportationLegCreateData(dto.initialLeg ?? {}, dto.originPoint, dto.destinationPoint, this.initialLegMode(dto)),
               transportationId: base.id,
               orderIndex: 1,
             },
@@ -252,7 +256,7 @@ export class TransportationsService {
       });
       const leg = await tx.transportationLeg.create({
         data: {
-          ...this.legCreateData(dto, dto.fromPoint, dto.toPoint, dto.mode),
+          ...transportationLegCreateData(dto, dto.fromPoint, dto.toPoint, dto.mode),
           transportationId: id,
           orderIndex: (aggregate._max.orderIndex ?? 0) + 1,
         },
@@ -276,7 +280,7 @@ export class TransportationsService {
     if (!current) throw new NotFoundException('Участок перевозки не найден');
     if (dto.subcontractorId) await this.ensureCarrier(dto.subcontractorId);
     const updated = await this.prisma.$transaction(async (tx) => {
-      const leg = await tx.transportationLeg.update({ where: { id: legId }, data: this.legData(dto) });
+      const leg = await tx.transportationLeg.update({ where: { id: legId }, data: transportationLegData(dto) });
       const row = await tx.transportation.findUniqueOrThrow({ where: { id }, include: transportationInclude });
       await this.writeAudit(tx, user.id, id, AuditAction.UPDATE, {
         legs: { old: this.legSnapshot(current), new: this.legSnapshot(leg) },
@@ -561,35 +565,6 @@ export class TransportationsService {
       unloadingAddress: this.text(dto.unloadingAddress), unloadingContactName: this.text(dto.unloadingContactName),
       unloadingContactPhone: this.text(dto.unloadingContactPhone), bodyType: this.text(dto.bodyType),
       accompanyingDocs: dto.accompanyingDocs, specialConditions: this.text(dto.specialConditions),
-    });
-  }
-
-  private legCreateData(
-    dto: UpdateTransportationLegDto,
-    fromPoint: string,
-    toPoint: string,
-    mode: CreateTransportationLegDto['mode'],
-  ): Prisma.TransportationLegUncheckedCreateWithoutTransportationInput {
-    return {
-      ...(this.legData(dto) as Prisma.TransportationLegUncheckedCreateWithoutTransportationInput),
-      orderIndex: 0,
-      fromPoint: dto.fromPoint?.trim() ?? fromPoint.trim(),
-      toPoint: dto.toPoint?.trim() ?? toPoint.trim(),
-      mode: dto.mode ?? mode,
-    };
-  }
-
-  private legData(dto: UpdateTransportationLegDto): Prisma.TransportationLegUncheckedUpdateInput {
-    return this.removeUndefined({
-      fromPoint: dto.fromPoint?.trim(), toPoint: dto.toPoint?.trim(), mode: dto.mode,
-      subcontractorId: dto.subcontractorId, subcontractorRate: dto.subcontractorRate,
-      subcontractorRateCurrency: dto.subcontractorRateCurrency?.toUpperCase(),
-      plannedStartDate: this.date(dto.plannedStartDate), plannedEndDate: this.date(dto.plannedEndDate),
-      actualStartDate: this.date(dto.actualStartDate), actualEndDate: this.date(dto.actualEndDate),
-      vehicleNumber: this.text(dto.vehicleNumber), trailerNumber: this.text(dto.trailerNumber), status: dto.status,
-      driverFullName: this.text(dto.driverFullName), driverPhone: this.text(dto.driverPhone), driverIin: this.text(dto.driverIin),
-      driverLicenseNumber: this.text(dto.driverLicenseNumber), driverLicenseDate: this.date(dto.driverLicenseDate),
-      driverLicenseIssuer: this.text(dto.driverLicenseIssuer),
     });
   }
 

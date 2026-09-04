@@ -13,7 +13,7 @@ function context(handler: Function, roles: string[]): ExecutionContext {
 
 describe('Права на исход просчёта', () => {
   const guard = new RolesGuard(new Reflector());
-  for (const method of ['sent', 'lose'] as const) {
+  for (const method of ['sent', 'lose', 'win'] as const) {
     it(`логист не может вызвать ${method}`, () =>
       expect(() =>
         guard.canActivate(

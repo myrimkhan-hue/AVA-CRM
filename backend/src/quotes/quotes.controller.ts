@@ -19,6 +19,7 @@ import {
 } from './dto/quote-option.dto';
 import { QuoteQueryDto } from './dto/quote-query.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
+import { WinQuoteDto } from './dto/win-quote.dto';
 import { QuotesService } from './quotes.service';
 
 const MANAGER_ROLES = [
@@ -95,6 +96,15 @@ export class QuotesController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.service.lose(id, dto, user);
+  }
+  @Post(':id/win')
+  @Roles(...MANAGER_ROLES)
+  win(
+    @Param('id') id: string,
+    @Body() dto: WinQuoteDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.service.win(id, dto, user);
   }
   @Delete(':id')
   @Roles(...MANAGER_ROLES)
