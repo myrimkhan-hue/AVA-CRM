@@ -20,6 +20,8 @@ import { useNavigate } from 'react-router-dom';
 import { ApiError, apiRequest } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { MoneyInput } from '../components/MoneyInput';
+import { PasteCargoBox } from '../components/PasteCargoBox';
+import type { ParsedCargo } from '../quotes/parse-cargo';
 import {
   DELIVERY_TERMS,
   QUOTE_CURRENCIES,
@@ -30,6 +32,13 @@ import {
   quotePayload,
 } from '../quotes/shared';
 import { MODES } from '../transportations/shared';
+
+/** Поля, которые умеет заполнять вставка заявки текстом на этой форме. */
+const PASTE_FIELDS = [
+  'originPoint', 'destinationPoint', 'cargoName', 'weightKg', 'volumeM3',
+  'placesCount', 'vehicleType', 'deliveryTerms', 'isDangerous', 'cargoReadyDate',
+  'clientTargetRate',
+] as const;
 
 export function NewQuotePage() {
   const { t } = useTranslation();
@@ -44,6 +53,15 @@ export function NewQuotePage() {
   const [saving, setSaving] = useState(false);
   const clientMode = Form.useWatch('clientMode', form) ?? 'existing';
   const responsibleId = Form.useWatch('responsibleId', form);
+
+  // Дата из разбора приходит строкой, форме нужен dayjs; остальное подставляется как есть.
+  const applyParsedCargo = (parsed: ParsedCargo) => {
+    const { cargoReadyDate, ...rest } = parsed;
+    form.setFieldsValue({
+      ...rest,
+      ...(cargoReadyDate ? { cargoReadyDate: dayjs(cargoReadyDate) } : {}),
+    });
+  };
 
   const showError = useCallback((error: unknown) => {
     void message.error(
@@ -215,6 +233,14 @@ export function NewQuotePage() {
         </Card>
 
         <Card className="transport-card quote-form-card" title={t('quotes.sections.cargo')}>
+          <PasteCargoBox
+            fields={PASTE_FIELDS}
+            getFilled={() => PASTE_FIELDS.filter((key) => {
+              const value = form.getFieldValue(key);
+              return value !== undefined && value !== null && value !== '' && value !== false;
+            })}
+            onApply={applyParsedCargo}
+          />
           <div className="form-grid two">
             <Form.Item
               name="originPoint"
@@ -260,6 +286,13 @@ export function NewQuotePage() {
             </Form.Item>
             <Form.Item name="cargoReadyDate" label={t('quotes.fields.cargoReadyDate')}>
               <DatePicker className="full-width" />
+            </Form.Item>
+            <Form.Item
+              name="vehicleType"
+              label={t('quotes.fields.vehicleType')}
+              extra={t('quotes.hints.vehicleType')}
+            >
+              <Input allowClear />
             </Form.Item>
             <Form.Item name="isDangerous" valuePropName="checked" className="quote-checkbox-field">
               <Checkbox>{t('quotes.fields.isDangerous')}</Checkbox>

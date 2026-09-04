@@ -102,6 +102,8 @@ export interface QuoteFormValues {
   deliveryTerms?: DeliveryTerms;
   cargoReadyDate?: Dayjs;
   transportMode: QuoteTransportMode;
+  /** Тип ТС из заявки. Если указан — при создании появится первый вариант расчёта с ним. */
+  vehicleType?: string;
   clientTargetRate?: number;
   clientTargetRateCurrency?: QuoteCurrency;
   quoteRateDate?: Dayjs;
@@ -130,5 +132,6 @@ export function quotePayload(values: QuoteFormValues) {
     clientName: values.clientMode === 'new' ? values.clientName?.trim() : undefined,
     cargoReadyDate: cargoReadyDate?.format('YYYY-MM-DD'),
     quoteRateDate: quoteRateDate?.format('YYYY-MM-DD'),
+    vehicleType: values.vehicleType?.trim() || undefined,
   };
 }

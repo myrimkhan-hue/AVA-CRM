@@ -133,8 +133,15 @@ export class QuotesService {
               quoteRateDate: this.date(dto.quoteRateDate),
             },
           });
+          // Тип ТС из заявки превращается в первый вариант расчёта: логисту
+          // останется вписать перевозчика и себестоимость. Создаём в той же
+          // транзакции — иначе при сбое получился бы просчёт без варианта.
+          const vehicleType = dto.vehicleType?.trim();
           const transportation = await tx.transportation.create({
             data: {
+              ...(vehicleType
+                ? { quoteOptions: { create: [{ sequence: 1, vehicleType }] } }
+                : {}),
               number: `Р-${year}-${String(quoteSequence.lastNumber).padStart(4, '0')}`,
               isQuoteDraft: true,
               dealId: deal.id,

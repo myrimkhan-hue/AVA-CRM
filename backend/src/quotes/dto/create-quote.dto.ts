@@ -44,6 +44,8 @@ export class CreateQuoteDto {
   cargoReadyDate?: string;
   @IsEnum(TransportMode, { message: 'Указан неизвестный тип перевозки' })
   transportMode!: TransportMode;
+  /** Тип ТС из заявки. Если указан, вместе с просчётом создаётся первый вариант расчёта с ним. */
+  @IsOptional() @IsString() @MinLength(1) vehicleType?: string;
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
