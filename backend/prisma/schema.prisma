@@ -125,6 +125,20 @@ enum TransportMode {
   MULTIMODAL
 }
 
+enum DeliveryTerms {
+  EXW
+  FCA
+  FAS
+  FOB
+  CFR
+  CIF
+  CPT
+  CIP
+  DAP
+  DPU
+  DDP
+}
+
 enum LegTransportMode {
   AUTO
   RAIL
@@ -249,6 +263,7 @@ model LegalEntity {
   contractor             Contractor?             @relation(fields: [contractorId], references: [id], onDelete: SetNull)
   deals                  Deal[]
   dealNumberSequences    DealNumberSequence[]
+  quoteNumberSequences   QuoteNumberSequence[]
   taxRates               LegalEntityTaxRate[]
   invoices               Invoice[]
   invoiceSequences       InvoiceNumberSequence[]
@@ -332,6 +347,7 @@ model Contractor {
   isProblem          Boolean                 @default(false) @map("is_problem")
   problemComment     String?                 @map("problem_comment")
   isBlacklisted      Boolean                 @default(false) @map("is_blacklisted")
+  isProspect         Boolean                 @default(false) @map("is_prospect")
   blacklistReason    String?                 @map("blacklist_reason")
   legalForm          String?                 @map("legal_form")
   signerPosition     String?                 @map("signer_position")
@@ -356,31 +372,37 @@ model Contractor {
   matchedByLeads     Lead[]                  @relation("LeadMatchedContractor")
   convertedFromLeads Lead[]                  @relation("LeadConvertedContractor")
   whatsappMessages   WhatsAppMessage[]
+  quoteOptions       QuoteOption[]           @relation("QuoteOptionCarrier")
 
+  @@index([isProspect])
   @@map("contractors")
 }
 
 model Deal {
-  id                 String              @id @default(cuid())
-  number             String              @unique
-  legalEntityId      String              @map("legal_entity_id")
-  clientId           String              @map("client_id")
-  responsibleId      String              @map("responsible_id")
-  departmentId       String?             @map("department_id")
-  stage              DealStage           @default(NEW)
-  rejectReason       DealRejectReason?   @map("reject_reason")
-  rejectComment      String?             @map("reject_comment")
-  notes              String?
-  deletedAt          DateTime?           @map("deleted_at")
-  createdAt          DateTime            @default(now()) @map("created_at")
-  updatedAt          DateTime            @updatedAt @map("updated_at")
-  legalEntity        LegalEntity         @relation(fields: [legalEntityId], references: [id])
-  client             Contractor          @relation(fields: [clientId], references: [id])
-  responsible        User                @relation(fields: [responsibleId], references: [id])
-  department         Department?         @relation(fields: [departmentId], references: [id])
-  transportations    Transportation[]
-  generatedDocuments GeneratedDocument[]
-  convertedFromLead  Lead?
+  id                       String              @id @default(cuid())
+  number                   String              @unique
+  legalEntityId            String              @map("legal_entity_id")
+  clientId                 String              @map("client_id")
+  responsibleId            String              @map("responsible_id")
+  departmentId             String?             @map("department_id")
+  stage                    DealStage           @default(NEW)
+  rejectReason             DealRejectReason?   @map("reject_reason")
+  rejectComment            String?             @map("reject_comment")
+  // Ориентир, названный клиентом, а не наша ставка.
+  clientTargetRate         Decimal?            @map("client_target_rate") @db.Decimal(18, 2)
+  clientTargetRateCurrency String?             @map("client_target_rate_currency") @db.VarChar(3)
+  quoteRateDate            DateTime?           @map("quote_rate_date") @db.Date
+  notes                    String?
+  deletedAt                DateTime?           @map("deleted_at")
+  createdAt                DateTime            @default(now()) @map("created_at")
+  updatedAt                DateTime            @updatedAt @map("updated_at")
+  legalEntity              LegalEntity         @relation(fields: [legalEntityId], references: [id])
+  client                   Contractor          @relation(fields: [clientId], references: [id])
+  responsible              User                @relation(fields: [responsibleId], references: [id])
+  department               Department?         @relation(fields: [departmentId], references: [id])
+  transportations          Transportation[]
+  generatedDocuments       GeneratedDocument[]
+  convertedFromLead        Lead?
 
   @@map("deals")
 }
@@ -422,6 +444,8 @@ model Transportation {
   unloadingContactName  String?                     @map("unloading_contact_name")
   unloadingContactPhone String?                     @map("unloading_contact_phone")
   bodyType              String?                     @map("body_type")
+  deliveryTerms         DeliveryTerms?              @map("delivery_terms")
+  cargoReadyDate        DateTime?                   @map("cargo_ready_date") @db.Date
   accompanyingDocs      String[]                    @default([]) @map("accompanying_docs")
   specialConditions     String?                     @map("special_conditions")
   deletedAt             DateTime?                   @map("deleted_at")
@@ -434,11 +458,39 @@ model Transportation {
   invoices              Invoice[]
   paymentRequests       PaymentRequest[]
   generatedDocuments    GeneratedDocument[]
+  quoteOptions          QuoteOption[]
 
   @@unique([dealId, sequenceInDeal])
   @@index([logistId])
   @@index([status])
   @@map("transportations")
+}
+
+model QuoteOption {
+  id                 String         @id @default(cuid())
+  transportationId   String         @map("transportation_id")
+  sequence           Int
+  vehicleType        String?        @map("vehicle_type")
+  carrierId          String?        @map("carrier_id")
+  // Себестоимость — ставка перевозчика, которую вводит логист.
+  costRate           Decimal?       @map("cost_rate") @db.Decimal(18, 2)
+  costRateCurrency   String?        @map("cost_rate_currency") @db.VarChar(3)
+  // Наша ставка клиенту по конкретному варианту расчёта.
+  clientRate         Decimal?       @map("client_rate") @db.Decimal(18, 2)
+  clientRateCurrency String?        @map("client_rate_currency") @db.VarChar(3)
+  transitDays        Int?           @map("transit_days")
+  notes              String?
+  isSelected         Boolean        @default(false) @map("is_selected")
+  deletedAt          DateTime?      @map("deleted_at")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  transportation     Transportation @relation(fields: [transportationId], references: [id], onDelete: Cascade)
+  carrier            Contractor?    @relation("QuoteOptionCarrier", fields: [carrierId], references: [id], onDelete: SetNull)
+
+  @@unique([transportationId, sequence])
+  @@index([transportationId])
+  @@index([carrierId])
+  @@map("quote_options")
 }
 
 model TransportationLeg {
@@ -511,6 +563,17 @@ model InvoiceNumberSequence {
 
   @@unique([legalEntityId, year])
   @@map("invoice_number_sequences")
+}
+
+model QuoteNumberSequence {
+  id            String      @id @default(cuid())
+  legalEntityId String      @map("legal_entity_id")
+  year          Int
+  lastNumber    Int         @map("last_number")
+  legalEntity   LegalEntity @relation(fields: [legalEntityId], references: [id], onDelete: Cascade)
+
+  @@unique([legalEntityId, year])
+  @@map("quote_number_sequences")
 }
 
 model Invoice {
@@ -1009,25 +1072,25 @@ enum ContractStatus {
 }
 
 model Contract {
-  id               String         @id @default(cuid())
-  contractorId     String         @map("contractor_id")
-  legalEntityId    String         @map("legal_entity_id")
-  number           String
-  signedAt         DateTime       @map("signed_at") @db.Date
-  validUntil       DateTime?      @map("valid_until") @db.Date
-  status           ContractStatus @default(ACTIVE)
-  terminatedAt     DateTime?      @map("terminated_at") @db.Date
-  subject          String?
-  notes            String?
-  expiryNotifiedAt DateTime?      @map("expiry_notified_at")
+  id                String         @id @default(cuid())
+  contractorId      String         @map("contractor_id")
+  legalEntityId     String         @map("legal_entity_id")
+  number            String
+  signedAt          DateTime       @map("signed_at") @db.Date
+  validUntil        DateTime?      @map("valid_until") @db.Date
+  status            ContractStatus @default(ACTIVE)
+  terminatedAt      DateTime?      @map("terminated_at") @db.Date
+  subject           String?
+  notes             String?
+  expiryNotifiedAt  DateTime?      @map("expiry_notified_at")
   expiryEscalatedAt DateTime?      @map("expiry_escalated_at")
-  createdById      String         @map("created_by_id")
-  deletedAt        DateTime?      @map("deleted_at")
-  createdAt        DateTime       @default(now()) @map("created_at")
-  updatedAt        DateTime       @updatedAt @map("updated_at")
-  contractor       Contractor     @relation(fields: [contractorId], references: [id], onDelete: Restrict)
-  legalEntity      LegalEntity    @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
-  createdBy        User           @relation("ContractCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  createdById       String         @map("created_by_id")
+  deletedAt         DateTime?      @map("deleted_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  contractor        Contractor     @relation(fields: [contractorId], references: [id], onDelete: Restrict)
+  legalEntity       LegalEntity    @relation(fields: [legalEntityId], references: [id], onDelete: Restrict)
+  createdBy         User           @relation("ContractCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
 
   @@index([contractorId])
   @@index([legalEntityId])
