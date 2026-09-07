@@ -1,6 +1,7 @@
 import { Transform, Type } from 'class-transformer';
 import { DealStage } from '@prisma/client';
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
@@ -14,6 +15,11 @@ export class QuoteQueryDto {
   @IsOptional() @IsEnum(DealStage) stage?: DealStage;
   @IsOptional() @IsString() responsibleId?: string;
   @IsOptional() @IsString() logistId?: string;
+  /** Только свободные просчёты — те, где логист ещё не назначен. */
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  unassigned?: boolean;
   @IsOptional() @IsString() departmentId?: string;
   @IsOptional() @IsDateString() from?: string;
   @IsOptional() @IsDateString() to?: string;

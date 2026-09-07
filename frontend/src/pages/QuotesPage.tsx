@@ -19,6 +19,8 @@ import {
 } from '../quotes/shared';
 
 const PAGE_SIZE = 20;
+/** Значение фильтра «Логист» для свободных просчётов: не id сотрудника, а признак «никто не назначен». */
+const UNASSIGNED = '__unassigned__';
 
 export function QuotesPage() {
   const { t, i18n } = useTranslation();
@@ -55,7 +57,9 @@ export function QuotesPage() {
       if (search) params.set('search', search);
       if (stage) params.set('stage', stage);
       if (responsibleId) params.set('responsibleId', responsibleId);
-      if (logistId) params.set('logistId', logistId);
+      // Отдельного контрола под «свободные» нет: это пункт в том же выборе логиста.
+      if (logistId === UNASSIGNED) params.set('unassigned', 'true');
+      else if (logistId) params.set('logistId', logistId);
       if (departmentId) params.set('departmentId', departmentId);
       if (period?.[0]) params.set('from', period[0].format('YYYY-MM-DD'));
       if (period?.[1]) params.set('to', period[1].format('YYYY-MM-DD'));
@@ -166,7 +170,11 @@ export function QuotesPage() {
       title: t('quotes.columns.logist'),
       key: 'logist',
       width: 185,
-      render: (_, row) => row.logist.fullName,
+      render: (_, row) => row.logist?.fullName ?? (
+        <Tag bordered={false} className="quote-unassigned-tag">
+          {t('quotes.values.unassigned')}
+        </Tag>
+      ),
     },
     {
       title: t('quotes.columns.clientTargetRate'),
@@ -250,7 +258,10 @@ export function QuotesPage() {
           optionFilterProp="label"
           value={logistId}
           placeholder={t('quotes.filters.logist')}
-          options={logists.map((item) => ({ value: item.id, label: item.fullName }))}
+          options={[
+            { value: UNASSIGNED, label: t('quotes.values.unassigned') },
+            ...logists.map((item) => ({ value: item.id, label: item.fullName })),
+          ]}
           onChange={(value) => { setLogistId(value); setPage(1); }}
         />
         <Select

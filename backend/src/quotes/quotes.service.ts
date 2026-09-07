@@ -184,6 +184,7 @@ export class QuotesService {
           ? { deal: { responsibleId: query.responsibleId } }
           : {},
         query.logistId ? { logistId: query.logistId } : {},
+        query.unassigned ? { logistId: null } : {},
         query.departmentId
           ? { deal: { departmentId: query.departmentId } }
           : {},
@@ -401,6 +402,9 @@ export class QuotesService {
   }
 
   async take(id: string, user: AuthUser) {
+    // Назначение логиста через форму проверяет роль исполнителя, и «Взять себе»
+    // обязано проверять её так же — иначе тем же полем можно обойти правило.
+    await this.ensureSelfIsLogist(user);
     const current = await this.active(id, user);
     const row = await this.prisma.$transaction(async (tx) => {
       const assigned = await tx.transportation.updateMany({
@@ -696,6 +700,12 @@ export class QuotesService {
     assertCanAssignTransportationResponsible(user, responsible);
     if (!department) throw new BadRequestException('Отдел не найден');
   }
+  private async ensureSelfIsLogist(user: AuthUser) {
+    if (!user.roles.includes('LOGIST')) {
+      throw new BadRequestException(ru.quotes.takeRequiresLogist);
+    }
+  }
+
   private async ensureLogist(id?: string | null) {
     if (id === undefined || id === null) return;
     const logist = await this.prisma.user.findFirst({

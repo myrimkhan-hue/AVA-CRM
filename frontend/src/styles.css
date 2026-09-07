@@ -749,3 +749,6 @@ h3.ant-typography, h4.ant-typography { font-size: 15px; font-weight: 700; letter
   .leads-import-mapping-row { grid-template-columns: 1fr; }
   .document-template-placeholder-list { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Метка свободного просчёта: логист ещё не назначен, заявка ждёт в общей очереди. */
+.quote-unassigned-tag.ant-tag { color: var(--amber-fg); background: var(--amber-soft); }

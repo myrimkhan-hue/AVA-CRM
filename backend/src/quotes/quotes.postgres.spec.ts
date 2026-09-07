@@ -246,18 +246,24 @@ describe('Quotes HTTP + PostgreSQL', () => {
     expect([logist.id, secondLogist.id]).toContain(row.logistId);
   });
 
-  it('permits take for heads, admins and directors and denies managers and financiers', async () => {
+  // Исполнителем перевозки может стать только логист, и «Взять себе» обязано
+  // проверять роль так же, как назначение через форму: иначе тем же полем
+  // руководитель или админ обошли бы правило и стал бы «логистом» без роли.
+  it('allows take only for users with the logist role', async () => {
     for (const actor of [head, admin, director]) {
       const quote = await createQuote();
       const response = await http('POST', `/${quote.id}/take`, actor);
-      expect({ role: actor.roles[0], status: response.status, body: await response.json() }).toMatchObject({ status: 201 });
-      expect(await prisma.transportation.findUnique({ where: { id: quote.id } })).toMatchObject({ logistId: actor.id });
+      expect({ role: actor.roles[0], status: response.status }).toMatchObject({ status: 400 });
+      expect(await prisma.transportation.findUnique({ where: { id: quote.id } })).toMatchObject({ logistId: null });
     }
     for (const actor of [manager, financier]) {
       const quote = await createQuote();
       expect((await http('POST', `/${quote.id}/take`, actor)).status).toBe(403);
       expect(await prisma.transportation.findUnique({ where: { id: quote.id } })).toMatchObject({ logistId: null });
     }
+    const own = await createQuote();
+    expect((await http('POST', `/${own.id}/take`, logist)).status).toBe(201);
+    expect(await prisma.transportation.findUnique({ where: { id: own.id } })).toMatchObject({ logistId: logist.id });
   });
 
   it('lists own and department-free quotes, hides other departments, and exposes unscoped free quotes', async () => {

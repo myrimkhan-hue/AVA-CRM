@@ -92,6 +92,7 @@ export function NewQuotePage() {
       setLegalEntities(legalEntityRows);
       const current = userRows.find((item) => item.id === user?.id);
       form.setFieldsValue({
+        legalEntityId: form.getFieldValue('legalEntityId') ?? legalEntityRows[0]?.id,
         responsibleId: user?.id,
         departmentId: current?.department?.id ?? user?.departmentId ?? undefined,
       });
@@ -213,9 +214,10 @@ export function NewQuotePage() {
             <Form.Item
               name="logistId"
               label={t('quotes.fields.logist')}
-              rules={[{ required: true, message: t('quotes.validation.logist') }]}
+              extra={t('quotes.hints.optionalLogist')}
             >
               <Select
+                allowClear
                 showSearch
                 optionFilterProp="label"
                 options={logists.map((item) => ({ value: item.id, label: item.fullName }))}

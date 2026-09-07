@@ -58,7 +58,7 @@ export interface Quote {
     responsible: { id: string; fullName: string };
     department: { id: string; name: string } | null;
   };
-  logist: { id: string; fullName: string };
+  logist: { id: string; fullName: string } | null;
   quoteOptions: QuoteOption[];
 }
 
@@ -89,7 +89,7 @@ export interface QuoteFormValues {
   clientName?: string;
   legalEntityId: string;
   responsibleId?: string;
-  logistId: string;
+  logistId?: string;
   departmentId?: string;
   originPoint: string;
   destinationPoint: string;

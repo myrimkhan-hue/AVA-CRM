@@ -48,6 +48,7 @@ import {
   QuoteOption,
   QuoteOptionFormValues,
   QuoteReference,
+  QuoteUserReference,
   QuoteRejectReason,
   hasManagerQuoteRights,
 } from '../quotes/shared';
@@ -78,6 +79,7 @@ export function QuoteDetailPage() {
   const [winForm] = Form.useForm<WinValues>();
   const [quote, setQuote] = useState<Quote>();
   const [carriers, setCarriers] = useState<QuoteReference[]>([]);
+  const [logists, setLogists] = useState<QuoteUserReference[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -90,6 +92,10 @@ export function QuoteDetailPage() {
   const [contractOpen, setContractOpen] = useState(false);
   const rejectReason = Form.useWatch('rejectReason', loseForm);
   const mayManage = hasManagerQuoteRights(user?.roles);
+  // «Взять себе» — только для логистов: исполнителем перевозки может стать
+  // лишь сотрудник с этой ролью, и сервер проверяет то же самое.
+  // Остальные назначают исполнителя через «Назначить логиста».
+  const mayTake = Boolean(user?.roles.includes('LOGIST'));
   const mayEditOptions = Boolean(user?.roles.some((role) => (
     [...['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'], 'LOGIST'].includes(role)
   )));
@@ -124,6 +130,13 @@ export function QuoteDetailPage() {
     void loadQuote();
   }, [loadQuote]);
 
+  useEffect(() => {
+    if (!mayManage) return;
+    apiRequest<QuoteUserReference[]>('/references/users')
+      .then((rows) => setLogists(rows.filter((item) => item.isActive && item.roles.includes('LOGIST'))))
+      .catch(showError);
+  }, [mayManage, showError]);
+
   const searchCarriers = useCallback(async (value = '') => {
     try {
       const params = new URLSearchParams({ type: 'CARRIER' });
@@ -156,6 +169,7 @@ export function QuoteDetailPage() {
   const openEdit = () => {
     if (!quote) return;
     editForm.setFieldsValue({
+      logistId: quote.logist?.id,
       originPoint: quote.originPoint,
       destinationPoint: quote.destinationPoint,
       cargoName: quote.cargoName ?? undefined,
@@ -183,6 +197,7 @@ export function QuoteDetailPage() {
       const updated = await apiRequest<Quote>(`/quotes/${quote.id}`, {
         method: 'PATCH',
         body: JSON.stringify({
+          logistId: values.logistId !== quote.logist?.id ? values.logistId ?? null : undefined,
           originPoint: values.originPoint,
           destinationPoint: values.destinationPoint,
           cargoName: values.cargoName,
@@ -282,6 +297,20 @@ export function QuoteDetailPage() {
     });
   };
 
+  const takeQuote = async () => {
+    if (!quote || quote.logist || !mayTake) return;
+    setSaving(true);
+    try {
+      setQuote(await apiRequest<Quote>(`/quotes/${quote.id}/take`, { method: 'POST' }));
+      void message.success(t('quotes.messages.taken'));
+    } catch (error) {
+      showError(error);
+      await loadQuote();
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const markSent = async () => {
     if (!quote) return;
     setSaving(true);
@@ -313,6 +342,7 @@ export function QuoteDetailPage() {
   };
 
   const openWin = () => {
+    if (!quote?.logist) return;
     const onlyOption = quote?.quoteOptions.length === 1 ? quote.quoteOptions[0] : undefined;
     winForm.setFieldsValue({ optionId: onlyOption?.id });
     setWinOpen(true);
@@ -527,13 +557,18 @@ export function QuoteDetailPage() {
             <Button icon={<SendOutlined />} loading={saving} onClick={() => void markSent()}>
               {t('quotes.actions.sent')}
             </Button>
-            <Button className="create-green" icon={<TrophyOutlined />} onClick={openWin}>
+            <Button className={quote.logist ? 'create-green' : undefined} disabled={!quote.logist || saving} icon={<TrophyOutlined />} onClick={openWin}>
               {t('quotes.actions.win')}
             </Button>
             <Button danger icon={<StopOutlined />} onClick={() => setLoseOpen(true)}>
               {t('quotes.actions.lose')}
             </Button>
           </Space>
+          {!quote.logist && (
+            <Typography.Paragraph type="secondary">
+              {t('quotes.hints.assignBeforeWin')}
+            </Typography.Paragraph>
+          )}
         </Card>
       )}
 
@@ -597,9 +632,25 @@ export function QuoteDetailPage() {
               { key: 'client', label: t('quotes.fields.client'), children: <Link to="/contractors">{quote.deal.client.name}</Link> },
               { key: 'entity', label: t('quotes.fields.legalEntity'), children: quote.deal.legalEntity.name },
               { key: 'responsible', label: t('quotes.fields.responsible'), children: quote.deal.responsible.fullName },
-              { key: 'logist', label: t('quotes.fields.logist'), children: quote.logist.fullName },
+              { key: 'logist', label: t('quotes.fields.logist'), children: quote.logist?.fullName ?? (
+                <Tag bordered={false} className="quote-unassigned-tag">
+                  {t('quotes.values.unassigned')}
+                </Tag>
+              ) },
               { key: 'department', label: t('quotes.fields.department'), children: quote.deal.department?.name || t('common.dash') },
             ]} />
+            <Space wrap>
+              {mayManage && (
+                <Button type="link" onClick={openEdit} disabled={saving}>
+                  {t('quotes.actions.assignLogist')}
+                </Button>
+              )}
+              {mayTake && !quote.logist && (
+                <Button type="primary" onClick={() => void takeQuote()} loading={saving}>
+                  {t('quotes.actions.take')}
+                </Button>
+              )}
+            </Space>
           </Card>
         </aside>
       </div>
@@ -617,6 +668,20 @@ export function QuoteDetailPage() {
       >
         <Form<QuoteFormValues> form={editForm} layout="vertical" onFinish={(values) => void saveQuote(values)}>
           <div className="form-grid two">
+            <Form.Item name="logistId" label={t('quotes.fields.logist')} extra={t('quotes.hints.optionalLogist')} className="span-all">
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                placeholder={t('quotes.values.unassigned')}
+                options={[
+                  ...logists.map((item) => ({ value: item.id, label: item.fullName })),
+                  ...(quote.logist && !logists.some((item) => item.id === quote.logist?.id)
+                    ? [{ value: quote.logist.id, label: quote.logist.fullName }]
+                    : []),
+                ]}
+              />
+            </Form.Item>
             <Form.Item name="originPoint" label={t('quotes.fields.origin')} rules={[{ required: true }]}><Input /></Form.Item>
             <Form.Item name="destinationPoint" label={t('quotes.fields.destination')} rules={[{ required: true }]}><Input /></Form.Item>
             <Form.Item name="cargoName" label={t('quotes.fields.cargoName')}><Input /></Form.Item>
