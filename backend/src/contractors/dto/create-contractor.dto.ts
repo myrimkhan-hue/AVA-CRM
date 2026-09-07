@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   Min,
+  MaxLength,
   MinLength,
   ValidateIf,
   ValidateNested,
@@ -19,6 +20,7 @@ import { ContractorContactDto } from './contractor-contact.dto';
 export class CreateContractorDto {
   @IsString({ message: 'Название должно быть строкой' })
   @MinLength(1, { message: 'Укажите название контрагента' })
+  @MaxLength(300, { message: 'Название контрагента не длиннее 300 символов' })
   name!: string;
 
   @IsArray({ message: 'Типы должны быть массивом' })

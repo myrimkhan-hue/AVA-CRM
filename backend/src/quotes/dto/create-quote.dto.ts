@@ -1,4 +1,5 @@
 import { DeliveryTerms, TransportMode } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsDateString,
@@ -8,7 +9,9 @@ import {
   IsOptional,
   IsString,
   Matches,
+  Max,
   Min,
+  MaxLength,
   MinLength,
   ValidateIf,
 } from 'class-validator';
@@ -28,11 +31,22 @@ export class CreateQuoteDto {
   @MinLength(1, { message: 'Название клиента не может быть пустым' })
   clientName?: string;
 
-  @IsString() @MinLength(1) originPoint!: string;
-  @IsString() @MinLength(1) destinationPoint!: string;
-  @IsOptional() @IsString() cargoName?: string;
-  @IsOptional() @IsNumber({ maxDecimalPlaces: 3 }) @Min(0) weightKg?: number;
-  @IsOptional() @IsNumber({ maxDecimalPlaces: 3 }) @Min(0) volumeM3?: number;
+  // trim до проверки: иначе маршрут из одних пробелов проходит MinLength(1)
+  // и в базу попадает просчёт с пустым направлением.
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @MinLength(1, { message: 'Укажите пункт отправления' })
+  @MaxLength(200, { message: 'Пункт отправления не длиннее 200 символов' })
+  originPoint!: string;
+
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @MinLength(1, { message: 'Укажите пункт назначения' })
+  @MaxLength(200, { message: 'Пункт назначения не длиннее 200 символов' })
+  destinationPoint!: string;
+  @IsOptional() @IsString() @MaxLength(500, { message: 'Наименование груза не длиннее 500 символов' }) cargoName?: string;
+  @IsOptional() @IsNumber({ maxDecimalPlaces: 3 }) @Min(0) @Max(99999999, { message: 'Вес указан неправдоподобно большим' }) weightKg?: number;
+  @IsOptional() @IsNumber({ maxDecimalPlaces: 3 }) @Min(0) @Max(99999999, { message: 'Объём указан неправдоподобно большим' }) volumeM3?: number;
   @IsOptional() @IsInt() @Min(1) placesCount?: number;
   @IsOptional() @IsString() placesUnit?: string;
   @IsOptional() @IsBoolean() isDangerous?: boolean;
@@ -49,6 +63,7 @@ export class CreateQuoteDto {
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
+  @Max(999999999999, { message: 'Сумма указана неправдоподобно большой' })
   clientTargetRate?: number;
   @IsOptional()
   @Matches(/^(KZT|USD)$/, {

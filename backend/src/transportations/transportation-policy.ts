@@ -1,5 +1,6 @@
 import { ForbiddenException, BadRequestException } from '@nestjs/common';
 import { Prisma, TransportationStatus } from '@prisma/client';
+import { isFutureBusinessDay } from '../common/business-date';
 import { AuthUser } from '../auth/auth-user.type';
 
 export function transportationVisibilityWhere(
@@ -117,7 +118,10 @@ export function resolveStatusBusinessEventDate(
   if (Number.isNaN(eventDate.getTime())) {
     throw new BadRequestException('Дата события указана неверно');
   }
-  if (eventDate.getTime() > now.getTime()) {
+  // Сравнение по календарным дням в поясе компании — см. business-date.ts:
+  // сервер работает по UTC, и до пяти утра по Алматы сегодняшнее событие
+  // выглядело бы будущим и отвергалось.
+  if (isFutureBusinessDay(eventDate, now)) {
     throw new BadRequestException('Дата события не может быть в будущем');
   }
   return eventDate;

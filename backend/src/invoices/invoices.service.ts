@@ -12,6 +12,7 @@ import {
   TaxRateKind,
 } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
+import { isFutureBusinessDay } from '../common/business-date';
 import { LegalEntitiesService } from '../legal-entities/legal-entities.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
@@ -561,6 +562,12 @@ export class InvoicesService {
   async addPayment(id: string, dto: CreatePaymentDto, user: AuthUser) {
     const current = await this.getActiveVisibleInvoice(id, user);
     const paymentDate = this.parseDate(dto.paymentDate);
+    // То же правило, что и для событий перевозки: деньги не могут прийти завтра.
+    // Без него опечатка в годе делала счёт оплаченным задним числом из будущего.
+    // Сравнение по календарным дням в поясе компании — см. business-date.ts.
+    if (isFutureBusinessDay(paymentDate)) {
+      throw new BadRequestException('Дата оплаты не может быть в будущем');
+    }
 
     const updated = await this.prisma.$transaction(async (tx) => {
       const payment = await tx.invoicePayment.create({

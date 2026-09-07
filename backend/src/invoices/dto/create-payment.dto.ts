@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   Min,
 } from 'class-validator';
 
@@ -20,6 +21,7 @@ export class CreatePaymentDto {
     { message: 'Сумма оплаты должна быть числом с точностью до двух знаков' },
   )
   @Min(0.01, { message: 'Сумма оплаты должна быть больше нуля' })
+  @Max(999999999999, { message: 'Сумма оплаты указана неправдоподобно большой' })
   amount!: number;
 
   @IsOptional()
