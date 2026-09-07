@@ -10,7 +10,7 @@ import { MoneyInput } from '../components/MoneyInput';
 import { compact, CURRENCIES, errorText, MODES, TransportMode } from '../transportations/shared';
 
 interface Deal { id: string; number: string; client: { name: string }; legalEntity: { name: string }; responsible: { fullName: string } }
-interface Ref { id: string; name?: string; fullName?: string; isActive?: boolean }
+interface Ref { id: string; name?: string; fullName?: string; isActive?: boolean; roles?: string[]; department?: { id: string; name: string } | null }
 interface Values {
   dealId?: string; logistId?: string; plannedDeliveryDate?: Dayjs; cargoName?: string; placesCount?: number; placesUnit?: string;
   weightKg?: number; volumeM3?: number; cargoValue?: number; cargoValueCurrency?: string; transportMode: TransportMode;
@@ -41,15 +41,35 @@ export function NewTransportationPage() {
   const values = Form.useWatch([], form) ?? form.getFieldsValue();
   const selectedDeal = deals.find((item) => item.id === values.dealId);
   const canSeeClientRate = Boolean(user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'FINANCIER', 'DEPARTMENT_HEAD', 'MANAGER'].includes(role)));
-  const isAdmin = Boolean(user?.roles.includes('ADMIN'));
+  // Назначать логиста может не только администратор: по правилу сервера
+  // (assertCanAssignTransportationResponsible) руководитель назначает любого,
+  // руководитель отдела — сотрудника своего отдела, остальные — только себя.
+  // Поэтому поле показываем трём ролям, а список кандидатов сужаем так же,
+  // как его сузит сервер, — иначе выбор упрётся в отказ уже после отправки.
+  const mayAssignLogist = Boolean(user?.roles.some((role) => (
+    ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD'].includes(role)
+  )));
+  const seesAllDepartments = Boolean(user?.roles.some((role) => (
+    ['ADMIN', 'DIRECTOR'].includes(role)
+  )));
 
   const showError = useCallback((error: unknown) => void message.error(errorText(error, t('errors.connection'))), [message, t]);
   useEffect(() => {
     apiRequest<Deal[]>('/deals').then((items) => { setDeals(items); setDealUnavailable(items.length === 0); }).catch((error) => {
       if (error instanceof ApiError && error.status === 403) setDealUnavailable(true); else showError(error);
     });
-    if (isAdmin) apiRequest<Ref[]>('/users').then((items) => setUsers(items.filter((item) => item.isActive !== false))).catch(showError);
-  }, [isAdmin, showError]);
+    // Справочник сотрудников, а не /users: тот закрыт на администратора,
+    // и до этой правки менеджер вообще не мог выбрать ответственного.
+    if (mayAssignLogist) {
+      apiRequest<Ref[]>('/references/users')
+        .then((items) => setUsers(items.filter((item) => (
+          item.isActive !== false
+          && item.roles?.includes('LOGIST')
+          && (seesAllDepartments || item.department?.id === user?.departmentId)
+        ))))
+        .catch(showError);
+    }
+  }, [mayAssignLogist, seesAllDepartments, showError, user?.departmentId]);
 
   const findCarriers = async (search = '') => {
     try {
@@ -109,7 +129,7 @@ export function NewTransportationPage() {
           <div className="form-grid two"><Form.Item name="dealId" label={t('transportationWizard.fields.deal')} rules={[{ required: true, message: t('transportationWizard.validation.deal') }]}><Select showSearch disabled={dealUnavailable} optionFilterProp="label" placeholder={t('transportationWizard.dealPlaceholder')} options={deals.map((deal) => ({ value: deal.id, label: `${deal.number} · ${deal.client.name}` }))} /></Form.Item>
           <Form.Item label={t('transportationWizard.fields.client')}><Input disabled value={selectedDeal?.client.name} /></Form.Item>
           <Form.Item label={t('transportationWizard.fields.legalEntity')}><Input disabled value={selectedDeal?.legalEntity.name} /></Form.Item>
-          {isAdmin && <Form.Item name="logistId" label={t('transportationWizard.fields.logist')}><Select allowClear options={users.map((item) => ({ value: item.id, label: item.fullName }))} /></Form.Item>}
+          {mayAssignLogist && <Form.Item name="logistId" label={t('transportationWizard.fields.logist')}><Select allowClear options={users.map((item) => ({ value: item.id, label: item.fullName }))} /></Form.Item>}
           {field('plannedDeliveryDate', t('transportationWizard.fields.plannedDelivery'), <DatePicker className="full-width" />)}</div></div>
         <div style={{ display: step === 1 ? undefined : 'none' }}><Typography.Title level={4}>{t('transportationWizard.sections.cargo')}</Typography.Title><div className="form-grid three">
           {field('cargoName', t('transportationWizard.fields.cargoName'))}<Form.Item label={t('transportationWizard.fields.places')}><Space.Compact block><Form.Item name="placesCount" noStyle><InputNumber min={1} /></Form.Item><Form.Item name="placesUnit" noStyle><Select options={['паллеты','коробки','ролики','биг-бэги','места'].map((value) => ({ value, label: t(`transportationWizard.units.${value}`) }))} /></Form.Item></Space.Compact></Form.Item>
