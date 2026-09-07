@@ -6,6 +6,9 @@ import { DashboardQueryDto } from './dto/dashboard-query.dto';
 import { sendXlsx } from './lib/send-xlsx';
 import { ReportsExportService } from './reports-export.service';
 import { ReportsService } from './reports.service';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { AuthUser } from '../auth/auth-user.type';
+import { QuoteConversionQueryDto } from './dto/quote-conversion-query.dto';
 
 @Roles('ADMIN', 'DIRECTOR', 'FINANCIER')
 @Controller('reports')
@@ -18,6 +21,18 @@ export class ReportsController {
   @Get('dashboard')
   dashboard(@Query() query: DashboardQueryDto) {
     return this.reportsService.getDashboard(query);
+  }
+
+  @Roles('ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD')
+  @Get('quote-conversion')
+  quoteConversion(@Query() query: QuoteConversionQueryDto, @CurrentUser() user: AuthUser) {
+    return this.reportsService.getQuoteConversion(query, user);
+  }
+
+  @Roles('ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD')
+  @Get('quote-conversion/export')
+  async exportQuoteConversion(@Query() query: QuoteConversionQueryDto, @CurrentUser() user: AuthUser, @Res() res: Response) {
+    sendXlsx(res, await this.reportsExportService.exportQuoteConversion(query, user));
   }
 
   @Get('dashboard/export')

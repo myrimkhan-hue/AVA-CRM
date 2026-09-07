@@ -11,6 +11,10 @@ export function ReportsLayout() {
   const canView = Boolean(
     user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'FINANCIER'].includes(role)),
   );
+  const canViewQuoteConversion = Boolean(
+    user?.roles.some((role) => ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD'].includes(role)),
+  );
+  const isQuoteConversion = location.pathname === '/reports/quote-conversion';
 
   const activeKey = location.pathname.includes('/reports/receivables')
     ? 'receivables'
@@ -20,19 +24,26 @@ export function ReportsLayout() {
         ? 'cash-calendar'
         : 'dashboard';
 
-  if (!canView) return <Navigate to="/" replace />;
+  if (isQuoteConversion ? !canViewQuoteConversion : !canView) {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <div className="settings-page">
       <Tabs
         className="settings-tabs"
-        activeKey={activeKey}
+        activeKey={isQuoteConversion ? 'quote-conversion' : activeKey}
         onChange={(key) => navigate(`/reports/${key}`)}
         items={[
+          ...(canView ? [
           { key: 'dashboard', label: t('reports.tabs.dashboard') },
           { key: 'cash-calendar', label: t('reports.tabs.cashCalendar') },
           { key: 'receivables', label: t('reports.tabs.receivables') },
           { key: 'payables', label: t('reports.tabs.payables') },
+          ] : []),
+          ...(canViewQuoteConversion ? [
+            { key: 'quote-conversion', label: t('reports.quoteConversion.title') },
+          ] : []),
         ]}
       />
       <Outlet />

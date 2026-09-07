@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CashCalendarQueryDto } from './dto/cash-calendar-query.dto';
 import { DashboardQueryDto } from './dto/dashboard-query.dto';
+import { QuoteConversionQueryDto } from './dto/quote-conversion-query.dto';
+import { AuthUser } from '../auth/auth-user.type';
+import { QuoteConversionMetrics, QuoteConversionResult } from './quote-conversion.types';
+import { ru } from '../locales/ru';
 import { buildXlsx, xlsxFileName, XlsxSheet } from './lib/build-xlsx';
 import {
   CashCalendarPeriod,
@@ -44,6 +48,59 @@ const PAYMENT_REQUEST_STATUS_LABELS: Record<string, string> = {
 @Injectable()
 export class ReportsExportService {
   constructor(private readonly reportsService: ReportsService) {}
+
+  async exportQuoteConversion(query: QuoteConversionQueryDto, user: AuthUser): Promise<XlsxExport> {
+    const result = await this.reportsService.getQuoteConversion(query, user);
+    const labels = ru.quoteConversion;
+    const metricColumns = [
+      { header: labels.total, value: (row: QuoteConversionMetrics) => row.total, type: 'number' as const },
+      { header: labels.won, value: (row: QuoteConversionMetrics) => row.won, type: 'number' as const },
+      { header: labels.lost, value: (row: QuoteConversionMetrics) => row.lost, type: 'number' as const },
+      { header: labels.inProgress, value: (row: QuoteConversionMetrics) => row.inProgress, type: 'number' as const },
+      { header: labels.conversionPercent, value: (row: QuoteConversionMetrics) => row.conversionPercent, type: 'number' as const },
+    ];
+    const buffer = await buildXlsx([
+      {
+        name: labels.summary,
+        columns: [
+          { header: labels.indicator, value: (row: { label: string }) => row.label, width: 40 },
+          { header: labels.value, value: (row: { value: string | number }) => row.value, width: 24 },
+        ],
+        rows: [
+          { label: labels.from, value: result.period.from },
+          { label: labels.to, value: result.period.to },
+          ...(['total', 'won', 'lost', 'inProgress', 'conversionPercent'] as const).map((key) => ({ label: labels[key], value: result.summary[key] })),
+          { label: labels.stalledRateSent, value: result.stalledRateSentCount },
+          { label: labels.stalledDays, value: result.stalledDays },
+        ],
+      },
+      {
+        name: labels.byManager,
+        columns: [{ header: labels.manager, value: (row: { name: string | null }) => row.name ?? labels.unassigned, width: 32 }, ...metricColumns],
+        rows: result.byManager,
+      },
+      {
+        name: labels.byLogist,
+        columns: [{ header: labels.logist, value: (row: { name: string | null }) => row.name ?? labels.unassigned, width: 32 }, ...metricColumns],
+        rows: result.byLogist,
+      },
+      {
+        name: labels.byDirection,
+        columns: [{ header: labels.direction, value: (row: { originPoint: string; destinationPoint: string }) => `${row.originPoint} — ${row.destinationPoint}`, width: 40 }, ...metricColumns],
+        rows: result.byDirection,
+      },
+      {
+        name: labels.byRejectReason,
+        columns: [
+          { header: labels.reason, value: (row: QuoteConversionResult['byRejectReason'][number]) => row.reason ? labels.rejectReasons[row.reason] : labels.unknownReason, width: 32 },
+          { header: labels.count, value: (row: { count: number }) => row.count, type: 'number' },
+          { header: labels.sharePercent, value: (row: { sharePercent: number }) => row.sharePercent, type: 'number' },
+        ],
+        rows: result.byRejectReason,
+      },
+    ]);
+    return { buffer, filename: xlsxFileName(labels.title) };
+  }
 
   async exportReceivables(): Promise<XlsxExport> {
     const rows = await this.reportsService.getReceivables();

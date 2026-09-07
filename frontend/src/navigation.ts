@@ -17,7 +17,7 @@ export type NavigationIconName =
   | 'users'
   | 'settings';
 
-export type NavigationItemId = NavigationIconName;
+export type NavigationItemId = NavigationIconName | 'quoteConversion';
 
 export interface NavigationItem {
   id: NavigationItemId;
@@ -31,6 +31,7 @@ export interface NavigationItem {
 const LEAD_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER'];
 const INVOICE_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'FINANCIER'];
 const REPORT_ROLES = ['ADMIN', 'DIRECTOR', 'FINANCIER'];
+const QUOTE_REPORT_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD'];
 const SETTINGS_ROLES = ['ADMIN', 'FINANCIER'];
 const QUOTE_ROLES = ['ADMIN', 'DIRECTOR', 'DEPARTMENT_HEAD', 'MANAGER', 'LOGIST'];
 
@@ -125,6 +126,13 @@ export const NAVIGATION_GROUPS: NavigationItem[][] = [
       labelKey: 'nav.reports',
       icon: 'reports',
       isVisible: (roles) => hasAnyRole(roles, REPORT_ROLES),
+    },
+    {
+      id: 'quoteConversion',
+      path: '/reports/quote-conversion',
+      labelKey: 'reports.quoteConversion.title',
+      icon: 'reports',
+      isVisible: (roles) => hasAnyRole(roles, QUOTE_REPORT_ROLES),
     },
   ],
   [

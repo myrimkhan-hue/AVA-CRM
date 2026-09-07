@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { DealStage, InvoiceStatus, PaymentRequestStatus, Prisma, TransportationStatus } from '@prisma/client';
 import { MarginService } from '../deals/margin.service';
 import { DealMarginResult } from '../deals/margin-calculator';
@@ -6,6 +6,12 @@ import { ExchangeRatesService } from '../currencies/exchange-rates.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CashCalendarQueryDto } from './dto/cash-calendar-query.dto';
 import { DashboardQueryDto } from './dto/dashboard-query.dto';
+import { AuthUser } from '../auth/auth-user.type';
+import { QuoteConversionQueryDto } from './dto/quote-conversion-query.dto';
+import { QuoteConversionMetrics, QuoteConversionPerson, QuoteConversionDirection, QuoteConversionResult } from './quote-conversion.types';
+import { DEFAULT_DEAL_STALLED_DAYS, NOTIFICATION_SETTINGS_ID } from '../notifications/notifications.constants';
+import { isDealStalled } from '../notifications/notifications-rules';
+import { ru as reportRu } from '../locales/ru';
 
 export interface ReceivableRow {
   invoiceId: string;
@@ -210,6 +216,107 @@ export class ReportsService {
       topDebtors,
       topCreditors,
       cashCalendar,
+    };
+  }
+
+  async getQuoteConversion(query: QuoteConversionQueryDto, user: AuthUser): Promise<QuoteConversionResult> {
+    const allDepartments = user.roles.some((role) => ['ADMIN', 'DIRECTOR'].includes(role));
+    if (!allDepartments && (!user.roles.includes('DEPARTMENT_HEAD') || !user.departmentId)) {
+      throw new ForbiddenException(reportRu.quoteConversion.forbidden);
+    }
+    if (!allDepartments && query.departmentId && query.departmentId !== user.departmentId) {
+      throw new ForbiddenException(reportRu.quoteConversion.forbidden);
+    }
+    const departmentId = allDepartments ? query.departmentId : user.departmentId!;
+    const defaults = this.resolvePeriod({});
+    const start = query.from ? this.parseDate(query.from) : defaults.start;
+    const end = query.to ? this.parseDate(query.to) : defaults.end;
+    if (end < start) throw new BadRequestException(reportRu.quoteConversion.invalidPeriod);
+
+    // После выигрыша isQuoteDraft снимается, поэтому по одному этому признаку
+    // выигранные заявки не найти — конверсия всегда была бы нулевой. Следом за
+    // просчётом остаются его варианты расчёта: они и служат признаком того, что
+    // перевозка выросла из запроса. Удалённые варианты тоже считаются признаком,
+    // а вот удалённые заявки и перевозки в отчёт не попадают.
+    const quoteTransportation: Prisma.TransportationWhereInput = {
+      deletedAt: null,
+      OR: [{ isQuoteDraft: true }, { quoteOptions: { some: {} } }],
+    };
+    const [deals, settings] = await Promise.all([
+      this.prisma.deal.findMany({
+        where: {
+          deletedAt: null,
+          departmentId,
+          createdAt: { gte: start, lte: this.endOfDay(end) },
+          stage: { in: DEAL_STAGE_ORDER },
+          transportations: { some: quoteTransportation },
+        },
+        select: {
+          id: true, stage: true, rejectReason: true, createdAt: true,
+          responsible: { select: { id: true, fullName: true } },
+          transportations: {
+            where: quoteTransportation,
+            orderBy: { sequenceInDeal: 'asc' },
+            take: 1,
+            select: {
+              originPoint: true, destinationPoint: true,
+              logist: { select: { id: true, fullName: true } },
+            },
+          },
+        },
+      }),
+      this.prisma.notificationSettings.findUnique({ where: { id: NOTIFICATION_SETTINGS_ID } }),
+    ]);
+    const empty = (): QuoteConversionMetrics => ({ total: 0, won: 0, lost: 0, inProgress: 0, conversionPercent: 0 });
+    const summary = empty();
+    const managers = new Map<string, QuoteConversionPerson>();
+    const logists = new Map<string | null, QuoteConversionPerson>();
+    const directions = new Map<string, QuoteConversionDirection>();
+    const reasons = new Map<QuoteConversionResult['byRejectReason'][number]['reason'], number>();
+    const count = (metrics: QuoteConversionMetrics, stage: DealStage) => {
+      metrics.total += 1;
+      if (AGREED_OR_LATER_STAGES.includes(stage)) metrics.won += 1;
+      else if (stage === DealStage.REJECTED) metrics.lost += 1;
+      else metrics.inProgress += 1;
+      const resolved = metrics.won + metrics.lost;
+      metrics.conversionPercent = resolved ? this.round2(metrics.won / resolved * 100) : 0;
+    };
+    for (const deal of deals) {
+      const transportation = deal.transportations[0];
+      const manager = managers.get(deal.responsible.id) ?? { id: deal.responsible.id, name: deal.responsible.fullName, ...empty() };
+      const logistId = transportation.logist?.id ?? null;
+      const logist = logists.get(logistId) ?? { id: logistId, name: transportation.logist?.fullName ?? null, ...empty() };
+      const directionId = JSON.stringify([transportation.originPoint, transportation.destinationPoint]);
+      const direction = directions.get(directionId) ?? { id: directionId, originPoint: transportation.originPoint, destinationPoint: transportation.destinationPoint, ...empty() };
+      for (const metrics of [summary, manager, logist, direction]) count(metrics, deal.stage);
+      managers.set(manager.id!, manager);
+      logists.set(logistId, logist);
+      directions.set(directionId, direction);
+      if (deal.stage === DealStage.REJECTED) reasons.set(deal.rejectReason, (reasons.get(deal.rejectReason) ?? 0) + 1);
+    }
+    const stalledDays = settings?.dealStalledDays ?? DEFAULT_DEAL_STALLED_DAYS;
+    const sent = deals.filter((deal) => deal.stage === DealStage.RATE_SENT);
+    const logs = sent.length ? await this.prisma.auditLog.findMany({
+      where: { entityType: 'Deal', entityId: { in: sent.map((deal) => deal.id) } },
+      orderBy: { createdAt: 'desc' },
+      select: { entityId: true, changes: true, createdAt: true },
+    }) : [];
+    const stageDates = new Map<string, Date>();
+    for (const log of logs) {
+      if (!stageDates.has(log.entityId) && log.changes && typeof log.changes === 'object' && 'stage' in log.changes) {
+        stageDates.set(log.entityId, log.createdAt);
+      }
+    }
+    const now = new Date();
+    return {
+      period: { from: this.dateString(start), to: this.dateString(end) },
+      summary,
+      byManager: [...managers.values()].sort((a, b) => b.total - a.total || (a.name ?? '').localeCompare(b.name ?? '')),
+      byLogist: [...logists.values()].sort((a, b) => b.total - a.total || (a.name ?? '').localeCompare(b.name ?? '')),
+      byDirection: [...directions.values()].sort((a, b) => b.total - a.total || a.id.localeCompare(b.id)),
+      byRejectReason: [...reasons].map(([reason, count]) => ({ reason, count, sharePercent: summary.lost ? this.round2(count / summary.lost * 100) : 0 })).sort((a, b) => b.count - a.count),
+      stalledRateSentCount: sent.filter((deal) => isDealStalled(stageDates.get(deal.id) ?? deal.createdAt, now, stalledDays)).length,
+      stalledDays,
     };
   }
 

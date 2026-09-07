@@ -37,6 +37,7 @@ import { OperatingExpenseTypesPage } from './pages/OperatingExpenseTypesPage';
 import { QuotesPage } from './pages/QuotesPage';
 import { NewQuotePage } from './pages/NewQuotePage';
 import { QuoteDetailPage } from './pages/QuoteDetailPage';
+import { QuoteConversionPage } from './pages/QuoteConversionPage';
 
 const INVOICE_ROLES = [
   'ADMIN',
@@ -152,6 +153,7 @@ export default function App() {
             <Route path="cash-calendar" element={<CashCalendarPage />} />
             <Route path="receivables" element={<ReceivablesPage />} />
             <Route path="payables" element={<PayablesPage />} />
+            <Route path="quote-conversion" element={<QuoteConversionPage />} />
           </Route>
           <Route path="motivation" element={<MotivationLayout />}>
             <Route index element={<Navigate to="my" replace />} />

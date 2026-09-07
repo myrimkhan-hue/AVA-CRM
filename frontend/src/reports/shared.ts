@@ -105,3 +105,22 @@ export interface DashboardResult {
   topCreditors: Array<{ payeeId: string; payeeName: string; amountKzt: number }>;
   cashCalendar: CashCalendarResult;
 }
+
+export interface QuoteConversionMetrics {
+  total: number;
+  won: number;
+  lost: number;
+  inProgress: number;
+  conversionPercent: number;
+}
+
+export interface QuoteConversionResult {
+  period: { from: string; to: string };
+  summary: QuoteConversionMetrics;
+  byManager: Array<QuoteConversionMetrics & { id: string; name: string }>;
+  byLogist: Array<QuoteConversionMetrics & { id: string | null; name: string | null }>;
+  byDirection: Array<QuoteConversionMetrics & { id: string; originPoint: string; destinationPoint: string }>;
+  byRejectReason: Array<{ reason: string | null; count: number; sharePercent: number }>;
+  stalledRateSentCount: number;
+  stalledDays: number;
+}
