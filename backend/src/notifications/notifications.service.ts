@@ -167,6 +167,7 @@ export class NotificationsService {
       select: { id: true, number: true, logistId: true, status: true, plannedDeliveryDate: true },
     });
     for (const item of candidates) {
+      if (!item.logistId) continue;
       if (!isTransportationOverdue(item.status, item.plannedDeliveryDate, today)) continue;
       await this.notifyOnce(
         item.logistId,

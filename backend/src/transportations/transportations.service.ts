@@ -12,6 +12,7 @@ import {
   TransportationStatus,
 } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
+import { ru } from '../locales/ru';
 import { MarginService } from '../deals/margin.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -186,9 +187,9 @@ export class TransportationsService {
           await this.writeAudit(tx, user.id, row.id, AuditAction.CREATE, this.creationChanges(row));
           return row;
         });
-        if (created.logistId !== user.id) {
+        if (logistId !== user.id) {
           await this.notificationsService.notify(
-            created.logistId,
+            logistId,
             NotificationType.RESPONSIBLE_ASSIGNED,
             'Вам назначена перевозка',
             `Вы назначены ответственным по перевозке ${created.number}`,
@@ -211,6 +212,7 @@ export class TransportationsService {
   }
 
   async update(id: string, dto: UpdateTransportationDto, user: AuthUser) {
+    if (dto.logistId === null) throw new BadRequestException(ru.transportations.logistRequired);
     this.ensureClientRateAccess(dto, user);
     const current = await this.getActiveVisible(id, user);
     if (dto.logistId) await this.ensureResponsibleAssignment(dto.logistId, user);
@@ -235,7 +237,7 @@ export class TransportationsService {
     });
     if (dto.logistId && dto.logistId !== current.logistId && dto.logistId !== user.id) {
       await this.notificationsService.notify(
-        updated.logistId,
+        dto.logistId,
         NotificationType.RESPONSIBLE_ASSIGNED,
         'Вам назначена перевозка',
         `Вы назначены ответственным по перевозке ${updated.number}`,

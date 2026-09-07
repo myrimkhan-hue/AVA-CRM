@@ -10,11 +10,29 @@ import {
 export function quoteVisibilityWhere(
   user: AuthUser,
 ): Prisma.TransportationWhereInput {
+  if (user.roles.some((role) => ['ADMIN', 'DIRECTOR'].includes(role))) return {};
   // У финансиста нет самостоятельного права видеть просчёты, но остальные его роли продолжают действовать.
-  return transportationVisibilityWhere({
+  const assigned = transportationVisibilityWhere({
     ...user,
     roles: user.roles.filter((role) => role !== 'FINANCIER'),
   });
+  if (!user.roles.some((role) => ['LOGIST', 'DEPARTMENT_HEAD'].includes(role))) {
+    return assigned;
+  }
+  return {
+    OR: [
+      assigned,
+      {
+        logistId: null,
+        deal: {
+          OR: [
+            { departmentId: null },
+            ...(user.departmentId ? [{ departmentId: user.departmentId }] : []),
+          ],
+        },
+      },
+    ],
+  };
 }
 
 export function assertCanEditQuoteClientRate(

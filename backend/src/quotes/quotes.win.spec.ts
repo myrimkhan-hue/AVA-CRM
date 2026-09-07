@@ -14,7 +14,7 @@ const manager: AuthUser = {
 function fixture() {
   const deal = {
     id: 'deal-1',
-    number: 'AVA-2026-0001',
+    number: 'Р-2026-0001',
     legalEntityId: 'legal-1',
     clientId: 'client-1',
     responsibleId: manager.id,
@@ -27,7 +27,7 @@ function fixture() {
     clientTargetRate: new Prisma.Decimal(1200),
     clientTargetRateCurrency: 'USD',
     client: { id: 'client-1', isProspect: true },
-    legalEntity: { id: 'legal-1' },
+    legalEntity: { id: 'legal-1', numberingPrefix: 'AVA' },
     responsible: { id: manager.id, fullName: manager.fullName },
     department: { id: 'department-1' },
   };
@@ -48,6 +48,7 @@ function fixture() {
   const transportation = {
     id: 'quote-1',
     dealId: deal.id,
+    logistId: 'logist-1',
     number: 'Р-2026-0001',
     sequenceInDeal: 1,
     isQuoteDraft: true,
@@ -66,6 +67,7 @@ function fixture() {
   const audits: Array<Record<string, unknown>> = [];
 
   const tx = {
+    dealNumberSequence: { upsert: jest.fn().mockResolvedValue({ lastNumber: 1 }) },
     quoteOption: {
       updateMany: jest.fn(async () => {
         transportation.quoteOptions.forEach((item) => {
@@ -148,7 +150,8 @@ describe('Выигрыш просчёта', () => {
     expect(state.deal.rejectComment).toBeNull();
     expect(state.deal.client.isProspect).toBe(false);
     expect(state.transportation.isQuoteDraft).toBe(false);
-    expect(state.transportation.number).toBe('AVA-2026-0001/1');
+    expect(state.transportation.number).toBe(`AVA-${new Date().getFullYear()}-0001/1`);
+    expect(state.tx.dealNumberSequence.upsert).toHaveBeenCalledTimes(1);
     expect(String(state.transportation.clientRate)).toBe('1200');
     expect(state.transportation.clientRateCurrency).toBe('USD');
     expect(state.transportation.bodyType).toBe('Тент');

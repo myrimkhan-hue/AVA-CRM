@@ -13,6 +13,8 @@ import {
 } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
 import { ExchangeRatesService } from '../currencies/exchange-rates.service';
+import { allocateDealNumber } from '../deals/deal-number';
+import { ru } from '../locales/ru';
 import { PrismaService } from '../prisma/prisma.service';
 import { assertCanAssignTransportationResponsible } from '../transportations/transportation-policy';
 import {
@@ -100,29 +102,18 @@ export class QuotesService {
             select: { departmentId: true },
           });
           const departmentId = dto.departmentId ?? responsible.departmentId;
-          const legalEntity = await tx.legalEntity.findUniqueOrThrow({
-            where: { id: dto.legalEntityId },
-          });
           const year = new Date().getFullYear();
-          const [dealSequence, quoteSequence] = await Promise.all([
-            tx.dealNumberSequence.upsert({
-              where: {
-                legalEntityId_year: { legalEntityId: dto.legalEntityId, year },
-              },
-              create: { legalEntityId: dto.legalEntityId, year, lastNumber: 1 },
-              update: { lastNumber: { increment: 1 } },
-            }),
-            tx.quoteNumberSequence.upsert({
-              where: {
-                legalEntityId_year: { legalEntityId: dto.legalEntityId, year },
-              },
-              create: { legalEntityId: dto.legalEntityId, year, lastNumber: 1 },
-              update: { lastNumber: { increment: 1 } },
-            }),
-          ]);
+          const quoteSequence = await tx.quoteNumberSequence.upsert({
+            where: {
+              legalEntityId_year: { legalEntityId: dto.legalEntityId, year },
+            },
+            create: { legalEntityId: dto.legalEntityId, year, lastNumber: 1 },
+            update: { lastNumber: { increment: 1 } },
+          });
+          const quoteNumber = `Р-${year}-${String(quoteSequence.lastNumber).padStart(4, '0')}`;
           const deal = await tx.deal.create({
             data: {
-              number: `${legalEntity.numberingPrefix}-${year}-${String(dealSequence.lastNumber).padStart(4, '0')}`,
+              number: quoteNumber,
               legalEntityId: dto.legalEntityId,
               clientId,
               responsibleId,
@@ -142,7 +133,7 @@ export class QuotesService {
               ...(vehicleType
                 ? { quoteOptions: { create: [{ sequence: 1, vehicleType }] } }
                 : {}),
-              number: `Р-${year}-${String(quoteSequence.lastNumber).padStart(4, '0')}`,
+              number: quoteNumber,
               isQuoteDraft: true,
               dealId: deal.id,
               sequenceInDeal: 1,
@@ -253,8 +244,10 @@ export class QuotesService {
 
   async update(id: string, dto: UpdateQuoteDto, user: AuthUser) {
     const current = await this.active(id, user);
+    await this.ensureLogist(dto.logistId);
     await this.ensureRate(dto.clientTargetRateCurrency, dto.quoteRateDate);
     const transportationData = this.defined({
+      logistId: dto.logistId,
       originPoint: dto.originPoint?.trim(),
       destinationPoint: dto.destinationPoint?.trim(),
       cargoName: this.text(dto.cargoName),
@@ -275,11 +268,14 @@ export class QuotesService {
     const row = await this.prisma.$transaction(async (tx) => {
       if (Object.keys(dealData).length)
         await tx.deal.update({ where: { id: current.dealId }, data: dealData });
-      const updated = await tx.transportation.update({
-        where: { id },
+      const changed = await tx.transportation.updateMany({
+        where: { id, isQuoteDraft: true, deletedAt: null },
         data: transportationData,
-        include,
       });
+      if (changed.count !== 1) {
+        throw new BadRequestException(ru.quotes.inactive);
+      }
+      const updated = await tx.transportation.findUniqueOrThrow({ where: { id }, include });
       await this.audit(tx, user.id, current.dealId, AuditAction.UPDATE, {
         quote: { old: this.snapshot(current), new: this.snapshot(updated) },
       });
@@ -404,8 +400,29 @@ export class QuotesService {
     return this.stage(id, DealStage.REJECTED, user, dto);
   }
 
+  async take(id: string, user: AuthUser) {
+    const current = await this.active(id, user);
+    const row = await this.prisma.$transaction(async (tx) => {
+      const assigned = await tx.transportation.updateMany({
+        where: { id, isQuoteDraft: true, deletedAt: null, logistId: null },
+        data: { logistId: user.id },
+      });
+      if (assigned.count !== 1) {
+        throw new BadRequestException(ru.quotes.alreadyTaken);
+      }
+      await this.audit(tx, user.id, current.dealId, AuditAction.UPDATE, {
+        logistId: { old: null, new: user.id },
+      });
+      return tx.transportation.findUniqueOrThrow({ where: { id }, include });
+    });
+    return this.present(row, user);
+  }
+
   async win(id: string, dto: WinQuoteDto, user: AuthUser) {
     const current = await this.visibleForWin(id, user);
+    if (!current.logistId) {
+      throw new BadRequestException(ru.quotes.assignLogistBeforeWin);
+    }
     const option = current.quoteOptions.find((item) => item.id === dto.optionId);
     if (!option) {
       throw new BadRequestException(
@@ -432,16 +449,16 @@ export class QuotesService {
         _max: { sequenceInDeal: true },
       });
       const sequenceInDeal = (aggregate._max.sequenceInDeal ?? 0) + 1;
-      const number = `${current.deal.number}/${sequenceInDeal}`;
-
-      await tx.deal.update({
+      const deal = await tx.deal.update({
         where: { id: current.dealId },
         data: {
+          number: await allocateDealNumber(tx, current.deal.legalEntity),
           stage: DealStage.AGREED,
           rejectReason: null,
           rejectComment: null,
         },
       });
+      const number = `${deal.number}/${sequenceInDeal}`;
       if (current.deal.client.isProspect) {
         await tx.contractor.update({
           where: { id: current.deal.clientId },
@@ -450,7 +467,7 @@ export class QuotesService {
       }
 
       const promoted = await tx.transportation.updateMany({
-        where: { id, isQuoteDraft: true },
+        where: { id, isQuoteDraft: true, logistId: { not: null } },
         data: {
           isQuoteDraft: false,
           number,
@@ -461,7 +478,7 @@ export class QuotesService {
         },
       });
       if (promoted.count !== 1) {
-        throw new BadRequestException('Просчёт уже выигран');
+        throw new BadRequestException(ru.quotes.winConflict);
       }
 
       if (option.carrierId) {
@@ -485,6 +502,7 @@ export class QuotesService {
 
       await this.audit(tx, user.id, current.dealId, AuditAction.UPDATE, {
         stage: { old: current.deal.stage, new: DealStage.AGREED },
+        dealNumber: { old: current.deal.number, new: deal.number },
         selectedOptionId: { old: null, new: option.id },
         transportationNumber: { old: current.number, new: number },
         isQuoteDraft: { old: true, new: false },
@@ -655,11 +673,11 @@ export class QuotesService {
   private async ensureAssignments(
     legalEntityId: string,
     responsibleId: string,
-    logistId: string,
+    logistId: string | null | undefined,
     departmentId: string | undefined,
     user: AuthUser,
   ) {
-    const [legal, responsible, logist, department] = await Promise.all([
+    const [legal, responsible, , department] = await Promise.all([
       this.prisma.legalEntity.findFirst({
         where: { id: legalEntityId, isActive: true },
       }),
@@ -667,13 +685,7 @@ export class QuotesService {
         where: { id: responsibleId, isActive: true },
         select: { id: true, departmentId: true },
       }),
-      this.prisma.user.findFirst({
-        where: {
-          id: logistId,
-          isActive: true,
-          roles: { some: { role: { code: 'LOGIST' } } },
-        },
-      }),
+      this.ensureLogist(logistId),
       departmentId
         ? this.prisma.department.findUnique({ where: { id: departmentId } })
         : Promise.resolve(true),
@@ -682,8 +694,18 @@ export class QuotesService {
     if (!responsible)
       throw new BadRequestException('Активный менеджер не найден');
     assertCanAssignTransportationResponsible(user, responsible);
-    if (!logist) throw new BadRequestException('Активный логист не найден');
     if (!department) throw new BadRequestException('Отдел не найден');
+  }
+  private async ensureLogist(id?: string | null) {
+    if (id === undefined || id === null) return;
+    const logist = await this.prisma.user.findFirst({
+      where: {
+        id,
+        isActive: true,
+        roles: { some: { role: { code: 'LOGIST' } } },
+      },
+    });
+    if (!logist) throw new BadRequestException('Активный логист не найден');
   }
   private async existingClient(tx: Prisma.TransactionClient, id: string) {
     const row = await tx.contractor.findFirst({

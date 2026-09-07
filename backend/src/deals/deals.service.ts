@@ -10,6 +10,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { canSeeTransportationClientRate } from '../transportations/transportation-policy';
 import { dealVisibilityWhere } from './deal-policy';
+import { allocateDealNumber } from './deal-number';
 import { CreateDealDto } from './dto/create-deal.dto';
 import { DealQueryDto } from './dto/deal-query.dto';
 import { UpdateDealStageDto } from './dto/update-deal-stage.dto';
@@ -110,13 +111,7 @@ export class DealsService {
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       try {
         const created = await this.prisma.$transaction(async (tx) => {
-          const year = new Date().getFullYear();
-          const sequence = await tx.dealNumberSequence.upsert({
-            where: { legalEntityId_year: { legalEntityId: legalEntity.id, year } },
-            create: { legalEntityId: legalEntity.id, year, lastNumber: 1 },
-            update: { lastNumber: { increment: 1 } },
-          });
-          const number = `${legalEntity.numberingPrefix}-${year}-${String(sequence.lastNumber).padStart(4, '0')}`;
+          const number = await allocateDealNumber(tx, legalEntity);
           const created = await tx.deal.create({
             data: {
               number,

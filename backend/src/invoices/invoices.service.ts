@@ -644,7 +644,7 @@ export class InvoicesService {
     const transportation = await this.prisma.transportation.findFirst({
       where: {
         AND: [
-          { id, deletedAt: null, deal: { deletedAt: null } },
+          { id, isQuoteDraft: false, deletedAt: null, deal: { deletedAt: null } },
           this.transportationVisibilityWhere(user),
         ],
       },

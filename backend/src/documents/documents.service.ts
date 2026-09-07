@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { GeneratedDocumentType, Prisma } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
+import { ru } from '../locales/ru';
 import { PrismaService } from '../prisma/prisma.service';
 import { generatedDocumentVisibilityWhere } from './document-policy';
 import { DocumentQueryDto } from './dto/document-query.dto';
@@ -55,6 +56,14 @@ export interface PartyRequisitesOverride {
 @Injectable()
 export class DocumentsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  async assertDealIsNotQuote(dealId: string): Promise<void> {
+    const draft = await this.prisma.transportation.findFirst({
+      where: { dealId, isQuoteDraft: true, deletedAt: null },
+      select: { id: true },
+    });
+    if (draft) throw new BadRequestException(ru.quotes.documentsAfterWin);
+  }
 
   /**
    * Уникальный номер документа на базе ключа (обычно уже содержит дату,

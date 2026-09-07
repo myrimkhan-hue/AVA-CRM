@@ -16,7 +16,7 @@ import {
 export class CreateQuoteDto {
   @IsString() legalEntityId!: string;
   @IsOptional() @IsString() responsibleId?: string;
-  @IsString() logistId!: string;
+  @IsOptional() @IsString() @MinLength(1) logistId?: string | null;
   @IsOptional() @IsString() departmentId?: string;
 
   @ValidateIf((o: CreateQuoteDto) => !o.clientName)

@@ -9,9 +9,11 @@ import {
   IsString,
   Matches,
   Min,
+  MinLength,
 } from 'class-validator';
 
 export class UpdateQuoteDto {
+  @IsOptional() @IsString() @MinLength(1) logistId?: string | null;
   @IsOptional() @IsString() originPoint?: string;
   @IsOptional() @IsString() destinationPoint?: string;
   @IsOptional() @IsString() cargoName?: string;

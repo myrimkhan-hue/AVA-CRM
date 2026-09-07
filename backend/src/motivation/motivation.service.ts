@@ -202,8 +202,8 @@ export class MotivationService {
     transportations.forEach((transportation, index) => {
       const margin = margins[index];
       const associatedUserIds = new Set(
-        [transportation.logistId, transportation.deal.responsibleId].filter((id) =>
-          userIds.includes(id),
+        [transportation.logistId, transportation.deal.responsibleId].filter((id): id is string =>
+          id !== null && userIds.includes(id),
         ),
       );
       const row: MotivationRow = {

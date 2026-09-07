@@ -97,6 +97,11 @@ export class QuotesController {
   ) {
     return this.service.lose(id, dto, user);
   }
+  @Post(':id/take')
+  @Roles('LOGIST', 'DEPARTMENT_HEAD', 'ADMIN', 'DIRECTOR')
+  take(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.service.take(id, user);
+  }
   @Post(':id/win')
   @Roles(...MANAGER_ROLES)
   win(

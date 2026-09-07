@@ -25,6 +25,7 @@ export class ContractGeneratorService {
     existingNumber?: string,
   ): Promise<{ buffer: Buffer; filename: string }> {
     const deal = await this.dealsService.findOne(dealId, user);
+    await this.documentsService.assertDealIsNotQuote(dealId);
     if (overrides) await this.documentsService.applyContractorOverrides(deal.clientId, overrides);
 
     const [legalEntity, client] = await Promise.all([

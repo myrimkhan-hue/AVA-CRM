@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DocumentTemplateType, GeneratedDocumentType } from '@prisma/client';
 import { AuthUser } from '../auth/auth-user.type';
+import { ru } from '../locales/ru';
 import { PrismaService } from '../prisma/prisma.service';
 import { transportationVisibilityWhere } from '../transportations/transportation-policy';
 import { TransportRequestTemplatePlaceholder } from './document-template.constants';
@@ -33,7 +34,7 @@ export class RequestGeneratorService {
     const transportation = await this.prisma.transportation.findFirst({
       where: {
         AND: [
-          { id: transportationId, deletedAt: null, deal: { deletedAt: null } },
+          { id: transportationId, isQuoteDraft: false, deletedAt: null, deal: { deletedAt: null } },
           transportationVisibilityWhere(user),
         ],
       },
@@ -84,6 +85,7 @@ export class RequestGeneratorService {
       },
     });
     if (!transportation) throw new NotFoundException('Перевозка не найдена');
+    if (!transportation.logist) throw new BadRequestException(ru.transportations.logistRequired);
     const leg = transportation.legs[0];
     if (!leg) throw new NotFoundException('Участок перевозки не найден');
     if (!leg.subcontractorId) {

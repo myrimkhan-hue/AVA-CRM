@@ -412,7 +412,7 @@ model Transportation {
   number                String                      @unique
   dealId                String                      @map("deal_id")
   sequenceInDeal        Int                         @map("sequence_in_deal")
-  logistId              String                      @map("logist_id")
+  logistId              String?                     @map("logist_id")
   status                TransportationStatus        @default(REQUEST_ACCEPTED)
   isMultiLeg            Boolean                     @default(false) @map("is_multi_leg")
   isQuoteDraft          Boolean                     @default(false) @map("is_quote_draft")
@@ -453,7 +453,7 @@ model Transportation {
   createdAt             DateTime                    @default(now()) @map("created_at")
   updatedAt             DateTime                    @updatedAt @map("updated_at")
   deal                  Deal                        @relation(fields: [dealId], references: [id])
-  logist                User                        @relation("TransportationLogist", fields: [logistId], references: [id])
+  logist                User?                       @relation("TransportationLogist", fields: [logistId], references: [id], onDelete: Restrict)
   legs                  TransportationLeg[]
   statusEvents          TransportationStatusEvent[]
   invoices              Invoice[]

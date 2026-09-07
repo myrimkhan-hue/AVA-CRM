@@ -15,17 +15,25 @@ const user = (roles: string[], id = 'u1'): AuthUser => ({
 });
 
 describe('Права доступа к просчётам', () => {
+  it('добавление роли логиста не ограничивает администратора общей очередью', () =>
+    expect(quoteVisibilityWhere(user(['ADMIN', 'LOGIST']))).toEqual({}));
   it('менеджер видит только свои просчёты', () =>
     expect(quoteVisibilityWhere(user(['MANAGER'], 'manager'))).toEqual({
       OR: [{ deal: { responsibleId: 'manager' } }],
     }));
-  it('логист видит только назначенные ему просчёты', () =>
+  it('логист без отдела видит свои и свободные просчёты без отдела', () =>
     expect(quoteVisibilityWhere(user(['LOGIST'], 'logist'))).toEqual({
-      OR: [{ logistId: 'logist' }],
+      OR: [
+        { OR: [{ logistId: 'logist' }] },
+        { logistId: null, deal: { OR: [{ departmentId: null }] } },
+      ],
     }));
   it('права комбинированных ролей суммируются', () =>
     expect(quoteVisibilityWhere(user(['LOGIST', 'MANAGER'], 'both'))).toEqual({
-      OR: [{ deal: { responsibleId: 'both' } }, { logistId: 'both' }],
+      OR: [
+        { OR: [{ deal: { responsibleId: 'both' } }, { logistId: 'both' }] },
+        { logistId: null, deal: { OR: [{ departmentId: null }] } },
+      ],
     }));
   it('чистый логист не видит ставку клиенту, но видит ориентир и себестоимость', () => {
     const result = presentQuote(
