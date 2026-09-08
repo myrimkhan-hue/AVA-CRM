@@ -36,14 +36,19 @@ export const lightAntdTheme = {
       defaultHoverBg: '#E9EDF4',
       defaultBorderColor: '#E7EBF1',
     },
+    // Рамку полей ввода берём от --faint, а не от общей линии --line: фон поля
+    // и фон карточки различаются всего в 1,09 раза, и без внятной рамки поле не
+    // читается как поле — непонятно, куда нажимать и где оно заканчивается.
     Input: {
       colorBgContainer: '#F3F5F9',
       hoverBg: '#F3F5F9',
       activeBg: '#F3F5F9',
+      colorBorder: '#D3D9E3',
       borderRadius: 14,
     },
     Select: {
       selectorBg: '#F3F5F9',
+      colorBorder: '#D3D9E3',
       borderRadius: 14,
       optionSelectedBg: '#E9EDF4',
     },
@@ -51,6 +56,12 @@ export const lightAntdTheme = {
       colorBgContainer: '#F3F5F9',
       hoverBg: '#F3F5F9',
       activeBg: '#F3F5F9',
+      colorBorder: '#D3D9E3',
+      borderRadius: 14,
+    },
+    InputNumber: {
+      colorBgContainer: '#F3F5F9',
+      colorBorder: '#D3D9E3',
       borderRadius: 14,
     },
     Card: {
@@ -121,14 +132,17 @@ export const darkAntdTheme = {
       defaultHoverBg: '#232A33',
       defaultBorderColor: '#262E38',
     },
+    // См. пояснение в светлой теме: рамка поля берётся от --faint.
     Input: {
       colorBgContainer: '#1C222A',
       hoverBg: '#1C222A',
       activeBg: '#1C222A',
+      colorBorder: '#39424D',
       borderRadius: 14,
     },
     Select: {
       selectorBg: '#1C222A',
+      colorBorder: '#39424D',
       borderRadius: 14,
       optionSelectedBg: '#232A33',
     },
@@ -136,6 +150,12 @@ export const darkAntdTheme = {
       colorBgContainer: '#1C222A',
       hoverBg: '#1C222A',
       activeBg: '#1C222A',
+      colorBorder: '#39424D',
+      borderRadius: 14,
+    },
+    InputNumber: {
+      colorBgContainer: '#1C222A',
+      colorBorder: '#39424D',
       borderRadius: 14,
     },
     Card: {
