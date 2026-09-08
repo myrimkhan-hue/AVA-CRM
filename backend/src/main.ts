@@ -1,10 +1,12 @@
 import { ValidationPipe } from '@nestjs/common';
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { NumericOverflowFilter } from './common/numeric-overflow.filter';
+import { configureHttpSecurity } from './http-security';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { rawBody: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
@@ -16,7 +18,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(
     new NumericOverflowFilter(app.get(HttpAdapterHost).httpAdapter),
   );
-  app.enableCors();
+  configureHttpSecurity(app);
   await app.listen(Number(process.env.PORT ?? 3000), '0.0.0.0');
 }
 

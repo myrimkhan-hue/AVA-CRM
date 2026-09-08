@@ -26,6 +26,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задайте POSTGRES_PASSWORD в файле .env}
       POSTGRES_DB: ${POSTGRES_DB:?Задайте POSTGRES_DB в файле .env}
       PORT: 3000
+      TRUST_PROXY: '1'
+      CORS_ORIGINS: ${CORS_ORIGINS:?Задайте CORS_ORIGINS доменом CRM в файле .env}
       JWT_SECRET: ${JWT_SECRET:?Задайте JWT_SECRET в файле .env}
       WAZZUP_API_KEY: ${WAZZUP_API_KEY:-}
       WAZZUP_CHANNEL_ID: ${WAZZUP_CHANNEL_ID:-}

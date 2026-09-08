@@ -1,5 +1,5 @@
 import { Body, Controller, Headers, NotFoundException, Post, RawBodyRequest, Req, UseGuards } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { Request } from 'express';
 import { Public } from '../auth/decorators/public.decorator';
 import { CreateWebsiteLeadDto } from './dto/create-website-lead.dto';
@@ -18,6 +18,7 @@ export class WebsiteLeadsController {
 
   @Public()
   @Post('website')
+  @Throttle({ default: { ttl: 60000, limit: 20, blockDuration: 60000 } })
   async create(
     @Req() req: RawBodyRequest<Request>,
     @Headers('x-signature') signature: string | undefined,
