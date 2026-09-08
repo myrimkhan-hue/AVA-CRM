@@ -1,4 +1,5 @@
-import { App, Button, Card, Form, Input, InputNumber, Modal, Select, Space, Spin, Tag, Typography } from 'antd';
+import { App, Button, Card, DatePicker, Form, Input, InputNumber, Modal, Select, Space, Spin, Tag, Typography } from 'antd';
+import dayjs, { type Dayjs } from 'dayjs';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError, apiRequest } from '../api/client';
@@ -42,6 +43,8 @@ interface FormValues {
 }
 
 interface PayValues {
+  /** Когда деньги реально ушли: платят в пятницу, отмечают в понедельник. */
+  paymentDate?: Dayjs;
   actualExchangeRate?: number;
 }
 
@@ -163,7 +166,12 @@ export function TransportationPaymentRequestCard({
     try {
       await apiRequest(`/payment-requests/${request.id}/${action}`, {
         method: 'PATCH',
-        body: body ? JSON.stringify(body) : undefined,
+        body: body
+          ? JSON.stringify({
+              ...body,
+              paymentDate: body.paymentDate?.format('YYYY-MM-DD'),
+            })
+          : undefined,
       });
       void message.success(t(
         action === 'approve'
@@ -179,12 +187,11 @@ export function TransportationPaymentRequestCard({
     }
   };
 
+  // Окно открывается и для тенге: курс там не нужен, а дата фактической оплаты
+  // нужна всегда — по ней считаются отчёты по долгам и курс НБ для валютных сумм.
   const openPay = (request: PaymentRequest) => {
-    if (request.currencyCode === 'KZT') {
-      void transition(request, 'pay');
-      return;
-    }
     payForm.resetFields();
+    payForm.setFieldsValue({ paymentDate: dayjs() });
     setPayTarget(request);
   };
 
@@ -398,12 +405,21 @@ export function TransportationPaymentRequestCard({
           onFinish={(values) => payTarget && void transition(payTarget, 'pay', values)}
         >
           <Form.Item
-            name="actualExchangeRate"
-            label={t('paymentRequests.fields.actualExchangeRate')}
-            extra={t('paymentRequests.payModal.hint')}
+            name="paymentDate"
+            label={t('paymentRequests.fields.paymentDate')}
+            extra={t('paymentRequests.payModal.dateHint')}
           >
-            <InputNumber min={0.000001} precision={6} className="full-width" />
+            <DatePicker className="full-width" />
           </Form.Item>
+          {payTarget?.currencyCode !== 'KZT' && (
+            <Form.Item
+              name="actualExchangeRate"
+              label={t('paymentRequests.fields.actualExchangeRate')}
+              extra={t('paymentRequests.payModal.hint')}
+            >
+              <InputNumber min={0.000001} precision={6} className="full-width" />
+            </Form.Item>
+          )}
         </Form>
       </Modal>
 

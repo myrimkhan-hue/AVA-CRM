@@ -14,6 +14,7 @@ import {
 import { AuthUser } from '../auth/auth-user.type';
 import { InvoicesService } from '../invoices/invoices.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { isFutureBusinessDay } from '../common/business-date';
 import { PrismaService } from '../prisma/prisma.service';
 import { transportationVisibilityWhere } from '../transportations/transportation-policy';
 import { CreatePaymentRequestDto } from './dto/create-payment-request.dto';
@@ -284,6 +285,15 @@ export class PaymentRequestsService {
         'Оплатить можно только согласованную заявку',
       );
     }
+    // Дату можно указать задним числом: платят в пятницу, отмечают в понедельник,
+    // а курс НБ РК по разделу 4.4.3 ТЗ берётся на дату оплаты. Без указания —
+    // текущий момент, как было раньше.
+    const paidAt = dto.paymentDate
+      ? new Date(`${dto.paymentDate}T00:00:00.000Z`)
+      : new Date();
+    if (dto.paymentDate && isFutureBusinessDay(paidAt)) {
+      throw new BadRequestException('Дата оплаты не может быть в будущем');
+    }
     return this.transition(
       current,
       user,
@@ -291,7 +301,7 @@ export class PaymentRequestsService {
       {
         status: PaymentRequestStatus.PAID,
         paidByUserId: user.id,
-        paidAt: new Date(),
+        paidAt,
         actualExchangeRate:
           dto.actualExchangeRate === undefined
             ? undefined
